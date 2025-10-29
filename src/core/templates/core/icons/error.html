@@ -1,0 +1,8 @@
+{# defaults: stroke icon; pass label for non-decorative use #}
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
+     class="{{ class|default:'h-5 w-5' }}"
+     {% if label %}role="img" aria-label="{{ label }}"{% else %}aria-hidden="true"{% endif %}
+     fill="none" stroke="currentColor" stroke-width="{{ stroke_width|default:2 }}">
+  <circle cx="12" cy="12" r="9"></circle>
+  <path stroke-linecap="round" stroke-linejoin="round" d="M9 9l6 6M15 9l-6 6"></path>
+</svg>

@@ -1,0 +1,34 @@
+{# src/core/templates/core/partials/head_meta.html #}
+{% load static %}
+
+{# ─── Favicons & Progressive Web App manifest ─────────────────────────────────────────────── #}
+<link rel="icon" href="{% static 'core/favicon/favicon.ico' %}">
+<link rel="icon" type="image/svg+xml" href="{% static 'core/favicon/favicon.svg' %}">
+<link rel="icon" type="image/png" sizes="32x32" href="{% static 'core/favicon/favicon-32x32.png' %}">
+<link rel="icon" type="image/png" sizes="16x16" href="{% static 'core/favicon/favicon-16x16.png' %}">
+<link rel="apple-touch-icon" sizes="180x180" href="{% static 'core/favicon/apple-icon-180.png' %}">
+<link rel="manifest" href="{% static 'core/favicon/site.webmanifest' %}">
+
+<meta name="color-scheme" content="light dark">
+<meta name="theme-color" media="(prefers-color-scheme: light)" content="#ffffff">
+<meta name="theme-color" media="(prefers-color-scheme: dark)" content="#0A4D8C">
+
+{# ─── Open Graph / social preview ──────────────────────────────────────────── #}
+<meta property="og:site_name" content="LangCen Base">
+<meta property="og:title" content="{% block og_title %}Language Centre{% endblock %}">
+<meta property="og:description" content="{% block og_description %}University of Cambridge Language Centre{% endblock %}">
+<meta property="og:type" content="website">
+
+{# Only emit og:url if request exists #}
+{% if request %}
+  <meta property="og:url" content="{{ request.build_absolute_uri }}">
+{% endif %}
+
+{# Absolute OG image if request exists, else fall back to relative (still fine) #}
+{% if request %}
+  <meta property="og:image" content="{{ request.scheme }}://{{ request.get_host }}{% static 'core/img/og-default.jpg' %}">
+{% else %}
+  <meta property="og:image" content="{% static 'core/img/og-default.jpg' %}">
+{% endif %}
+
+<meta name="twitter:card" content="summary_large_image">

@@ -1,0 +1,73 @@
+{# users/core/tempolates/core/partials/footer.html #}
+{# Footer
+   - University style: left = logo + copyright, right = quick links (+ socials)
+   - Theme-aware via bg-background / text-foreground / border-border
+   - Mobile: stacked; ≥md: two columns
+#}
+{% load static social %}
+
+<footer role="contentinfo" aria-label="Site footer"
+        class="border-t border-border/70 bg-background text-foreground">
+  <div class="mx-auto max-w-7xl px-6 py-8 md:py-10 flex flex-col md:flex-row md:items-start md:justify-between gap-8">
+
+    {# LEFT: Cambridge lockup + eLearning mark #}
+    <div class="flex flex-shrink-0 items-start gap-4">
+      <!-- Cambridge logo (light/dark) -->
+      <a href="https://www.langcen.cam.ac.uk/"
+         target="_blank"
+         rel="noopener"
+         aria-label="University of Cambridge Language Centre homepage"
+        class="inline-flex items-start">
+        <img src="{% static 'core/img/ucam_language_centre_v_col.png' %}"
+            alt="University of Cambridge — Language Centre"
+            class="h-16 sm:h-20 w-auto object-contain dark:hidden" />
+        <img src="{% static 'core/img/ucam_language_centre_v_rev_col.png' %}"
+            alt="University of Cambridge — Language Centre"
+            class="hidden h-16 sm:h-20 w-auto object-contain dark:inline" />
+      </a>
+
+      <!-- eLearning mark (light/dark) -->
+      <a href="https://www.langcen.cam.ac.uk/"
+         target="_blank"
+         rel="noopener"
+         aria-label="Cambridge Language Centre eLearning Team"
+        class="inline-flex items-start">
+        <img src="{% static 'core/img/ucam_language_centre_v_col.png' %}"
+            alt="eLearning Team"
+            class="h-16 sm:h-20 w-auto object-contain dark:hidden" />
+        <img src="{% static 'core/img/ucam_language_centre_v_rev_col.png' %}"
+            alt="eLearning Team"
+            class="hidden h-16 sm:h-20 w-auto object-contain dark:inline" />
+      </a>
+    </div>
+
+
+    {# CENTER: Copyright + Links #}
+    <div class="flex-1 text-center md:text-left text-sm text-muted-foreground space-y-3 md:space-y-2">
+      <p class="leading-snug">
+        © {% now "Y" %} University of Cambridge.</p>
+      <p class="leading-snug">Developed by the eLearning team,
+        <a href="https://www.langcen.cam.ac.uk/" target="_blank" rel="noopener"
+           class="focus-ring rounded-md px-1 underline-offset-4 hover:underline hover:text-foreground">
+          Language Centre
+        </a>.
+      </p>
+
+      <div class="flex flex-col items-center md:items-start md:flex-row md:gap-6 gap-2">
+        <a href="https://www.cam.ac.uk/about-this-site/terms-and-conditions"
+          target="_blank"
+          class="focus-ring rounded-md px-1 hover:text-foreground transition-colors">
+           Terms & Conditions
+        </a>
+        <a href="https://www.cam.ac.uk/about-this-site/accessibility"
+          target="_blank"
+          class="focus-ring rounded-md px-1 hover:text-foreground transition-colors">Accessibility</a>
+        <a href="#" class="focus-ring rounded-md px-1 hover:text-foreground transition-colors">Support</a>
+      </div>
+    </div>
+
+    {# RIGHT: Social icons #}
+    {% social_list "facebook,x,youtube,linkedin,instagram" %}
+
+  </div>
+</footer>

@@ -1,0 +1,60 @@
+{# users/templates/users/registration/login.html #}
+{# NOTE:
+   We use <c-card> + <c-slot> (not <c-card-title>/<c-card-header> tags).
+   That avoids maintaining alias templates like cotton/card_title/index.html.
+   If we ever want those, add one-line includes that point to cotton/card/*.html.
+
+  templates/cotton/card_title/index.html         →  {% include "cotton/card/title.html" %}
+  templates/cotton/card_header/index.html        →  {% include "cotton/card/header.html" %}
+  templates/cotton/card_description/index.html   →  {% include "cotton/card/description.html" %}
+  templates/cotton/card_content/index.html       →  {% include "cotton/card/content.html" %}
+  templates/cotton/card_footer/index.html        →  {% include "cotton/card/footer.html" %}
+
+#}
+
+{% extends "core/base.html" %}
+{% load cotton form_extras %}
+{% load navigation icons %}
+
+{% block content %}
+  <div class="min-h-[calc(100vh-8rem)] flex items-start justify-center pt-24">
+    {% c card class="w-full max-w-md card-solid" %}
+      {% c card/header %}
+        {% c card/title %}Sign in{% endc %}
+        {% c card/description %}Welcome back{% endc %}
+      {% endc %}
+
+      {% c card/content %}
+        <form method="post" novalidate class="space-y-4">
+          {% csrf_token %}
+          {% include "core/forms/non_field_errors.html" with form=form %}
+
+          {% if form.email %}
+            {% include "core/forms/field.html" with field=form.email autocomplete="email" placeholder="Email address" %}
+          {% elif form.username %}
+            {% include "core/forms/field.html" with field=form.username autocomplete="username" placeholder="Username" %}
+          {% endif %}
+
+          {% if form.password %}
+            {% include "core/forms/field.html" with field=form.password type="password" autocomplete="current-password" placeholder="••••••••" %}
+          {% endif %}
+
+          <div class="pt-4">
+            <c-button variant="default" size="lg"
+              class="w-full font-medium flex group items-center justify-center gap-2 transition-all">
+              Log in
+              {% icon 'arrow_right' class_='h-5 w-5 relative right-0 transition-all group-hover:-right-1' %}
+            </c-button>
+          </div>
+        </form>
+      {% endc %}
+
+      {% c card/footer class="justify-center" %}
+        <a href="{% url 'users:password_reset' %}"
+           class="text-sm text-muted-foreground underline-offset-4 hover:underline hover:text-foreground">
+          Forgot password?
+        </a>
+      {% endc %}
+    {% endc %}
+  </div>
+{% endblock %}

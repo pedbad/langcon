@@ -1,0 +1,20 @@
+{# users/core/tempolates/core/partials/head.html #}
+{% load static %}
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+
+<!-- core/templates/core/partials/head.html -->
+<style>[x-cloak]{ display:none !important; }</style>
+
+
+{# Tailwind build will eventually write to core/css/output.css #}
+<link rel="stylesheet" href="{% static 'core/css/output.css' %}">
+
+{# ─── Favicons & Progressive Web App manifest ─────────────────────────────────────────────── #}
+{% include "core/partials/head_meta.html" %}
+
+{# Page-specific meta tags (SEO, OG, etc.) #}
+{% block meta %}{% endblock %}
+
+{# Extra head content (inline styles, preloads, etc.) #}
+{% block head_extra %}{% endblock %}

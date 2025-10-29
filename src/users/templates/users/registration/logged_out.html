@@ -1,0 +1,36 @@
+{# users/templates/users/registration/logged_out.html #}
+{% extends "core/base.html" %}
+{% load cotton form_extras %}
+{% load icons %}
+
+{% block title %}Signed out{% endblock %}
+
+{% block content %}
+  <div class="min-h-[calc(100vh-8rem)] flex items-start justify-center pt-24">
+    {# cotton components accept passthrough attrs; aria-labelledby is safe here #}
+    {% c card class="w-full max-w-md card-solid" aria-labelledby="logout-title" %}
+      {% c card/header %}
+        {% c card/title id="logout-title" %}You’ve signed out{% endc %}
+        {% c card/description %}You have been logged out successfully.{% endc %}
+      {% endc %}
+
+      {% c card/content %}
+        <p class="text-sm text-muted-foreground text-center">
+          You can safely close this page or sign in again below.
+        </p>
+      {% endc %}
+
+      {% c card/footer %}
+        <div class="pt-4 w-full">
+          <a href="{% url 'users:login' %}">
+            <c-button variant="default" size="lg"
+              class="w-full font-medium flex group items-center justify-center gap-2 transition-all">
+              Log in
+              {% icon 'arrow_right' class_='h-5 w-5 relative right-0 transition-all group-hover:-right-1' %}
+            </c-button>
+          </a>
+        </div>
+      {% endc %}
+    {% endc %}
+  </div>
+{% endblock %}

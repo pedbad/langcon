@@ -1,0 +1,94 @@
+{#  src/core/templates/core/forms/field.html #}
+{% load form_extras %}
+
+{% with
+  input_id=field.id_for_label
+  help_id=field.id_for_label|add:"-help"
+  err_id=field.id_for_label|add:"-errors"
+  base_input_classes='block w-full h-10 rounded-md border border-border dark:border-white/30 bg-background text-foreground placeholder:text-foreground/60 px-3 py-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:border-ring dark:focus-visible:border-white/80 dark:focus-visible:ring-white/80 ring-offset-background disabled:opacity-50 disabled:cursor-not-allowed'
+  invalid_classes=' border-red-500 dark:border-red-400'
+%}
+  <div class="space-y-1.5">
+    {% if field.label %}
+      <label for="{{ input_id }}" class="text-sm font-medium text-foreground">
+        {{ label|default:field.label }}
+      </label>
+    {% endif %}
+
+    {# Start attrs with id + class #}
+    {% with attrs='id:'|add:input_id|add:'; class:'|add:base_input_classes %}
+      {# If there are errors, append error classes and aria-invalid:true; else aria-invalid:false #}
+      {% if field.errors %}
+        {% with attrs=attrs|add:invalid_classes %}
+          {% with attrs=attrs|add:'; aria-invalid:true' %}
+            {% with attrs=attrs|add:'; aria-describedby:'|add:help_id|add:' '|add:err_id %}
+              {# Optional placeholder #}
+              {% if placeholder %}
+                {% with attrs=attrs|add:'; placeholder:'|add:placeholder %}
+                  {# Optional autocomplete #}
+                  {% if autocomplete %}
+                    {% with attrs=attrs|add:'; autocomplete:'|add:autocomplete %}
+                      {{ field|add_attrs:attrs }}
+                    {% endwith %}
+                  {% else %}
+                    {{ field|add_attrs:attrs }}
+                  {% endif %}
+                {% endwith %}
+              {% else %}
+                {% if autocomplete %}
+                  {% with attrs=attrs|add:'; autocomplete:'|add:autocomplete %}
+                    {{ field|add_attrs:attrs }}
+                  {% endwith %}
+                {% else %}
+                  {{ field|add_attrs:attrs }}
+                {% endif %}
+              {% endif %}
+            {% endwith %}
+          {% endwith %}
+        {% endwith %}
+      {% else %}
+        {% with attrs=attrs|add:'; aria-invalid:false' %}
+          {% with attrs=attrs|add:'; aria-describedby:'|add:help_id|add:' '|add:err_id %}
+            {% if placeholder %}
+              {% with attrs=attrs|add:'; placeholder:'|add:placeholder %}
+                {% if autocomplete %}
+                  {% with attrs=attrs|add:'; autocomplete:'|add:autocomplete %}
+                    {{ field|add_attrs:attrs }}
+                  {% endwith %}
+                {% else %}
+                  {{ field|add_attrs:attrs }}
+                {% endif %}
+              {% endwith %}
+            {% else %}
+              {% if autocomplete %}
+                {% with attrs=attrs|add:'; autocomplete:'|add:autocomplete %}
+                  {{ field|add_attrs:attrs }}
+                {% endwith %}
+              {% else %}
+                {{ field|add_attrs:attrs }}
+              {% endif %}
+            {% endif %}
+          {% endwith %}
+        {% endwith %}
+      {% endif %}
+    {% endwith %}
+
+    {# Help region – always exists to satisfy aria-describedby #}
+    {% if field.help_text %}
+      <p id="{{ help_id }}" class="text-xs text-foreground/70">{{ field.help_text|safe }}</p>
+    {% else %}
+      <p id="{{ help_id }}" class="sr-only"></p>
+    {% endif %}
+
+    {# Error region – always exists to satisfy aria-describedby #}
+    {% if field.errors %}
+      <ul id="{{ err_id }}" class="space-y-0.5 mt-1 list-none pl-0">
+        {% for err in field.errors %}
+          <li class="text-sm text-red-600 dark:text-red-400">{{ err }}</li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <ul id="{{ err_id }}" class="sr-only"></ul>
+    {% endif %}
+  </div>
+{% endwith %}

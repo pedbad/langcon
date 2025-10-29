@@ -1,0 +1,10 @@
+{#  src/core/templates/core/forms/non_field_errors.html #}
+{% if form.non_field_errors %}
+  <div class="rounded-md border border-red-200 bg-red-50 text-red-800 dark:border-red-900/60 dark:bg-red-950/40 dark:text-red-200 p-3 text-sm">
+    <ul class="list-disc pl-4 space-y-1">
+      {% for err in form.non_field_errors %}
+        <li>{{ err }}</li>
+      {% endfor %}
+    </ul>
+  </div>
+{% endif %}

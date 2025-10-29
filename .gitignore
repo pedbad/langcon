@@ -1,0 +1,90 @@
+# ---- macOS ----
+.DS_Store
+.AppleDouble
+.LSOverride
+__MACOSX/
+
+# ---- Python ----
+*.pyc
+*.pyo
+*.pyd
+__pycache__/
+*.so
+
+# virtualenvs
+.venv/
+venv/
+env/
+ENV/
+
+# distribution / packaging
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Django stuff:
+*.log
+local_settings.py
+db.sqlite3
+db.sqlite3-journal
+media/
+
+# ---- IDEs / Editors ----
+# VS Code
+*.code-workspace
+.vscode/
+
+.idea/
+*.swp
+*.swo
+
+
+# ---- npm / Node ----
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# production build outputs
+*.min.js
+*.min.css
+*.bundle.js
+
+# ---- Tailwind build artifacts ----
+core/static/css/output.css
+
+# ---- environment / secrets ----
+.env
+.env.*
+!.env.example
+
+
+# Tailwind build artifact
+src/core/static/core/css/output.css
+
+# Email outbox (dev)
+tmp_emails/
+src/tmp_emails/
+
+
+# Ignore real CSV data (keep only sample)
+data/*.csv
+!data/sample_students.csv
+
+# --- allow vendored JS libs (even .min.js) under core static ---
+!src/core/static/core/js/lib/
+!src/core/static/core/js/lib/**
+!src/core/static/core/js/lib/**/*.min.js

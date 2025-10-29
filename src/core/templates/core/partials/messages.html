@@ -1,0 +1,82 @@
+{# src/core/templates/core/partials/messages.html #}
+{% load icons %}
+
+{#
+  Django messages renderer
+  - Uses {% icon %} tag for consistency
+  - Accessible (role=alert, aria-live)
+  - Dismissible with Alpine
+  - Fully theme aware (light/dark)
+#}
+
+{% if messages %}
+  <div class="space-y-2 mb-4" aria-live="polite" role="region">
+    {% for message in messages %}
+      <div x-data="{ show: true }" x-show="show" x-transition>
+        {% with tag=message.tags %}
+          {% if "success" in tag %}
+            {% with icon_name="success" wrap_classes="border-green-200 bg-green-50 text-green-800 dark:border-green-900/60 dark:bg-green-950/40 dark:text-green-200" %}
+              <div class="flex items-start justify-between gap-2 rounded-md border p-3 {{ wrap_classes }}" role="alert">
+                <div class="flex items-start gap-2">
+                  {% icon icon_name class_="h-5 w-5 mt-0.5 shrink-0" %}
+                  <div class="text-sm">{{ message|safe }}</div>
+                </div>
+                <button
+                  @click="show = false"
+                  class="text-sm cursor-pointer opacity-60 hover:opacity-100 hover:scale-110 transition-transform focus:outline-none">
+                  ✕
+                </button>
+              </div>
+            {% endwith %}
+
+          {% elif "warning" in tag %}
+            {% with icon_name="warning" wrap_classes="border-amber-200 bg-amber-50 text-amber-800 dark:border-amber-900/60 dark:bg-amber-950/40 dark:text-amber-200" %}
+              <div class="flex items-start justify-between gap-2 rounded-md border p-3 {{ wrap_classes }}" role="alert">
+                <div class="flex items-start gap-2">
+                  {% icon icon_name class_="h-5 w-5 mt-0.5 shrink-0" %}
+                  <div class="text-sm">{{ message|safe }}</div>
+                </div>
+                <button
+                  @click="show = false"
+                  class="text-sm cursor-pointer opacity-60 hover:opacity-100 hover:scale-110 transition-transform focus:outline-none">
+                  ✕
+                </button>
+              </div>
+            {% endwith %}
+
+          {% elif "error" in tag %}
+            {% with icon_name="error" wrap_classes="border-red-200 bg-red-50 text-red-800 dark:border-red-900/60 dark:bg-red-950/40 dark:text-red-200" %}
+              <div class="flex items-start justify-between gap-2 rounded-md border p-3 {{ wrap_classes }}" role="alert">
+                <div class="flex items-start gap-2">
+                  {% icon icon_name class_="h-5 w-5 mt-0.5 shrink-0" %}
+                  <div class="text-sm">{{ message|safe }}</div>
+                </div>
+                <button
+                  @click="show = false"
+                  class="text-sm cursor-pointer opacity-60 hover:opacity-100 hover:scale-110 transition-transform focus:outline-none">
+                  ✕
+                </button>
+              </div>
+            {% endwith %}
+
+          {% else %}
+            {# ℹ️ Info (now soft pastel blue tone) #}
+            {% with icon_name="info" wrap_classes="border-blue-200 bg-blue-50 text-blue-800 dark:border-blue-900/60 dark:bg-blue-950/40 dark:text-blue-200" %}
+              <div class="flex items-start justify-between gap-2 rounded-md border p-3 {{ wrap_classes }}" role="alert">
+                <div class="flex items-start gap-2">
+                  {% icon icon_name class_="h-5 w-5 mt-0.5 shrink-0" %}
+                  <div class="text-sm">{{ message|safe }}</div>
+                </div>
+                <button
+                  @click="show = false"
+                  class="text-sm cursor-pointer opacity-60 hover:opacity-100 hover:scale-110 transition-transform focus:outline-none">
+                  ✕
+                </button>
+              </div>
+            {% endwith %}
+          {% endif %}
+        {% endwith %}
+      </div>
+    {% endfor %}
+  </div>
+{% endif %}

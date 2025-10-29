@@ -1,0 +1,123 @@
+{# src/core/templates/core/partials/theme_toggle.html #}
+{#
+  ────────────────────────────────────────────────────────────────────────────────
+  THEME TOGGLE + ALPINE INITIALIZATION NOTES
+  ────────────────────────────────────────────────────────────────────────────────
+  ⚙️  Background:
+      The Theme Toggle (inside core/partials/theme_toggle.html) uses <c-dropdown-menu>
+      components from the Cotton/ShadCN library. These components render their menus
+      inside a Shadow DOM, which means Alpine.js cannot automatically detect them
+      or bind stores if Alpine is initialized too early.
+
+  🧩  Issue:
+      We were getting "Cannot read properties of undefined (reading 'value')" errors
+      from Alpine when accessing `$store.theme`, because the store wasn’t registered
+      before Alpine started — the Shadow DOM isolates its markup.
+
+  🛠️  Fix:
+      - In base/partials/scripts.html:
+          • We ensured `main.js` loads *before* Alpine starts (no `defer`).
+          • Added a tiny bootstrap snippet:
+                window.deferLoadingAlpine = (callback) => { callback(); Alpine.start(); };
+            This delays Alpine initialization until after our theme store is registered.
+
+      - In main.js:
+          • The theme store is registered on the `alpine:init` event.
+          • The store applies immediately and listens for OS theme changes.
+
+  ✅  Result:
+      - Theme toggle works across both normal DOM and Shadow DOM menus.
+      - The selected theme persists via localStorage.
+      - No more Alpine undefined-store errors in console.
+
+  📁  Relevant files:
+      - core/static/core/js/main.js
+      - core/templates/core/partials/scripts.html
+      - core/templates/core/partials/theme_toggle.html
+  ────────────────────────────────────────────────────────────────────────────────
+#}
+
+{% load icons %}
+
+{# Usage:
+   {% include "core/partials/theme_toggle.html" with variant="desktop" %}
+   {% include "core/partials/theme_toggle.html" with variant="mobile" %}
+#}
+
+{% if variant == "mobile" %}
+  {# Mobile: full-width row + dropdown menu #}
+  <c-dropdown-menu x-data class="w-full">
+    <c-dropdown-menu.trigger asChild>
+      <button type="button"
+              class="flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm hover:bg-accent hover:text-accent-foreground">
+        {# current theme icon #}
+        <template x-if="$store.theme.value === 'light'">
+          {% icon 'light_mode' class_='h-5 w-5 shrink-0' %}
+        </template>
+        <template x-if="$store.theme.value === 'dark'">
+          {% icon 'dark_mode' class_='h-5 w-5 shrink-0' %}
+        </template>
+        <template x-if="$store.theme.value === 'system'">
+          {% icon 'computer' class_='h-5 w-5 shrink-0' %}
+        </template>
+        <span>Theme</span>
+      </button>
+    </c-dropdown-menu.trigger>
+
+    <c-dropdown-menu.content align="end" side="bottom" side-offset="8" class="min-w-44">
+      <c-dropdown-menu.item x-on:click="$store.theme.set('light')" class="flex items-center gap-2" role="menuitemradio" :aria-checked="$store.theme.value==='light'">
+        {% icon 'light_mode' class_='h-4 w-4' %} <span>Light</span>
+        <span class="ml-auto text-xs" x-show="$store.theme.value==='light'" x-cloak>✓</span>
+      </c-dropdown-menu.item>
+
+      <c-dropdown-menu.item x-on:click="$store.theme.set('dark')" class="flex items-center gap-2" role="menuitemradio" :aria-checked="$store.theme.value==='dark'">
+        {% icon 'dark_mode' class_='h-4 w-4' %} <span>Dark</span>
+        <span class="ml-auto text-xs" x-show="$store.theme.value==='dark'" x-cloak>✓</span>
+      </c-dropdown-menu.item>
+
+      <c-dropdown-menu.separator />
+
+      <c-dropdown-menu.item x-on:click="$store.theme.set('system')" class="flex items-center gap-2" role="menuitemradio" :aria-checked="$store.theme.value==='system'">
+        {% icon 'computer' class_='h-4 w-4' %} <span>System</span>
+        <span class="ml-auto text-xs" x-show="$store.theme.value==='system'" x-cloak>✓</span>
+      </c-dropdown-menu.item>
+    </c-dropdown-menu.content>
+  </c-dropdown-menu>
+
+{% else %}
+  {# Desktop (default): icon button on the right #}
+  <c-dropdown-menu x-data>
+    <c-dropdown-menu.trigger asChild>
+      <c-button variant="outline" size="icon" class="h-9 w-9 p-0" type="button" aria-label="Theme">
+        <template x-if="$store.theme.value === 'light'">
+          {% icon 'light_mode' class_='h-5 w-5' %}
+        </template>
+        <template x-if="$store.theme.value === 'dark'">
+          {% icon 'dark_mode' class_='h-5 w-5' %}
+        </template>
+        <template x-if="$store.theme.value === 'system'">
+          {% icon 'computer' class_='h-5 w-5' %}
+        </template>
+      </c-button>
+    </c-dropdown-menu.trigger>
+
+    <c-dropdown-menu.content align="end" side="bottom" side-offset="8" class="min-w-44">
+      <c-dropdown-menu.item x-on:click="$store.theme.set('light')" class="flex items-center gap-2" role="menuitemradio" :aria-checked="$store.theme.value==='light'">
+        {% icon 'light_mode' class_='h-4 w-4' %} <span>Light</span>
+        <span class="ml-auto text-xs" x-show="$store.theme.value==='light'" x-cloak>✓</span>
+      </c-dropdown-menu.item>
+
+      <c-dropdown-menu.item x-on:click="$store.theme.set('dark')" class="flex items-center gap-2" role="menuitemradio" :aria-checked="$store.theme.value==='dark'">
+        {% icon 'dark_mode' class_='h-4 w-4' %} <span>Dark</span>
+        <span class="ml-auto text-xs" x-show="$store.theme.value==='dark'" x-cloak>✓</span>
+      </c-dropdown-menu.item>
+
+      <c-dropdown-menu.separator />
+
+      <c-dropdown-menu.item x-on:click="$store.theme.set('system')" class="flex items-center gap-2" role="menuitemradio" :aria-checked="$store.theme.value==='system'">
+        {% icon 'computer' class_='h-4 w-4' %} <span>System</span>
+        <span class="ml-auto text-xs" x-show="$store.theme.value==='system'" x-cloak>✓</span>
+      </c-dropdown-menu.item>
+    </c-dropdown-menu.content>
+  </c-dropdown-menu>
+{% endif %}

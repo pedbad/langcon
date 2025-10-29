@@ -1,0 +1,47 @@
+{# users/core/tempolates/core/base.html #}
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>{% block title %}Graduate Applications - Language Condition{% endblock %}</title>
+    {% include "core/partials/head.html" %}    
+  </head>
+
+  <body
+    class="min-h-screen flex flex-col bg-background text-foreground antialiased"
+    data-env="{% if debug %}dev{% else %}prod{% endif %}"
+  >
+    <!-- 🔹 Skip Link (visible on focus) -->
+    <a
+      href="#main-content"
+      class="sr-only focus:not-sr-only fixed left-3 top-3 z-50 px-3 py-2 rounded-lg bg-card text-card-foreground shadow focus-ring"
+    >
+      Skip to main content
+    </a>
+
+    <!-- 🔹 Site Header -->
+    <header role="banner">
+      {% include "core/partials/header.html" %}
+    </header>
+
+    <!-- 🔹 Main Landmark -->
+    <main
+      id="main-content"
+      role="main"
+      tabindex="-1"
+      class="pt-16 flex-grow outline-none"
+    >
+      <div class="container mx-auto p-4">
+        {% include "core/partials/messages.html" %}
+        {% block content %}{% endblock %}
+      </div>
+    </main>
+
+    <!-- 🔹 Footer Landmark -->
+    <footer role="contentinfo">
+      {% include "core/partials/footer.html" %}
+    </footer>
+
+    {% include "core/partials/scripts.html" %}
+  </body>
+</html>

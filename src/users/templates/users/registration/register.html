@@ -1,0 +1,30 @@
+{# users/templates/users/registration/register.html #}
+{% extends "core/base.html" %}
+{% load cotton form_extras %}
+
+{% block content %}
+<div class="min-h-[calc(100vh-8rem)] flex items-start justify-center pt-24">
+  {% c card class="w-full max-w-md card-solid" %}
+    {% c card/header %}
+      {% c card/title %}Create an account{% endc %}
+      {% c card/description %}Enter your details to get started.{% endc %}
+    {% endc %}
+
+    {% c card/content %}
+      <form method="post" novalidate class="space-y-4">
+        {% csrf_token %}
+        {% include "core/forms/non_field_errors.html" with form=form %}
+
+        {% if form.email %}{% include "core/forms/field.html" with field=form.email autocomplete="email" placeholder="Email address" %}{% endif %}
+        {% if form.password1 %}{% include "core/forms/field.html" with field=form.password1 type="password" autocomplete="new-password" placeholder="Password" %}{% endif %}
+        {% if form.password2 %}{% include "core/forms/field.html" with field=form.password2 type="password" autocomplete="new-password" placeholder="Confirm password" %}{% endif %}
+        {% if form.role %}{% include "core/forms/field.html" with field=form.role %}{% endif %}
+
+        <div class="pt-2">
+          <c-button variant="default" size="lg" class="w-full">Create account</c-button>
+        </div>
+      </form>
+    {% endc %}
+  {% endc %}
+</div>
+{% endblock %}

@@ -1,0 +1,16 @@
+{% load static %}
+<a href="{% url 'core:landing' %}" class="focus-ring inline-flex items-center gap-2">
+  {# Light logo (shows in light, hides in dark) #}
+  <img src="{% static 'core/img/logo-cap.svg' %}"
+       alt="LangCen logo"
+       class="h-6 w-6 align-middle dark:hidden" />
+
+  {# Dark logo (hidden by default, shows in dark) #}
+  <img src="{% static 'core/img/logo-cap-blue.svg' %}"
+       alt="LangCen logo dark"
+       class="h-6 w-6 align-middle hidden dark:inline" />
+
+  <span class="text-xl font-semibold tracking-tight text-gray-900 dark:text-gray-100">
+    Graduate Applications
+  </span>
+</a>

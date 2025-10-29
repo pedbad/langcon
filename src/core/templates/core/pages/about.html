@@ -1,0 +1,170 @@
+{# users/core/tempolates/core/pages/about.html #}
+{% extends "core/base.html" %}
+{% load cotton navigation icons user_roles %}
+{% load user_roles %}
+
+{% block title %}Graduate Applications - About{% endblock %}
+
+{% block content %}
+<div class="mx-auto max-w-3xl pt-2">
+
+  {% c card class="card-solid" %}
+    {% c card/header %}
+      <div class="flex items-center gap-3">
+        {% icon 'info' class_='h-6 w-6 text-foreground/80' %}
+        {% c card/title %}About LangCen Base{% endc %}
+      </div>
+      {% c card/description %}
+        Developed by the <strong>eLearning team</strong> at the University of Cambridge Language Centre.
+      {% endc %}
+    {% endc %}
+
+    {% c card/content %}
+      <p class="leading-relaxed">
+        LangCen Base is a reusable starter for Django projects, with accessibility-first UI, role-aware navigation,
+        and light/dark theming built on Tailwind v4 and Cotton (ShadCN-style).
+      </p>
+
+      <ul class="mt-4 space-y-2 text-sm leading-relaxed text-muted-foreground">
+        <li class="flex items-start gap-2">
+          <span class="mt-1.5 h-1.5 w-1.5 rounded-full bg-ring shrink-0"></span>
+          <span>Semantic landmarks and a keyboard skip link.</span>
+        </li>
+        <li class="flex items-start gap-2">
+          <span class="mt-1.5 h-1.5 w-1.5 rounded-full bg-ring shrink-0"></span>
+          <span>Consistent focus outlines via <code>.focus-ring</code>.</span>
+        </li>
+        <li class="flex items-start gap-2">
+          <span class="mt-1.5 h-1.5 w-1.5 rounded-full bg-ring shrink-0"></span>
+          <span>Themed components using Tailwind v4 <code>@theme</code> tokens.</span>
+        </li>
+        <li class="flex items-start gap-2">
+          <span class="mt-1.5 h-1.5 w-1.5 rounded-full bg-ring shrink-0"></span>
+          <span>Styled authentication flow; admin-controlled registration.</span>
+        </li>
+      </ul>
+
+
+
+    {% endc %}
+
+    {% c card/footer class="justify-start gap-2" %}
+      <a href="https://www.langcen.cam.ac.uk/"
+         target="_blank" rel="noopener"
+         class="focus-ring inline-flex items-center gap-2 rounded-md px-3 py-2 border border-border hover:bg-accent hover:text-accent-foreground">
+        <span>Language Centre website</span>
+        {% icon 'arrow_right' class_='h-4 w-4' %}
+      </a>
+
+      <a href="https://github.com/pedbad/langcen_base"
+         target="_blank" rel="noopener"
+         class="focus-ring inline-flex items-center gap-2 rounded-md px-3 py-2 border border-border hover:bg-accent hover:text-accent-foreground">
+        <span>GitHub repository</span>
+        {% icon 'arrow_right' class_='h-4 w-4' %}
+      </a>
+    {% endc %}
+  {% endc %}
+
+</div>
+
+<div class="mt-8 border-t border-border pt-6">
+  <h2 class="text-lg font-semibold mb-4 flex items-center gap-2">
+    {% icon 'apps' class_='h-5 w-5 text-foreground/80' %}
+    Icon Preview
+  </h2>
+
+  <div class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-6 text-center">
+    {% for name in icon_list %}
+      <div class="flex flex-col items-center justify-center gap-2 p-3 rounded-lg bg-muted/30 hover:bg-accent/40 transition-colors focus-ring">
+        {% icon name class_='h-6 w-6 text-foreground/80' %}
+        <span class="text-xs text-muted-foreground">{{ name|title }}</span>
+      </div>
+    {% endfor %}
+  </div>
+</div>
+
+
+<div class="border-t pt-6 mt-8">
+  <h2 class="text-xl font-semibold mb-4">🔗 Quick Auth Links (dev only)</h2>
+
+  <div class="grid gap-6 md:grid-cols-2">
+    {# ===================== Auth Flows ===================== #}
+    <div class="card p-4">
+      <h3 class="text-base font-semibold mb-2">Auth Flows</h3>
+      <ul class="text-sm space-y-1">
+        {% if request.user.is_authenticated %}
+          <li><a class="underline" href="{% url 'users:logout' %}">Logout</a></li>
+        {% else %}
+          <li><a class="underline" href="{% url 'users:login' %}">Login</a></li>
+        {% endif %}
+
+        <li><a class="underline" href="{% url 'users:password_reset' %}">Password Reset (start)</a></li>
+        <li><a class="underline" href="{% url 'users:password_reset_done' %}">Password Reset — Done</a></li>
+
+        {# Confirm needs uidb64+token; quick tester below #}
+        <li class="mt-2">
+          <div
+            x-data="{ uid:'', token:'' }"
+            class="flex flex-col gap-2"
+          >
+            <div class="text-xs text-muted-foreground">Password Reset — Confirm</div>
+            <div class="flex gap-2">
+              <input
+                type="text"
+                x-model="uid"
+                placeholder="uidb64"
+                class="w-1/2 rounded-md bg-background text-foreground border border-border/70 px-3 py-2 placeholder:text-foreground/50"
+              />
+              <input
+                type="text"
+                x-model="token"
+                placeholder="token"
+                class="w-1/2 rounded-md bg-background text-foreground border border-border/70 px-3 py-2 placeholder:text-foreground/50"
+              />
+            </div>
+            <button
+              type="button"
+              class="focus-ring inline-flex items-center justify-center rounded-md border border-border px-3 py-2 text-xs hover:bg-accent hover:text-accent-foreground w-min"
+              @click="
+                if(uid && token){
+                  window.location.href = '{% url 'users:password_reset_confirm' uidb64='UID' token='TOKEN' %}'
+                    .replace('UID', uid).replace('TOKEN', token)
+                }
+              "
+            >
+              Open confirm
+            </button>
+          </div>
+        </li>
+
+        <li class="mt-2"><a class="underline" href="{% url 'users:password_reset_complete' %}">Password Reset — Complete</a></li>
+      </ul>
+    </div>
+
+    {# ===================== Dashboards & Admin ===================== #}
+    <div class="card p-4">
+      <h3 class="text-base font-semibold mb-2">Dashboards & Admin</h3>
+      <ul class="text-sm space-y-1">
+        {% if request.user.is_authenticated %}
+          {% if request.user|is_student %}
+            <li><a class="underline" href="{% url 'users:student_home' %}">Student Home</a></li>
+          {% endif %}
+          {% if request.user|is_teacher %}
+            <li><a class="underline" href="{% url 'users:teacher_home' %}">Teacher Home</a></li>
+          {% endif %}
+          {% if request.user|is_admin %}
+            <li><a class="underline" href="{% url 'users:admin_home' %}">Admin Home</a></li>
+          {% endif %}
+          {% if request.user.is_staff %}
+            <li><a class="underline" href="/admin/">Django Admin</a></li>
+          {% endif %}
+        {% else %}
+          <li class="text-muted-foreground">Login to see role dashboards.</li>
+        {% endif %}
+      </ul>
+    </div>
+  </div>
+</div>
+
+
+{% endblock %}

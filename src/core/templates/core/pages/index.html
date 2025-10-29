@@ -1,0 +1,148 @@
+{# users/core/tempolates/core/pages/index.html #}
+{% extends "core/base.html" %}
+{% load cotton navigation icons static %}
+
+{% block title %}Graduate Applications - Home{% endblock %}
+
+{% block content %}
+<div class="mx-auto max-w-5xl pt-2 space-y-8">
+
+  {# ── Hero ─────────────────────────────────────────────────────────────── #}
+  {% c card class="card-strong" %}
+    {% c card/header %}
+      <div class="flex items-start justify-between gap-4">
+        <div class="flex items-center gap-3 text-4xl">
+          {% icon 'school' class_='h-7 w-7 text-foreground/80' %}
+          {% c card/title %}LangCen Base — Django + Tailwind + Cotton{% endc %}
+        </div>
+        <span class="inline-flex items-center rounded-full border border-border px-2.5 py-1 text-xs text-muted-foreground">
+          Reusable Starter
+        </span>
+      </div>
+      {% c card/description %}
+        A production-ready base you can rebrand and reuse for future projects:
+        accessibility-first UI, role-aware navigation, and light/dark theming with Tailwind v4 tokens.
+      {% endc %}
+    {% endc %}
+
+    {% c card/content %}
+      <p class="leading-relaxed text-foreground/80">
+        Use this repository as a golden starter. Download the ZIP, rename the folder, tweak branding,
+        and you’re ready to ship. See the quick-start and checklist below.
+      </p>
+    {% endc %}
+
+    {% c card/footer class="justify-start gap-2" %}
+      <a href="{% url 'core:about' %}" class="focus-ring inline-flex items-center gap-2 rounded-md px-3 py-2 border border-border hover:bg-accent hover:text-accent-foreground">
+        {% icon 'info' class_='h-4 w-4' %}<span>About</span>
+      </a>
+      <a href="https://github.com/pedbad/langcen_base" target="_blank" rel="noopener"
+         class="focus-ring inline-flex items-center gap-2 rounded-md px-3 py-2 border border-border hover:bg-accent hover:text-accent-foreground">
+        {% icon 'github' class_='h-4 w-4' %}<span>GitHub</span>
+      </a>
+      <a href="{% url 'users:login' %}" class="focus-ring inline-flex items-center gap-2 rounded-md px-3 py-2 border border-border hover:bg-accent hover:text-accent-foreground">
+        {% icon 'login' class_='h-4 w-4' %}<span>Login</span>
+      </a>
+      <a href="/admin/" class="focus-ring inline-flex items-center gap-2 rounded-md px-3 py-2 border border-border hover:bg-accent hover:text-accent-foreground">
+        {% icon 'admin' class_='h-4 w-4' %}<span>Admin</span>
+      </a>
+    {% endc %}
+  {% endc %}
+
+  {# ── Quick Start (How to reuse for a new project) ─────────────────────── #}
+  {% c card class="card-solid" %}
+    {% c card/header %}
+      <div class="flex items-center gap-3">
+        {% icon 'rocket' class_='h-6 w-6 text-foreground/80' %}
+        {% c card/title %}Reuse this Base for a New Project{% endc %}
+      </div>
+      {% c card/description %}
+        Follow these steps after downloading the ZIP to create a new project (e.g. <em>LangCon</em>, <em>Pace</em>, <em>Ice</em>).
+      {% endc %}
+    {% endc %}
+
+    {% c card/content %}
+      <ol class="mt-2 space-y-3 text-sm leading-relaxed text-foreground/80">
+        <li class="flex gap-2">
+          {% icon 'folder' class_='mt-0.5 h-4 w-4 shrink-0' %}
+          <span><strong>Rename the root folder</strong> (e.g. <code>langcen_base → langcon</code>). Then open it in your editor.</span>
+        </li>
+        <li class="flex gap-2">
+          {% icon 'replace' class_='mt-0.5 h-4 w-4 shrink-0' %}
+          <span><strong>Search & replace branding</strong>: “LangCen / LangCen Base” → your name; update titles, <code>UNFOLD</code> settings, and meta tags.</span>
+        </li>
+        <li class="flex gap-2">
+          {% icon 'package' class_='mt-0.5 h-4 w-4 shrink-0' %}
+          <span><strong>Install deps</strong>: <code>pip install -r requirements*.txt</code> (and <code>npm install</code> if using Tailwind build/watch).</span>
+        </li>
+        <li class="flex gap-2">
+          {% icon 'settings' class_='mt-0.5 h-4 w-4 shrink-0' %}
+          <span><strong>Project identity</strong>: update <code>UNFOLD</code> titles, <code>DEFAULT_FROM_EMAIL</code>, and admin site headers if needed.</span>
+        </li>
+        <li class="flex gap-2">
+          {% icon 'db' class_='mt-0.5 h-4 w-4 shrink-0' %}
+          <span><strong>Migrate & create a superuser</strong>: <code>python src/manage.py migrate</code> then <code>createsuperuser</code>.</span>
+        </li>
+        <li class="flex gap-2">
+          {% icon 'brush' class_='mt-0.5 h-4 w-4 shrink-0' %}
+          <span><strong>Swap logos/icons</strong> in <code>src/core/static/core/img/</code>, update favicons and Open Graph image.</span>
+        </li>
+        <li class="flex gap-2">
+          {% icon 'play' class_='mt-0.5 h-4 w-4 shrink-0' %}
+          <span><strong>Run</strong>: <code>python src/manage.py runserver</code>. Verify dark/light theme, favicon, login, and admin titles.</span>
+        </li>
+      </ol>
+    {% endc %}
+  {% endc %}
+
+  {# ── Rebrand Checklist ────────────────────────────────────────────────── #}
+  {% c card class="card-solid" %}
+    {% c card/header %}
+      <div class="flex items-center gap-3">
+        {% icon 'check_circle' class_='h-6 w-6 text-foreground/80' %}
+        {% c card/title %}Rebrand Checklist{% endc %}
+      </div>
+      {% c card/description %}Tick these off when creating a new project from this base.{% endc %}
+    {% endc %}
+
+    {% c card/content %}
+      <ul class="mt-2 space-y-2 text-sm leading-relaxed text-muted-foreground">
+        <li class="flex items-start gap-2">
+          <span class="mt-1.5 h-1.5 w-1.5 rounded-full bg-ring shrink-0"></span>
+          <span>Root folder renamed (<code>langcen_base → your_name</code>)</span>
+        </li>
+        <li class="flex items-start gap-2">
+          <span class="mt-1.5 h-1.5 w-1.5 rounded-full bg-ring shrink-0"></span>
+          <span><code>UNFOLD</code> titles updated in <code>src/config/settings.py</code></span>
+        </li>
+        <li class="flex items-start gap-2">
+          <span class="mt-1.5 h-1.5 w-1.5 rounded-full bg-ring shrink-0"></span>
+          <span>Meta title/OG tags updated in <code>core/partials/head.html</code></span>
+        </li>
+        <li class="flex items-start gap-2">
+          <span class="mt-1.5 h-1.5 w-1.5 rounded-full bg-ring shrink-0"></span>
+          <span>Favicons & logo swapped in <code>static/core/img/</code></span>
+        </li>
+        <li class="flex items-start gap-2">
+          <span class="mt-1.5 h-1.5 w-1.5 rounded-full bg-ring shrink-0"></span>
+          <span><code>ruff check .</code> and basic <code>pytest</code> smoke tests pass</span>
+        </li>
+        <li class="flex items-start gap-2">
+          <span class="mt-1.5 h-1.5 w-1.5 rounded-full bg-ring shrink-0"></span>
+          <span>Admin title bar shows your project name; login/logout flows render correctly</span>
+        </li>
+      </ul>
+    {% endc %}
+
+    {% c card/footer class="justify-start gap-2" %}
+      <a href="{% url 'users:login' %}" class="focus-ring inline-flex items-center gap-2 rounded-md px-3 py-2 border border-border hover:bg-accent hover:text-accent-foreground">
+        {% icon 'login' class_='h-4 w-4' %}<span>Go to Login</span>
+      </a>
+      <a href="/admin/" class="focus-ring inline-flex items-center gap-2 rounded-md px-3 py-2 border border-border hover:bg-accent hover:text-accent-foreground">
+        {% icon 'admin' class_='h-4 w-4' %}<span>Open Admin</span>
+      </a>
+    {% endc %}
+  {% endc %}
+
+</div>
+{% endblock %}

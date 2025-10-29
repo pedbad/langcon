@@ -1,0 +1,23 @@
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.6.0
+    hooks:
+      - id: trailing-whitespace        # remove stray spaces
+      - id: end-of-file-fixer          # ensure newline at EOF
+      - id: mixed-line-ending          # normalize line endings
+      - id: check-yaml                 # make sure YAML files are valid
+      - id: check-added-large-files    # prevent huge files by accident
+      - id: detect-private-key         # block committing private keys
+
+  - repo: https://github.com/psf/black
+    rev: 25.9.0
+    hooks:
+      - id: black
+        language_version: python3.13
+        args: ["--line-length=100"]
+
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.6.8
+    hooks:
+      - id: ruff
+        args: [--fix]  # auto-fix what it can (e.g., import order)

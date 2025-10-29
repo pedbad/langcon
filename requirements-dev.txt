@@ -1,0 +1,10 @@
+# Development-only tools; includes runtime too
+-r requirements.txt
+
+pre-commit
+black
+ruff
+pytest
+pytest-django
+django-browser-reload
+django-extensions

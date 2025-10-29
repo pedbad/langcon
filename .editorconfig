@@ -1,0 +1,28 @@
+# top-most EditorConfig file
+root = true
+
+# Default settings (applies to everything unless overridden)
+[*]
+end_of_line = lf
+insert_final_newline = true
+charset = utf-8
+trim_trailing_whitespace = true
+
+# Python files → PEP 8 (4 spaces)
+[*.py]
+indent_style = space
+indent_size = 4
+
+# HTML, CSS, JS → 2 spaces
+[*.{html,css,js}]
+indent_style = space
+indent_size = 2
+
+# JSON, YAML → 2 spaces (common convention)
+[*.{json,yml,yaml}]
+indent_style = space
+indent_size = 2
+
+# Markdown → no trimming whitespace
+[*.md]
+trim_trailing_whitespace = false

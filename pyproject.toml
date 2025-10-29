@@ -1,0 +1,30 @@
+# pyproject.toml
+
+[tool.black]
+line-length = 100
+target-version = ["py313"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py313"
+fix = true
+src = ["src"]
+
+[tool.ruff.lint]
+# E = pycodestyle, F = pyflakes, I = import sorting, W = warnings, UP = pyupgrade
+select = ["E", "F", "I", "W", "UP"]
+
+# Ignore long lines in generated Django migrations
+per-file-ignores = { "src/**/migrations/*.py" = ["E501"] }
+
+[tool.ruff.lint.isort]
+# Group your apps correctly
+known-third-party = ["django"]
+
+# Sorting behaviour
+combine-as-imports = true
+force-sort-within-sections = true
+order-by-type = false
+
+# (Optional) If you want to control the order of sections explicitly:
+# section-order = ["future", "standard-library", "third-party", "first-party", "local-folder"]

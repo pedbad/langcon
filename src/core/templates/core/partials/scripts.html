@@ -1,0 +1,54 @@
+{% load static %}
+
+<!-- Alpine.js -->
+<script src="{% static 'core/js/lib/alpine-3.14.1.min.js' %}" defer></script>
+
+<!-- Ensure Alpine starts properly -->
+<script>
+  // ✅ Ensure Alpine always starts, even if other scripts load late
+  window.deferLoadingAlpine = function (callback) {
+    callback();
+    window.Alpine.start();
+  };
+</script>
+
+<!-- Main app script (not deferred, so Alpine:init hooks register in time) -->
+<script src="{% static 'core/js/main.js' %}"></script>
+
+{% block scripts %}{% endblock %}
+
+{% if debug %}
+  <!-- Django browser reload (development only) -->
+  <script src="{% url 'django_browser_reload:reload' %}" defer></script>
+{% endif %}
+
+<!-- ================================================ -->
+<!-- University of Cambridge | CIVIC Cookie Banner -->
+<!-- ================================================ -->
+<!-- CIVIC cookie control banner starts -->
+<script src="https://cc.cdn.civiccomputing.com/9/cookieControl-9.x.min.js"></script>
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    var config = {
+      apiKey: '9c3bd2a68162ba67b19f07e540747675bd136e66',
+      product: 'community',
+      // Do NOT block these — Django needs them
+      necessaryCookies: ['csrftoken', 'sessionid'],
+
+      optionalCookies: [
+        {
+          name: 'analytics',
+          label: 'Analytics',
+          description: 'Analytical cookies help us to improve our website by collecting and reporting information on its usage.',
+          cookies: [],
+          onAccept: function () {},
+          onRevoke: function () {}
+        }
+      ],
+      position: 'RIGHT',
+      theme: 'LIGHT'
+    };
+    CookieControl.load(config);
+  });
+</script>
+<!-- CIVIC cookie control banner stops -->
