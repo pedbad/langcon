@@ -1,10 +1,11 @@
 # src/profiles/tests/test_routes.py
-import pytest
-from django.urls import reverse
 from django.conf import settings
 from django.contrib.auth import get_user_model
+from django.urls import reverse
+import pytest
 
 User = get_user_model()
+
 
 @pytest.mark.django_db
 def test_profile_requires_login(client):
@@ -12,6 +13,7 @@ def test_profile_requires_login(client):
     resp = client.get(url)
     assert resp.status_code in (302, 301)
     assert settings.LOGIN_URL in resp.headers.get("Location", "")
+
 
 @pytest.mark.django_db
 def test_student_can_access(client):
@@ -25,6 +27,7 @@ def test_student_can_access(client):
     resp = client.get(url)
     assert resp.status_code == 200
     assert b"Coming soon" in resp.content
+
 
 @pytest.mark.django_db
 def test_non_student_forbidden(client):

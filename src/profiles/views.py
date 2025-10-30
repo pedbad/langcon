@@ -3,6 +3,7 @@ from django.contrib.auth.decorators import login_required
 from django.http import HttpResponseForbidden
 from django.shortcuts import render
 
+
 @login_required
 def student_profile_entry(request):
     # Students only for now
