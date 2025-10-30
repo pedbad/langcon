@@ -58,7 +58,7 @@ def send_invite_email(user, *, domain: str, use_https: bool):
     context = {
         "user": user,
         "reset_url": reset_url,
-        "site_name": getattr(settings, "SITE_NAME", "LangCen Base"),
+        "site_name": getattr(settings, "SITE_NAME", "LangCon"),
         "domain": domain,
         "protocol": scheme,
         "uidb64": uidb64,

@@ -41,7 +41,11 @@ ALLOWED_HOSTS = [h.strip() for h in os.getenv("ALLOWED_HOSTS", "localhost,127.0.
 # Site identity (fork-friendly: env-driven; no hard-coded brand/domain defaults)
 _default_origin = "http://127.0.0.1:8000" if ENV == "dev" else ""
 SITE_ORIGIN = os.getenv("SITE_ORIGIN", _default_origin)
-SITE_NAME = os.getenv("SITE_NAME", "LangCen Base")
+SITE_NAME = os.getenv("SITE_NAME", "LangCon")
+SITE_DESCRIPTION = os.getenv(
+    "SITE_DESCRIPTION",
+    "LangCon — a clean, accessible Django 5 + Tailwind v4 starter.",
+)
 
 
 # Application definition
@@ -247,17 +251,18 @@ PASSWORD_RESET_TIMEOUT = int(timedelta(hours=24).total_seconds())
 TEACHER_ADMIN_FULL_PERMS = True
 
 if ENV == "dev":
-    EMAIL_BACKEND = "django.core.mail.backends.filebased.EmailBackend"
-    # Write to repo-root/tmp_emails
-    EMAIL_FILE_PATH = BASE_DIR.parent / "tmp_emails"
+    EMAIL_BACKEND = os.getenv("EMAIL_BACKEND", "django.core.mail.backends.filebased.EmailBackend")
+    # Let .env override the default tmp_emails path:
+    _default_email_dir = BASE_DIR.parent / "tmp_emails"
+    EMAIL_FILE_PATH = os.getenv("EMAIL_FILE_PATH", str(_default_email_dir))
 else:
-    # Example SMTP; configure via environment variables in production
     EMAIL_BACKEND = os.getenv("EMAIL_BACKEND", "django.core.mail.backends.smtp.EmailBackend")
     EMAIL_HOST = os.getenv("EMAIL_HOST", "smtp.sendgrid.net")
     EMAIL_PORT = int(os.getenv("EMAIL_PORT", "587"))
     EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER", "")
     EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD", "")
     EMAIL_USE_TLS = os.getenv("EMAIL_USE_TLS", "1") == "1"
+
 
 
 # if you’re behind a proxy/load balancer
@@ -284,8 +289,8 @@ IMPORT_EXPORT_SKIP_ADMIN_LOG = False
 # Unfold (Admin) Branding
 # ----------------------------------------------------------------------
 UNFOLD = {
-    "SITE_TITLE": "LangCen Admin",
-    "SITE_HEADER": "LangCen Admin",
+    "SITE_TITLE": "LangCon Admin",
+    "SITE_HEADER": "LangCon Admin",
     # "SITE_URL": "/admin/",
     # 1) where "View site" should go:
     "SITE_URL": "/",  # your main site root (or full URL)

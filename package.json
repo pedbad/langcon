@@ -1,7 +1,7 @@
 {
-  "name": "langcen_base",
+  "name": "langcon",
   "version": "1.0.0",
-  "description": "Reusable Django + Tailwind base for eLearning projects with three roles (student, teacher, admin).",
+  "description": "Graduate Applications - Language Condition",
   "main": "index.js",
   "scripts": {
     "tw:build": "tailwindcss -i src/core/static/core/css/input.css -o src/core/static/core/css/output.css -m",
@@ -10,15 +10,15 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/pedbad/langcen_base.git"
+    "url": "git+https://github.com/pedbad/langcon.git"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/pedbad/langcen_base/issues"
+    "url": "https://github.com/pedbad/langcon/issues"
   },
-  "homepage": "https://github.com/pedbad/langcen_base#readme",
+  "homepage": "https://github.com/pedbad/langcon#readme",
   "devDependencies": {
     "@tailwindcss/cli": "^4.1.13",
     "autoprefixer": "^10.4.20",

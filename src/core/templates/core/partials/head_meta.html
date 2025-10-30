@@ -14,9 +14,9 @@
 <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#0A4D8C">
 
 {# ─── Open Graph / social preview ──────────────────────────────────────────── #}
-<meta property="og:site_name" content="LangCen Base">
+<meta property="og:site_name" content="{{ SITE_NAME }}">
 <meta property="og:title" content="{% block og_title %}Language Centre{% endblock %}">
-<meta property="og:description" content="{% block og_description %}University of Cambridge Language Centre{% endblock %}">
+<meta property="og:description" content="{% block og_description %}{{ SITE_DESCRIPTION }}{% endblock %}">
 <meta property="og:type" content="website">
 
 {# Only emit og:url if request exists #}
