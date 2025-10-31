@@ -32,11 +32,28 @@
     {% endc %}
 
     {% c card/content %}
-      <p class="leading-relaxed text-foreground/80">
+      <div class="border-l-2 border-primary/60 pl-3">
+        <div class="flex flex-col gap-1 sm:flex-row sm:items-baseline sm:justify-between">
+          <h2 class="flex items-center gap-2 text-lg font-semibold text-foreground">
+            {% icon 'assignment_ind' class_='size-5 opacity-70' %}
+            <span>
+              {{ request.user.first_name|default:"First" }} {{ request.user.last_name|default:"Last" }}
+            </span>
+          </h2>
+          <div class="flex items-center gap-2 text-sm text-muted-foreground">
+            {% icon 'alternate_email' class_='size-4 opacity-70' %}
+            <span class="font-mono truncate max-w-[44ch]" title="{{ request.user.email }}">{{ request.user.email }}</span>
+          </div>
+        </div>
+      </div>
+
+      <p class="mt-4 leading-relaxed text-foreground/80">
         Use this repository as a golden starter. Download the ZIP, rename the folder, tweak branding,
         and you’re ready to ship. See the quick-start and checklist below.
       </p>
     {% endc %}
+
+
 
     {% c card/footer class="justify-start gap-2" %}
       {# ShadCN-Django Button wrapping a link #}
