@@ -1,7 +1,46 @@
 {% extends "core/base.html" %}
+{% load cotton navigation icons static %}
 {% block content %}
-<div class="max-w-2xl mx-auto p-6">
-  <h1 class="text-2xl font-semibold mb-2">Student home</h1>
-  <p class="text-sm">Replace this with your real dashboard later.</p>
-</div>
+<div class="mx-auto max-w-5xl pt-2 space-y-8">
+  {% c card class="card-strong" %}
+    {% c card/header %}
+      <div class="flex items-start justify-between gap-4">
+        <div class="flex items-center gap-3 text-4xl">
+          {% icon 'person_alert' class_='h-7 w-7 text-foreground/80' %}
+          {% c card/title %} Student Dashboard{% endc %}
+        </div>
+        <span class="inline-flex items-center rounded-full border border-border px-2.5 py-1 text-xs text-muted-foreground">
+          Profile not completed
+        </span>
+      </div>
+      {% c card/description %}
+        <p class="leading-relaxed text-foreground/80 pb-1 border-b-2 border-b-blue-400">
+          Welsome to ... first complete your profile before assessment becomes available.
+        </p>
+      {% endc %}
+    {% endc %}
+
+    {% c card/content %}
+      <p class="leading-relaxed text-foreground/80">
+        Use this repository as a golden starter. Download the ZIP, rename the folder, tweak branding,
+        and you’re ready to ship. See the quick-start and checklist below.
+      </p>
+    {% endc %}
+
+    {% c card/footer class="justify-start gap-2" %}
+      {# ShadCN-Django Button wrapping a link #}
+      {% c button as_child=True variant="outline" size="lg" class="w-full font-medium transition-all" %}
+        <a href="{% url 'profiles:profile' %}" class="group flex items-center justify-center gap-2">
+          <span>Complete your profile</span>
+          {% icon 'arrow_right' class_='h-5 w-5 relative transition-transform duration-200 group-hover:translate-x-1' %}
+        </a>
+      {% endc %}
+
+
+
+
+
+    {% endc %}
+  {% endc %}
+
 {% endblock %}

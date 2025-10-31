@@ -87,9 +87,13 @@
 
           {# Role placeholders (optional) #}
           {% if request.user|is_student %}
-            <a href="#" class="nav-link">
-              {% icon 'school' class_='h-5 w-5 align-middle shrink-0' %}
-              <span>Courses</span>
+            <a
+              href="{% url 'profiles:profile' %}"
+              class="nav-link focus-ring rounded-md px-2 py-1.5 {% active_url 'profiles:profile' startswith='/users/profile' %}"
+              {% aria_current 'profiles:profile' startswith='/users/profile' %}
+            >
+              {% icon 'assignment_ind' class_='h-5 w-5 align-middle shrink-0' %}
+              <span>Profile</span>
             </a>
           {% elif request.user|is_teacher %}
             <a href="#" class="nav-link">
@@ -249,13 +253,14 @@
       {# Optional role placeholders #}
       {% if request.user|is_student %}
         <a
-          href="#"
-          class="nav-link focus-ring flex w-full rounded-md px-3 py-2 hover:bg-accent hover:text-accent-foreground"
+          href="{% url 'profiles:profile' %}"
+          class="nav-link focus-ring flex w-full rounded-md px-3 py-2 hover:bg-accent hover:text-accent-foreground {% active_url 'profiles:profile' startswith='/users/profile' %}"
+          {% aria_current 'profiles:profile' startswith='/users/profile' %}
           @click="open = false"
           role="menuitem"
         >
-          {% icon 'school' class_='h-5 w-5 align-middle shrink-0' %}
-          <span>Courses</span>
+          {% icon 'assignment_ind' class_='h-5 w-5 align-middle shrink-0' %}
+          <span>Profile</span>
         </a>
       {% elif request.user|is_teacher %}
         <a

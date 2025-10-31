@@ -1,0 +1,61 @@
+{# src/profiles/templates/profiles/profile.html#}
+{% extends "core/base.html" %}
+{% load cotton navigation icons static %}
+{% block title %}Profile{% endblock %}
+
+{% block content %}
+<div class="mx-auto max-w-5xl pt-2 space-y-8">
+
+  {% c card class="card-strong" %}
+    {% c card/header %}
+      <div class="flex items-start justify-between gap-4">
+        <div class="flex items-center gap-3 text-4xl">
+          {% icon 'assignment_ind' class_='h-7 w-7 text-foreground/80' %}
+          {% c card/title %} Complete Your Profile{% endc %}
+        </div>
+
+        {% if profile_complete %}
+          <span class="inline-flex items-center rounded-full transition-colors duration-300 border border-green-500 bg-green-50 px-2.5 py-1 text-xs font-medium text-green-700">
+            Profile completed
+          </span>
+        {% else %}
+          <span class="inline-flex items-center rounded-full transition-colors duration-300 border border-red-500 bg-red-50 px-2.5 py-1 text-xs font-medium text-red-700">
+            Profile not completed
+          </span>
+        {% endif %}
+      </div>
+      {% c card/description %}
+        <p class="leading-relaxed text-foreground/80 pb-1 border-b-2 border-b-blue-400">
+          Your responses will be assessed by the ADTIS Director at the University of Cambridge Language Centre, who may contact you by e-mail to arrange a telephone interview to assess your competency in spoken English.
+        </p>
+      {% endc %}
+    {% endc %}
+
+    {% c card/content %}
+      <p class="leading-relaxed text-foreground/80">
+        Use this repository as a golden starter. Download the ZIP, rename the folder, tweak branding,
+        and you’re ready to ship. See the quick-start and checklist below.
+      </p>
+    {% endc %}
+
+    {% c card/footer class="justify-start gap-2" %}
+      {# ShadCN-Django Button wrapping a link #}
+
+
+      {% c button as_child=True variant="outline" size="lg" class="w-full font-medium transition-all" %}
+        <a href="{% url 'users:student_home' %}" class="group flex items-center justify-center gap-2">
+          {% icon 'arrow_left' class_='h-5 w-5 relative transition-transform duration-150 ease-out group-hover:-translate-x-1' %}
+          <span>Back to Student Dashboard</span>
+        </a>
+      {% endc %}
+
+
+
+
+
+
+    {% endc %}
+  {% endc %}
+
+</div>
+{% endblock %}

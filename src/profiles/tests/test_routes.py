@@ -26,7 +26,7 @@ def test_student_can_access(client):
     url = reverse("profiles:profile")
     resp = client.get(url)
     assert resp.status_code == 200
-    assert b"Coming soon" in resp.content
+    assert b"Complete Your Profile" in resp.content
 
 
 @pytest.mark.django_db
