@@ -1,11 +1,13 @@
 # src/profiles/tests/test_model.py
-import pytest
-from django.db import IntegrityError
 from django.contrib.auth import get_user_model
+from django.db import IntegrityError
 from django.test import override_settings
+import pytest
+
 from profiles.models import Profile
 
 User = get_user_model()
+
 
 @pytest.mark.django_db
 @override_settings(PROFILES_AUTO_CREATE=False)  # ← disable signal here
@@ -15,6 +17,7 @@ def test_profile_one_to_one_and_defaults():
     assert p.user == u
     assert p.is_locked is False
     assert p.created_at is not None and p.updated_at is not None
+
 
 @pytest.mark.django_db
 @override_settings(PROFILES_AUTO_CREATE=False)  # ← disable signal here
