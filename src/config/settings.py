@@ -82,6 +82,18 @@ if DEBUG:
     ]
 
     INTERNAL_IPS = ["127.0.0.1", "::1"]
+    
+    
+# -----------------------------------------------------------------------------
+# Profiles feature flag
+# -----------------------------------------------------------------------------
+# Auto-create a Profile when a new student user is registered.
+# This can be temporarily disabled in tests using:
+#     @override_settings(PROFILES_AUTO_CREATE=False)
+#
+# Keep True in all normal environments.
+# -----------------------------------------------------------------------------
+PROFILES_AUTO_CREATE = True
 
 
 # ----------------------------------------------------------------------
