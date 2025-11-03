@@ -35,7 +35,7 @@
       <div class="border-l-2 border-primary/60 pl-3">
         <div class="flex flex-col gap-1 sm:flex-row sm:items-baseline sm:justify-between">
           <h2 class="flex items-center gap-2 text-lg font-semibold text-foreground">
-            {% icon 'assignment_ind' class_='size-5 opacity-70' %}
+            {% icon 'id_card' class_='size-5 opacity-70' %}
             <span>
               {{ request.user.first_name|default:"First" }} {{ request.user.last_name|default:"Last" }}
             </span>
@@ -48,9 +48,40 @@
       </div>
 
       <p class="mt-4 leading-relaxed text-foreground/80">
-        Use this repository as a golden starter. Download the ZIP, rename the folder, tweak branding,
-        and you’re ready to ship. See the quick-start and checklist below.
+        Please provide your contact details below should this be deemed necessary.
       </p>
+
+      <form method="post" class="mt-6 space-y-4">
+        {% csrf_token %}
+
+        <div>
+          <label for="id_phone" class="mb-1 block text-sm font-medium text-foreground">Phone</label>
+          <div class="flex rounded-md shadow-sm">
+            <span class="inline-flex items-center rounded-l-md border border-input bg-muted px-3 text-muted-foreground shrink-0">
+              {% icon 'phone' class_='size-6 opacity-80 -mt-[1px]' %}
+            </span>
+            {{ form.phone }}
+          </div>
+          {% if form.phone.errors %}
+            <p class="mt-1 text-sm text-destructive">{{ form.phone.errors.0 }}</p>
+          {% endif %}
+          <p class="mt-1 text-xs text-muted-foreground">Include country code if possible (e.g. +44 …).</p>
+        </div>
+
+        {% if not profile.is_locked %}
+          {% c button type="submit" variant="primary" %}
+            Save
+          {% endc %}
+        {% else %}
+          <p class="text-sm text-muted-foreground">Your profile is locked and cannot be edited.</p>
+        {% endif %}
+      </form>
+
+
+
+
+
+
     {% endc %}
 
 
