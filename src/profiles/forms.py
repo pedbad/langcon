@@ -1,19 +1,34 @@
-# src/profiles/forms.py
 from django import forms
+
 from .models import Profile
+
 
 class ProfileForm(forms.ModelForm):
     class Meta:
         model = Profile
-        fields = ["phone"]
+        fields = ["phone", "subject_area"]
         widgets = {
             "phone": forms.TextInput(
                 attrs={
                     "id": "id_phone",
                     "placeholder": "Phone",
-                    "required": True,  # HTML5 required to match blank=False
-                    "class": "w-full rounded-md border border-input bg-background px-3 py-2 text-sm "
-                             "shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring",
+                    "required": True,
+                    "class": (
+                        "w-full rounded-md border border-input bg-background px-3 py-2 text-sm "
+                        "shadow-sm focus-visible:outline-none "
+                        "focus-visible:ring-1 focus-visible:ring-ring"
+                    ),
+                }
+            ),
+            "subject_area": forms.Select(
+                attrs={
+                    "id": "id_subject_area",
+                    "required": True,
+                    "class": (
+                        "w-full rounded-md border border-input bg-background px-3 py-2 text-sm "
+                        "shadow-sm focus-visible:outline-none "
+                        "focus-visible:ring-1 focus-visible:ring-ring"
+                    ),
                 }
             ),
         }

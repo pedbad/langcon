@@ -48,24 +48,38 @@
       </div>
 
       <p class="mt-4 leading-relaxed text-foreground/80">
-        Please provide your contact details below should this be deemed necessary.
+        Please provide your details below should this be deemed necessary.
       </p>
 
       <form method="post" class="mt-6 space-y-4">
         {% csrf_token %}
 
-        <div>
-          <label for="id_phone" class="mb-1 block text-sm font-medium text-foreground">Phone</label>
-          <div class="flex rounded-md shadow-sm">
-            <span class="inline-flex items-center rounded-l-md border border-input bg-muted px-3 text-muted-foreground shrink-0">
-              {% icon 'phone' class_='size-6 opacity-80 -mt-[1px]' %}
-            </span>
-            {{ form.phone }}
+        <div class="grid gap-4 sm:grid-cols-2">
+          {# LEFT: Phone #}
+          <div>
+            <label for="id_phone" class="mb-1 block text-sm font-medium text-foreground">Phone</label>
+            <div class="flex rounded-md shadow-sm">
+              <span class="inline-flex items-center rounded-l-md border border-input bg-muted px-3 text-muted-foreground shrink-0">
+                {# bump to size-6 so it balances with input #}
+                {% icon 'phone' class_='size-6 opacity-80 -mt-[1px]' label='Phone' %}
+              </span>
+              {{ form.phone }}
+            </div>
+            {% if form.phone.errors %}
+              <p class="mt-1 text-sm text-destructive">{{ form.phone.errors.0 }}</p>
+            {% endif %}
+            <p class="mt-1 text-xs text-muted-foreground">Include country code if possible (e.g. +44 …).</p>
           </div>
-          {% if form.phone.errors %}
-            <p class="mt-1 text-sm text-destructive">{{ form.phone.errors.0 }}</p>
-          {% endif %}
-          <p class="mt-1 text-xs text-muted-foreground">Include country code if possible (e.g. +44 …).</p>
+
+          {# RIGHT: Subject Area (ShadCN-styled select) #}
+          <div>
+            <label for="id_subject_area" class="mb-1 block text-sm font-medium text-foreground">Subject Area</label>
+            {{ form.subject_area }}
+            {% if form.subject_area.errors %}
+              <p class="mt-1 text-sm text-destructive">{{ form.subject_area.errors.0 }}</p>
+            {% endif %}
+            <p class="mt-1 text-xs text-muted-foreground">Select the subject area that best matches your course or research.</p>
+          </div>
         </div>
 
         {% if not profile.is_locked %}
@@ -76,6 +90,7 @@
           <p class="text-sm text-muted-foreground">Your profile is locked and cannot be edited.</p>
         {% endif %}
       </form>
+
 
 
 

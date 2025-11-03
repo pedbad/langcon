@@ -48,16 +48,6 @@ def test_profile_page_renders_phone_input_and_icon(client, student_user, setting
 
 
 @pytest.mark.django_db
-def test_student_can_update_phone(client, student_user):
-    client.force_login(student_user)
-    resp = client.post(reverse("profiles:profile"), {"phone": "+441234567890"})
-    assert resp.status_code == 302  # redirects after save
-    student_user.refresh_from_db()
-    assert student_user.profile.phone == "+441234567890"
-    assert student_user.profile.is_complete() is True
-
-
-@pytest.mark.django_db
 def test_phone_is_required(client, student_user):
     client.force_login(student_user)
     resp = client.post(reverse("profiles:profile"), {"phone": ""})
@@ -65,3 +55,40 @@ def test_phone_is_required(client, student_user):
     assert (
         b"This field is required" in resp.content or b"Enter a valid phone number" in resp.content
     )
+
+
+@pytest.mark.django_db
+def test_profile_page_renders_subject_area_select(client, student_user):
+    client.force_login(student_user)
+    resp = client.get(reverse("profiles:profile"))
+    assert resp.status_code == 200
+    assert b'name="subject_area"' in resp.content
+    # a couple of choice labels visible
+    assert b"Art and Humanities" in resp.content
+    assert b"Computing" in resp.content
+    assert b"Generic" in resp.content
+
+
+@pytest.mark.django_db
+def test_student_can_update_phone_and_subject_area(client, student_user):
+    client.force_login(student_user)
+    data = {
+        "phone": "+441234567890",
+        "subject_area": "computing",
+    }
+    resp = client.post(reverse("profiles:profile"), data)
+    assert resp.status_code == 302
+    student_user.refresh_from_db()
+    p = student_user.profile
+    assert p.phone == "+441234567890"
+    assert p.subject_area == "computing"
+    assert p.is_complete() is True
+
+
+@pytest.mark.django_db
+def test_subject_area_required(client, student_user):
+    client.force_login(student_user)
+    # Subject area missing -> form should reject (model has choices; field required)
+    resp = client.post(reverse("profiles:profile"), {"phone": "+441234567890"})
+    assert resp.status_code == 200
+    assert b"This field is required" in resp.content or b"Select a valid choice" in resp.content
