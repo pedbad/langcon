@@ -54,14 +54,37 @@ class Profile(models.Model):
         ("medicine", "Medicine"),
         ("physical_sciences", "Physical Sciences"),
         ("social_sciences", "Social Sciences"),
-        ("generic", "Generic"),
+        ("other", "Other"),
     ]
 
     subject_area = models.CharField(
-        max_length=32,
+        max_length=50,
         choices=SUBJECT_AREA_CHOICES,
-        default="generic",  # Ensures existing profiles migrate cleanly
+        default="other",  # Ensures existing profiles migrate cleanly
         help_text="Student's main subject area (required).",
+    )
+
+    # ────────────────────────────────────────────────────────────────
+    # UK Student Visa Requirement
+    # Indicates whether the student requires a visa to study in the UK.
+    # This field appears as a Yes/No dropdown banner in the student profile form.
+    # ────────────────────────────────────────────────────────────────
+    requires_uk_student_visa = models.BooleanField(
+        null=False,
+        default=True,
+        help_text="Whether the student requires a visa to study in the UK.",
+    )
+
+    # ────────────────────────────────────────────────────────────────
+    # English Exam (past five years)
+    # Records whether the student has taken an English language exam
+    # in the past five years. Additional fields (exam type/scores) will
+    # be collected only if this is True.
+    # ────────────────────────────────────────────────────────────────
+    has_recent_english_exam = models.BooleanField(
+        null=False,
+        default=False,
+        help_text="Has the student taken an English language exam in the last five years?",
     )
 
     # ────────────────────────────────────────────────────────────────

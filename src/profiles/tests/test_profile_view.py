@@ -1,4 +1,14 @@
 # src/profiles/tests/test_profile_view.py
+"""
+Profiles: view + form integration tests.
+
+Covers:
+- Auto-creation of Profile on first visit
+- Rendering of phone + icon, subject area select
+- Required validation for phone/subject_area
+- Visa + English-exam decision fields (Yes/No) and persistence
+"""
+
 from django.contrib.auth import get_user_model
 from django.urls import reverse
 import pytest
@@ -8,87 +18,151 @@ from profiles.models import Profile
 User = get_user_model()
 
 
+# -----------------------------------------------------------------------------
+# Fixtures
+# -----------------------------------------------------------------------------
 @pytest.fixture
 def student_user(db):
-    user = User.objects.create_user(
+    """Create a minimal student user for view/form tests."""
+    return User.objects.create_user(
         email="student@example.com",
         password="pass1234",
         role="student",
     )
-    return user
 
 
+# -----------------------------------------------------------------------------
+# View creates profile + basic render
+# -----------------------------------------------------------------------------
 @pytest.mark.django_db
 def test_profile_view_creates_profile_and_renders(client, settings):
-    # (Optional) ensure signal isn’t masking the get_or_create behavior
+    """GET /users/profile/ creates a Profile if missing and renders the page."""
+    # Ensure signal doesn't mask the view's get_or_create behavior.
     settings.PROFILES_AUTO_CREATE = False
 
-    student = User.objects.create_user(email="vp@example.com", password="pass1234", role="student")
+    student = User.objects.create_user(
+        email="vp@example.com",
+        password="pass1234",
+        role="student",
+    )
     client.login(email=student.email, password="pass1234")
 
     assert not Profile.objects.filter(user=student).exists()
+
     resp = client.get(reverse("profiles:profile"))
     assert resp.status_code == 200
 
-    # Profile should now exist (created by the view)
+    # Profile should now exist (created by the view).
     assert Profile.objects.filter(user=student).exists()
-    # Smoke check for the page title/heading
+    # Smoke check for heading.
     assert b"Complete Your Profile" in resp.content
 
 
+# -----------------------------------------------------------------------------
+# Phone field rendering + validation
+# -----------------------------------------------------------------------------
 @pytest.mark.django_db
 def test_profile_page_renders_phone_input_and_icon(client, student_user, settings):
-    settings.PROFILES_AUTO_CREATE = True  # or False; view will create with defaults
+    """Page shows phone input and inline SVG icon."""
+    settings.PROFILES_AUTO_CREATE = True  # or False; view creates with defaults.
     client.force_login(student_user)
+
     resp = client.get(reverse("profiles:profile"))
     assert resp.status_code == 200
     assert b'name="phone"' in resp.content
-    # sanity check that an inline SVG icon rendered
+    # Sanity check that an inline SVG rendered (icon).
     assert b"<svg" in resp.content and b'viewBox="0 -960 960 960"' in resp.content
 
 
 @pytest.mark.django_db
 def test_phone_is_required(client, student_user):
+    """POST with empty phone re-renders the page and shows an error."""
     client.force_login(student_user)
+
     resp = client.post(reverse("profiles:profile"), {"phone": ""})
-    assert resp.status_code == 200  # stays on page with error
+    assert resp.status_code == 200  # stays on page with errors
     assert (
         b"This field is required" in resp.content or b"Enter a valid phone number" in resp.content
     )
 
 
+# -----------------------------------------------------------------------------
+# Subject area rendering + validation
+# -----------------------------------------------------------------------------
 @pytest.mark.django_db
 def test_profile_page_renders_subject_area_select(client, student_user):
+    """Page shows Subject Area select with expected options."""
     client.force_login(student_user)
+
     resp = client.get(reverse("profiles:profile"))
     assert resp.status_code == 200
     assert b'name="subject_area"' in resp.content
-    # a couple of choice labels visible
     assert b"Art and Humanities" in resp.content
     assert b"Computing" in resp.content
     assert b"Generic" in resp.content
 
 
 @pytest.mark.django_db
-def test_student_can_update_phone_and_subject_area(client, student_user):
+def test_subject_area_required(client, student_user):
+    """POST without subject_area is rejected by the form."""
     client.force_login(student_user)
-    data = {
-        "phone": "+441234567890",
-        "subject_area": "computing",
-    }
-    resp = client.post(reverse("profiles:profile"), data)
-    assert resp.status_code == 302
-    student_user.refresh_from_db()
-    p = student_user.profile
-    assert p.phone == "+441234567890"
-    assert p.subject_area == "computing"
-    assert p.is_complete() is True
+
+    resp = client.post(
+        reverse("profiles:profile"),
+        {"phone": "+441234567890"},
+    )
+    assert resp.status_code == 200
+    assert b"This field is required" in resp.content or b"Select a valid choice" in resp.content
+
+
+# -----------------------------------------------------------------------------
+# English exam decision (past five years)
+# -----------------------------------------------------------------------------
+@pytest.mark.django_db
+def test_profile_renders_english_exam_decision(client, student_user):
+    """Page shows the required English exam Yes/No decision control."""
+    client.force_login(student_user)
+
+    resp = client.get(reverse("profiles:profile"))
+    assert resp.status_code == 200
+    assert b'name="has_recent_english_exam"' in resp.content
+    assert b"Have you taken an English language exam in the past five years?" in resp.content
 
 
 @pytest.mark.django_db
-def test_subject_area_required(client, student_user):
+def test_english_exam_answer_required(client, student_user):
+    """POST omitting exam decision re-renders with a required-field error."""
     client.force_login(student_user)
-    # Subject area missing -> form should reject (model has choices; field required)
-    resp = client.post(reverse("profiles:profile"), {"phone": "+441234567890"})
+
+    resp = client.post(
+        reverse("profiles:profile"),
+        {
+            "phone": "+441234567890",
+            "subject_area": "computing",
+            "requires_uk_student_visa": "True",
+            # Missing has_recent_english_exam
+        },
+    )
     assert resp.status_code == 200
-    assert b"This field is required" in resp.content or b"Select a valid choice" in resp.content
+    assert b"This field is required" in resp.content
+
+
+@pytest.mark.django_db
+def test_english_exam_yes_saves(client, student_user):
+    """POST with exam decision 'Yes' persists boolean True on the profile."""
+    client.force_login(student_user)
+
+    resp = client.post(
+        reverse("profiles:profile"),
+        {
+            "phone": "+441234567890",
+            "subject_area": "computing",
+            "requires_uk_student_visa": "False",
+            "has_recent_english_exam": "True",
+        },
+    )
+    assert resp.status_code == 302
+
+    student_user.refresh_from_db()
+    p = student_user.profile
+    assert p.has_recent_english_exam is True

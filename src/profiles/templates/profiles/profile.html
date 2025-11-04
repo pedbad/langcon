@@ -1,4 +1,4 @@
-{# src/profiles/templates/profiles/profile.html#}
+{# src/profiles/templates/profiles/profile.html #}
 {% extends "core/base.html" %}
 {% load cotton navigation icons static %}
 {% block title %}Profile{% endblock %}
@@ -51,16 +51,15 @@
         Please provide your details below should this be deemed necessary.
       </p>
 
-      <form method="post" class="mt-6 space-y-4">
+      <form method="post" class="mt-6 space-y-5">
         {% csrf_token %}
 
+        {# Two-column details: Phone (left) + Subject Area (right) #}
         <div class="grid gap-4 sm:grid-cols-2">
-          {# LEFT: Phone #}
           <div>
             <label for="id_phone" class="mb-1 block text-sm font-medium text-foreground">Phone</label>
             <div class="flex rounded-md shadow-sm">
               <span class="inline-flex items-center rounded-l-md border border-input bg-muted px-3 text-muted-foreground shrink-0">
-                {# bump to size-6 so it balances with input #}
                 {% icon 'phone' class_='size-6 opacity-80 -mt-[1px]' label='Phone' %}
               </span>
               {{ form.phone }}
@@ -71,54 +70,180 @@
             <p class="mt-1 text-xs text-muted-foreground">Include country code if possible (e.g. +44 …).</p>
           </div>
 
-          {# RIGHT: Subject Area (ShadCN-styled select) #}
           <div>
-            <label for="id_subject_area" class="mb-1 block text-sm font-medium text-foreground">Subject Area</label>
-            {{ form.subject_area }}
+            <label for="id_subject_area" class="mb-1 block text-sm font-medium text-foreground">
+              Subject Area
+            </label>
+
+            <div class="relative">
+              {{ form.subject_area }}
+              <span class="pointer-events-none absolute inset-y-0 right-3 grid place-items-center">
+                {% icon 'expand_more' class_='h-5 w-5 text-muted-foreground/80' label='Open' %}
+              </span>
+            </div>
+
             {% if form.subject_area.errors %}
               <p class="mt-1 text-sm text-destructive">{{ form.subject_area.errors.0 }}</p>
             {% endif %}
-            <p class="mt-1 text-xs text-muted-foreground">Select the subject area that best matches your course or research.</p>
+          </div>
+
+
+
+        </div>
+
+        {# Visa question banner #}
+        <div class="rounded-xl bg-sky-50 border border-sky-200 p-4">
+          <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div class="flex items-center gap-3 min-w-0">
+              <div class="grid size-10 place-items-center rounded-lg bg-sky-100 text-sky-700 shrink-0">
+                {% icon 'passport' class_='size-6' label='Globe' %}
+              </div>
+              <p class="font-semibold text-foreground leading-snug">
+                Do you require a student visa to study in the UK?
+              </p>
+            </div>
+
+            {# Segmented Yes/No for Visa #}
+            <div class="w-full sm:w-72">
+              <fieldset role="radiogroup" aria-label="UK Student Visa" class="w-full">
+                <div class="flex w-full overflow-hidden rounded-md border border-input shadow-sm">
+                  {# YES #}
+                  <input
+                    type="radio"
+                    name="{{ form.requires_uk_student_visa.html_name }}"
+                    id="visa_yes"
+                    value="True"
+                    class="peer/visaYes sr-only"
+                    {% with v=form.requires_uk_student_visa.value|stringformat:'s' %}
+                      {% if v == 'True' or v == '' %}checked{% endif %}
+                    {% endwith %}
+                  />
+                  <label
+                    for="visa_yes"
+                    class="flex-1 cursor-pointer select-none px-4 py-2 text-center text-sm font-medium
+                           transition-colors rounded-l-md
+                           bg-background text-foreground hover:bg-muted/70
+                           peer-checked/visaYes:bg-green-600 peer-checked/visaYes:text-white
+                           peer-checked/visaYes:hover:bg-green-600"
+                  >Yes</label>
+
+                  {# NO #}
+                  <input
+                    type="radio"
+                    name="{{ form.requires_uk_student_visa.html_name }}"
+                    id="visa_no"
+                    value="False"
+                    class="peer/visaNo sr-only"
+                    {% if form.requires_uk_student_visa.value|stringformat:'s' == 'False' %}checked{% endif %}
+                  />
+                  <label
+                    for="visa_no"
+                    class="flex-1 cursor-pointer select-none px-4 py-2 text-center text-sm font-medium
+                           transition-colors -ml-px rounded-r-md
+                           bg-background text-foreground hover:bg-muted/70
+                           peer-checked/visaNo:bg-red-600 peer-checked/visaNo:text-white
+                           peer-checked/visaNo:hover:bg-red-600"
+                  >No</label>
+                </div>
+              </fieldset>
+            </div>
           </div>
         </div>
 
+        {% if form.requires_uk_student_visa.errors %}
+          <p class="text-sm text-destructive">{{ form.requires_uk_student_visa.errors.0 }}</p>
+        {% endif %}
+
+        {# English exam decision #}
+        <div class="rounded-xl bg-sky-50 border border-sky-200 p-4">
+          <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div class="flex items-center gap-3 min-w-0">
+              <div class="grid size-10 place-items-center rounded-lg bg-sky-100 text-sky-700 shrink-0">
+                {% icon 'assignment_globe' class_='size-6' label='English Exam' %}
+              </div>
+              <p class="font-semibold text-foreground leading-snug">
+                Have you taken an English language exam in the past five years?
+              </p>
+            </div>
+
+            {# Segmented Yes/No for English exam #}
+            <div class="w-full sm:w-72">
+              <fieldset role="radiogroup" aria-label="English exam in past 5 years" class="w-full">
+                <div class="flex w-full overflow-hidden rounded-md border border-input shadow-sm">
+                  {# YES #}
+                  <input
+                    type="radio"
+                    name="{{ form.has_recent_english_exam.html_name }}"
+                    id="exam_yes"
+                    value="True"
+                    class="peer/examYes sr-only"
+                    {% with v=form.has_recent_english_exam.value|stringformat:'s' %}
+                      {% if v == 'True' or v == '' %}checked{% endif %}
+                    {% endwith %}
+                  />
+                  <label
+                    for="exam_yes"
+                    class="flex-1 cursor-pointer select-none px-4 py-2 text-center text-sm font-medium
+                           transition-colors rounded-l-md
+                           bg-background text-foreground hover:bg-muted/70
+                           peer-checked/examYes:bg-green-600 peer-checked/examYes:text-white
+                           peer-checked/examYes:hover:bg-green-600"
+                  >Yes</label>
+
+                  {# NO #}
+                  <input
+                    type="radio"
+                    name="{{ form.has_recent_english_exam.html_name }}"
+                    id="exam_no"
+                    value="False"
+                    class="peer/examNo sr-only"
+                    {% if form.has_recent_english_exam.value|stringformat:'s' == 'False' %}checked{% endif %}
+                  />
+                  <label
+                    for="exam_no"
+                    class="flex-1 cursor-pointer select-none px-4 py-2 text-center text-sm font-medium
+                           transition-colors -ml-px rounded-r-md
+                           bg-background text-foreground hover:bg-muted/70
+                           peer-checked/examNo:bg-red-600 peer-checked/examNo:text-white
+                           peer-checked/examNo:hover:bg-red-600"
+                  >No</label>
+                </div>
+              </fieldset>
+            </div>
+          </div>
+        </div>
+
+        {% if form.has_recent_english_exam.errors %}
+          <p class="text-sm text-destructive">{{ form.has_recent_english_exam.errors.0 }}</p>
+        {% endif %}
+
         {% if not profile.is_locked %}
-          {% c button type="submit" variant="primary" %}
-            Save
-          {% endc %}
+          <button
+            type="submit"
+            id="save-profile"
+            class="inline-flex w-full items-center justify-center gap-2 rounded-md border border-input
+                   bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm
+                   transition-colors hover:bg-primary/90 focus-visible:outline-none
+                   focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none
+                   disabled:opacity-50"
+          >
+            {% icon 'save' class_='h-5 w-5' %}
+            <span>Save Changes</span>
+          </button>
         {% else %}
           <p class="text-sm text-muted-foreground">Your profile is locked and cannot be edited.</p>
         {% endif %}
       </form>
-
-
-
-
-
-
-
     {% endc %}
 
-
-
     {% c card/footer class="justify-start gap-2" %}
-      {# ShadCN-Django Button wrapping a link #}
-
-
       {% c button as_child=True variant="outline" size="lg" class="w-full font-medium transition-all" %}
         <a href="{% url 'users:student_home' %}" class="group flex items-center justify-center gap-2">
           {% icon 'arrow_left' class_='h-5 w-5 relative transition-transform duration-150 ease-out group-hover:-translate-x-1' %}
           <span>Back to Student Dashboard</span>
         </a>
       {% endc %}
-
-
-
-
-
-
     {% endc %}
   {% endc %}
-
 </div>
 {% endblock %}
