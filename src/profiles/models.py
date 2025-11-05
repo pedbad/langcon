@@ -96,6 +96,25 @@ class Profile(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+    # ────────────────────────────────────────────────────────────────
+    # English Exam Type
+    # Dropdown appears when student selects "Yes" to having taken an exam.
+    # ────────────────────────────────────────────────────────────────
+    TEST_CHOICES = (
+        ("", "Select exam..."),  # Empty default for form placeholder
+        ("ielts", "IELTS"),
+        ("toefl", "TOEFL"),
+        ("c1", "Cambridge C1 Advanced"),
+        ("c2", "Cambridge C2 Proficiency"),
+    )
+
+    exam_type = models.CharField(
+        max_length=20,
+        choices=TEST_CHOICES,
+        blank=True,
+        help_text="The type of English language exam taken.",
+    )
+
     class Meta:
         ordering = ["-created_at"]
         verbose_name = "Profile"

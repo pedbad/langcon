@@ -3,52 +3,26 @@
   // Alpine bootstrapping: Theme store (dark / light / system)
   // ────────────────────────────────────────────────────────────────
   document.addEventListener("alpine:init", () => {
-    console.log("[alpine:init] fired - latest 001");
-
-    const A = window.Alpine;
-
-    // Avoid duplicate store registration if Alpine re-inits
-    if (A.store("theme")) return;
-
+  const A = window.Alpine;
+  if (!A.store("theme")) {
     const stored = localStorage.getItem("theme") || "system";
-
     A.store("theme", {
       value: stored,
       systemDark: window.matchMedia("(prefers-color-scheme: dark)").matches,
-
-      set(next) {
-        this.value = next;
-        localStorage.setItem("theme", next);
-        this.apply();
-        console.log("[theme] set", { next });
-      },
-
-      apply() {
-        const useDark =
-          this.value === "dark" ||
-          (this.value === "system" && this.systemDark);
+      set(next){ this.value = next; localStorage.setItem("theme", next); this.apply(); },
+      apply(){
+        const useDark = this.value === "dark" || (this.value === "system" && this.systemDark);
         document.documentElement.classList.toggle("dark", useDark);
-        console.log("[theme] apply", {
-          value: this.value,
-          systemDark: this.systemDark,
-          useDark,
-        });
       },
     });
-
-    // Apply on load
     A.store("theme").apply();
+    window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", (e) => {
+      A.store("theme").systemDark = e.matches;
+      if (A.store("theme").value === "system") A.store("theme").apply();
+    });
+  }
+});
 
-    // Watch for OS dark mode changes (system mode only)
-    window
-      .matchMedia("(prefers-color-scheme: dark)")
-      .addEventListener("change", (e) => {
-        A.store("theme").systemDark = e.matches;
-        if (A.store("theme").value === "system") {
-          A.store("theme").apply();
-        }
-      });
-  });
 
   // ────────────────────────────────────────────────────────────────
   // App bootstrap + progressive enhancement hooks
@@ -132,4 +106,7 @@
     // Initialize state on first paint
     renderExamDetails();
   });
+
+
+
 })();

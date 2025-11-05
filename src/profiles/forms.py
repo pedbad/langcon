@@ -54,6 +54,7 @@ class ProfileForm(forms.ModelForm):
             "subject_area",
             "requires_uk_student_visa",
             "has_recent_english_exam",
+            "exam_type",
         ]
         widgets = {
             "phone": forms.TextInput(
@@ -77,6 +78,16 @@ class ProfileForm(forms.ModelForm):
                         "shadow-sm focus-visible:outline-none "
                         "focus-visible:ring-1 focus-visible:ring-ring "
                         "appearance-none pr-10"
+                    ),
+                }
+            ),
+            "exam_type": forms.Select(
+                attrs={
+                    "id": "id_exam_type",
+                    "class": (
+                        "w-full rounded-md border border-input bg-background px-3 py-2 text-sm "
+                        "shadow-sm focus-visible:outline-none focus-visible:ring-1 "
+                        "focus-visible:ring-ring appearance-none pr-10"
                     ),
                 }
             ),

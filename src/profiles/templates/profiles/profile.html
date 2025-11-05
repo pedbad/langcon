@@ -82,6 +82,7 @@
               </span>
             </div>
 
+
             {% if form.subject_area.errors %}
               <p class="mt-1 text-sm text-destructive">{{ form.subject_area.errors.0 }}</p>
             {% endif %}
@@ -220,11 +221,40 @@
 
         <div
           id="exam-details"
-          class="hidden opacity-0 transition-all duration-500 ease-in-out overflow-hidden">
+          class="hidden opacity-0 transition-all duration-500 ease-in-out">
           <div class="rounded-xl border border-blue-200 bg-blue-50 p-4 mt-4">
             <p class="text-sm font-medium text-blue-700">
               Please select and provide your most recent English language exam test scores.
             </p>
+
+            {# --- Exam type (Combobox) --- #}
+{# --- Exam type (Combobox) --- #}
+<div class="space-y-2">
+  <label class="block text-base font-semibold">Select the exam taken:</label>
+
+  {% c combobox name=form.exam_type.html_name value=form.exam_type.value|default_if_none:'' %}
+    {# Trigger button (non-submitting) with full-width styling #}
+    {% c combobox/trigger class="w-full justify-between rounded-md border border-input bg-muted/40 px-4 py-3 text-sm" %}
+    {% endc %}
+
+    {# Menu #}
+    {% c combobox/content class="min-w-[28rem] z-50" side="bottom" side_offset="8" %}
+      {% c combobox/search placeholder="Search exam..." %}{% endc %}
+      {% c combobox/empty %}No results.{% endc %}
+
+      {% c combobox/group label="Exams" %}
+        {% c combobox/item value="" %}Select exam...{% endc %}
+        {% c combobox/item value="ielts" %}IELTS{% endc %}
+        {% c combobox/item value="toefl" %}TOEFL{% endc %}
+        {% c combobox/item value="c1" %}Cambridge C1 Advanced{% endc %}
+        {% c combobox/item value="c2" %}Cambridge C2 Proficiency{% endc %}
+      {% endc %}
+    {% endc %}
+  {% endc %}
+</div>
+
+
+
           </div>
         </div>
 
