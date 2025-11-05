@@ -13,7 +13,7 @@
 </script>
 
 <!-- Main app script (not deferred, so Alpine:init hooks register in time) -->
-<script src="{% static 'core/js/main.js' %}"></script>
+<script src="{% static 'core/js/main.js' %}?v={{ STATIC_VERSION }}"></script>
 
 {% block scripts %}{% endblock %}
 

@@ -9,7 +9,8 @@
 
   <body
     class="min-h-screen flex flex-col bg-background text-foreground antialiased"
-    data-env="{% if debug %}dev{% else %}prod{% endif %}"
+    data-env="{{ ENV|default:'dev' }}"
+    data-debug="{{ DEBUG_FLAG|yesno:'true,false' }}"
   >
     <!-- 🔹 Skip Link (visible on focus) -->
     <a

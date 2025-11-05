@@ -24,6 +24,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 load_dotenv(BASE_DIR.parent / ".env")
 
 ENV = os.getenv("ENV", "dev")
+STATIC_VERSION = "2025-11-04-01"  # bump this when you want to bust cache
 
 
 # Quick-start development settings - unsuitable for production
@@ -144,10 +145,13 @@ TEMPLATES = [
                 "django.template.loaders.app_directories.Loader",
             ],
             "context_processors": [
+                # Django defaults
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
+                # Project custom
                 "core.context_processors.site_meta",
+                "core.context.core_settings",
             ],
         },
     },
