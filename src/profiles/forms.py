@@ -119,6 +119,54 @@ class ProfileForm(forms.ModelForm):
     # Accept model.clean() errors keyed to "exam_date" without writing it back from the form
     exam_date = forms.DateField(required=False, widget=forms.HiddenInput())
 
+    # ────────────────────────────────────────────────────────────────
+    # Exam sub-scores and overall
+    # ────────────────────────────────────────────────────────────────
+    COMMON_SCORE_INPUT_ATTRS = {
+        "step": "0.5",  # default; JS will adjust per exam type
+        "placeholder": "—",
+        "class": (
+            "score-input w-full rounded-md border border-input bg-background px-3 py-2 text-sm "
+            "shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+        ),
+    }
+
+    reading_score = forms.DecimalField(
+        label="Reading",
+        required=False,
+        min_value=0,
+        widget=forms.NumberInput(attrs=COMMON_SCORE_INPUT_ATTRS),
+        help_text="Your reading score.",
+    )
+
+    listening_score = forms.DecimalField(
+        label="Listening",
+        required=False,
+        min_value=0,
+        widget=forms.NumberInput(attrs=COMMON_SCORE_INPUT_ATTRS),
+    )
+
+    writing_score = forms.DecimalField(
+        label="Writing",
+        required=False,
+        min_value=0,
+        widget=forms.NumberInput(attrs=COMMON_SCORE_INPUT_ATTRS),
+    )
+
+    speaking_score = forms.DecimalField(
+        label="Speaking",
+        required=False,
+        min_value=0,
+        widget=forms.NumberInput(attrs=COMMON_SCORE_INPUT_ATTRS),
+    )
+
+    overall_score = forms.DecimalField(
+        label="Overall",
+        required=False,
+        min_value=0,
+        widget=forms.NumberInput(attrs=COMMON_SCORE_INPUT_ATTRS),
+    )
+
     class Meta:
         model = Profile
         fields = [
@@ -127,6 +175,13 @@ class ProfileForm(forms.ModelForm):
             "requires_uk_student_visa",
             "has_recent_english_exam",
             "exam_type",
+            # (exam_date handled by day/month/year)
+            "reading_score",
+            "listening_score",
+            "writing_score",
+            "speaking_score",
+            "overall_score",
+            "overall_manual_override",
         ]
         widgets = {
             "phone": forms.TextInput(

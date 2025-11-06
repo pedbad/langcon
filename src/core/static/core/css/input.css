@@ -63,6 +63,25 @@
   --color-chart-5: oklch(0.769 0.188 70.08);
 
   --radius: 0.625rem;
+
+  /* ────────────────────────────────
+     Skill colours (light mode)
+     ──────────────────────────────── */
+  --color-reading:   oklch(43.2% 0.232 292.759);
+  --color-listening: oklch(43.2% 0.095 166.913);
+  --color-writing:   oklch(44.4% 0.177 26.899);
+  --color-speaking:  oklch(40.8% 0.153 2.432);
+  --color-overall:   oklch(37%   0.013 285.805);
+
+  /* Soft background tints for inputs / chips */
+  --color-reading-soft:   color-mix(in oklch, var(--color-reading)   14%, var(--color-background));
+  --color-listening-soft: color-mix(in oklch, var(--color-listening) 14%, var(--color-background));
+  --color-writing-soft:   color-mix(in oklch, var(--color-writing)   14%, var(--color-background));
+  --color-speaking-soft:  color-mix(in oklch, var(--color-speaking)  14%, var(--color-background));
+  --color-overall-soft:   color-mix(in oklch, var(--color-overall)   14%, var(--color-background));
+
+
+
 }
 
 /* ----- DARK MODE OVERRIDES ----- */
@@ -96,6 +115,13 @@
   --color-ring: oklch(0.439 0 0);
 
   /* optional sidebars/charts left as-is */
+
+  /* stronger tints in dark mode so they don’t vanish */
+  --color-reading-soft:   color-mix(in oklch, var(--color-reading)   24%, var(--color-background));
+  --color-listening-soft: color-mix(in oklch, var(--color-listening) 24%, var(--color-background));
+  --color-writing-soft:   color-mix(in oklch, var(--color-writing)   24%, var(--color-background));
+  --color-speaking-soft:  color-mix(in oklch, var(--color-speaking)  24%, var(--color-background));
+  --color-overall-soft:   color-mix(in oklch, var(--color-overall)   24%, var(--color-background));
 }
 
 /* ==========================================================================
@@ -196,6 +222,28 @@
   .helptext {
     @apply mt-1 text-xs text-foreground/70;
   }
+
+   /* Text colours */
+  .text-reading   { color: var(--color-reading); }
+  .text-listening { color: var(--color-listening); }
+  .text-writing   { color: var(--color-writing); }
+  .text-speaking  { color: var(--color-speaking); }
+  .text-overall   { color: var(--color-overall); }
+
+  /* Background tints */
+  .bg-reading-soft   { background-color: var(--color-reading-soft); }
+  .bg-listening-soft { background-color: var(--color-listening-soft); }
+  .bg-writing-soft   { background-color: var(--color-writing-soft); }
+  .bg-speaking-soft  { background-color: var(--color-speaking-soft); }
+  .bg-overall-soft   { background-color: var(--color-overall-soft); }
+
+  /* Border accents */
+  .border-reading   { border-color: color-mix(in oklch, var(--color-reading)   55%, var(--color-border)); }
+  .border-listening { border-color: color-mix(in oklch, var(--color-listening) 55%, var(--color-border)); }
+  .border-writing   { border-color: color-mix(in oklch, var(--color-writing)   55%, var(--color-border)); }
+  .border-speaking  { border-color: color-mix(in oklch, var(--color-speaking)  55%, var(--color-border)); }
+  .border-overall   { border-color: color-mix(in oklch, var(--color-overall)   55%, var(--color-border)); }
+
 }
 
 

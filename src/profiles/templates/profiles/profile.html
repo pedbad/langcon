@@ -354,6 +354,114 @@
               </div>
 
 
+              {# Exam sub-scores row ------------------------------------------------------ #}
+              <div class="mt-8 grid gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5">
+
+                {# Reading #}
+                <div>
+                  <label for="{{ form.reading_score.id_for_label }}"
+                      class="flex items-center gap-2 ml-2 text-base font-semibold text-reading">
+                  {% icon 'book_open' class_='size-5 -mt-[1px] text-reading' %}
+                  <span>{{ form.reading_score.label }}</span>
+                </label>
+
+                  <div class="flex items-center rounded-md shadow-sm">
+                    <span class="inline-flex items-center rounded-l-md border border-input bg-muted px-2 text-muted-foreground shrink-0">
+                      {% icon 'book_open' class_='size-4 opacity-70' %}
+                    </span>
+                    {{ form.reading_score }}
+                  </div>
+                  {% if form.reading_score.errors %}
+                    <p class="text-sm text-destructive mt-1">{{ form.reading_score.errors.0 }}</p>
+                  {% endif %}
+                </div>
+
+                {# Listening #}
+                <div>
+                  <label for="{{ form.listening_score.id_for_label }}"
+                        class="flex items-center gap-2 ml-2 text-base font-semibold text-listening">
+                    {% icon 'headphones' class_='size-5 -mt-[1px] text-listening' %}
+                    <span>{{ form.listening_score.label }}</span>
+                  </label>
+                  <div class="flex items-center rounded-md shadow-sm">
+                    <span class="inline-flex items-center rounded-l-md border border-input bg-muted px-2 text-muted-foreground shrink-0">
+                      {% icon 'headphones' class_='size-4 opacity-70' %}
+                    </span>
+                    {{ form.listening_score }}
+                  </div>
+                  {% if form.listening_score.errors %}
+                    <p class="text-sm text-destructive mt-1">{{ form.listening_score.errors.0 }}</p>
+                  {% endif %}
+                </div>
+
+                {# Writing #}
+                <div>
+                  <label class="flex items-center gap-2 ml-2 text-base font-semibold text-writing">
+                    {% icon 'ink_pen' class_='size-5 -mt-[1px] text-writing' %}
+                    <span>Writing</span>
+                  </label>
+
+                  <div class="flex items-center rounded-md shadow-sm">
+                    <span class="inline-flex items-center rounded-l-md border border-input bg-muted px-2 text-muted-foreground shrink-0">
+                      {% icon 'ink_pen' class_='size-4 opacity-70' %}
+                    </span>
+                    {{ form.writing_score }}
+                  </div>
+                  {% if form.writing_score.errors %}
+                    <p class="text-sm text-destructive mt-1">{{ form.writing_score.errors.0 }}</p>
+                  {% endif %}
+                </div>
+
+                {# Speaking #}
+                <div>
+                  <label for="{{ form.speaking_score.id_for_label }}"
+                        class="flex items-center gap-2 ml-2 text-base font-semibold text-speaking">
+                    {% icon 'forum' class_='size-5 opacity-85 -mt-[1px] text-speaking' %}
+                    <span>{{ form.speaking_score.label }}</span>
+                  </label>
+                  <div class="flex items-center rounded-md shadow-sm">
+                    <span class="inline-flex items-center rounded-l-md border border-input bg-muted px-2 text-muted-foreground shrink-0">
+                      {% icon 'forum' class_='size-4 opacity-70' %}
+                    </span>
+                    {{ form.speaking_score }}
+                  </div>
+                  {% if form.speaking_score.errors %}
+                    <p class="text-sm text-destructive mt-1">{{ form.speaking_score.errors.0 }}</p>
+                  {% endif %}
+                </div>
+
+                {# Overall #}
+                <div>
+                  <label for="{{ form.overall_score.id_for_label }}"
+                        class="flex items-center gap-2 ml-2 text-base font-semibold text-overall">
+                    {% icon 'bar_chart' class_='size-5 opacity-85 -mt-[1px] text-overall' %}
+                    <span>{{ form.overall_score.label }}</span>
+                  </label>
+
+                  <div class="flex items-center rounded-md shadow-sm">
+                    <span class="inline-flex items-center rounded-l-md border border-input bg-muted px-2 text-muted-foreground shrink-0">
+                      {% icon 'bar_chart' class_='size-4 opacity-70' %}
+                    </span>
+                    {{ form.overall_score }}
+                  </div>
+                  {% if form.overall_score.errors %}
+                    <p class="text-sm text-destructive mt-1">{{ form.overall_score.errors.0 }}</p>
+                  {% endif %}
+                </div>
+
+              </div>
+
+              {# Manual override toggle for overall ------------------------------------------- #}
+              <div class="mt-2 flex items-center gap-2">
+                {{ form.overall_manual_override }}
+                <label for="{{ form.overall_manual_override.id_for_label }}" class="text-sm text-foreground">
+                  {{ form.overall_manual_override.label }}
+                </label>
+              </div>
+
+
+
+
 
 
 
