@@ -77,24 +77,29 @@
       if (!examDetailsEl) return;
 
       const show = isExamYesSelected();
-
-      // Toggle the data attribute (drives child transitions)
       examDetailsEl.dataset.open = show ? "true" : "false";
 
-      // Opacity is handled by CSS via the data attribute; keep height animated here
       if (show) {
-        // First measure content height
-        // Set to a large-enough value to trigger transition
+        // Allow the open animation
+        examDetailsEl.style.overflow = "hidden";
         examDetailsEl.style.maxHeight = examDetailsEl.scrollHeight + "px";
-        examDetailsEl.style.opacity = "1"; // optional; CSS handles it but harmless
-      } else {
-        // Collapse smoothly
-        examDetailsEl.style.maxHeight = "0px";
-        examDetailsEl.style.opacity = "0"; // optional
-      }
+        examDetailsEl.style.opacity = "1";
 
-      console.log("[exam] render", { show });
+        // After transition ends, uncap and allow menus to escape
+        const done = () => {
+          examDetailsEl.style.maxHeight = "none";     // <-- important
+          examDetailsEl.style.overflow = "visible";   // <-- let popovers flow
+          examDetailsEl.removeEventListener("transitionend", done);
+        };
+        examDetailsEl.addEventListener("transitionend", done);
+      } else {
+        // Re-cap for a smooth close
+        examDetailsEl.style.overflow = "hidden";
+        examDetailsEl.style.maxHeight = "0px";
+        examDetailsEl.style.opacity = "0";
+      }
     }
+
 
 
     /**

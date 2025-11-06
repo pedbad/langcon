@@ -173,63 +173,64 @@
         {% endif %}
 
         {# English exam decision #}
-        <div class="rounded-xl bg-sky-50 border border-sky-200 p-4">
-          <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <div class="flex items-center gap-3 min-w-0">
-              <div class="grid size-10 place-items-center rounded-lg bg-sky-100 text-sky-700 shrink-0">
-                {% icon 'assignment_globe' class_='size-6' label='English Exam' %}
-              </div>
-              <p class="font-semibold text-foreground leading-snug">
-                Have you taken an English language exam in the past five years?
-              </p>
-            </div>
-
-            {# Segmented Yes/No for English exam #}
-            <div class="w-full sm:w-72">
-              <fieldset role="radiogroup" aria-label="English exam in past 5 years" class="w-full">
-                <div class="flex w-full overflow-hidden rounded-md border border-input shadow-sm">
-                  {# YES #}
-                  <input
-                    type="radio"
-                    name="{{ form.has_recent_english_exam.html_name }}"
-                    id="exam_yes"
-                    value="True"
-                    class="peer/examYes sr-only"
-                    {% with v=form.has_recent_english_exam.value|stringformat:'s' %}
-                      {% if v == 'True' or v == '' %}checked{% endif %}
-                    {% endwith %}
-                  />
-                  <label
-                    for="exam_yes"
-                    class="flex-1 cursor-pointer select-none px-4 py-2 text-center text-sm font-medium
-                           transition-colors rounded-l-md
-                           bg-background text-foreground hover:bg-muted/70
-                           peer-checked/examYes:bg-green-600 peer-checked/examYes:text-white
-                           peer-checked/examYes:hover:bg-green-600"
-                  >Yes</label>
-
-                  {# NO #}
-                  <input
-                    type="radio"
-                    name="{{ form.has_recent_english_exam.html_name }}"
-                    id="exam_no"
-                    value="False"
-                    class="peer/examNo sr-only"
-                    {% if form.has_recent_english_exam.value|stringformat:'s' == 'False' %}checked{% endif %}
-                  />
-                  <label
-                    for="exam_no"
-                    class="flex-1 cursor-pointer select-none px-4 py-2 text-center text-sm font-medium
-                           transition-colors -ml-px rounded-r-md
-                           bg-background text-foreground hover:bg-muted/70
-                           peer-checked/examNo:bg-red-600 peer-checked/examNo:text-white
-                           peer-checked/examNo:hover:bg-red-600"
-                  >No</label>
+          <div class="rounded-xl bg-sky-50 border border-sky-200 p-4">
+            <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <div class="flex items-center gap-3 min-w-0">
+                <div class="grid size-10 place-items-center rounded-lg bg-sky-100 text-sky-700 shrink-0">
+                  {% icon 'assignment_globe' class_='size-6' label='English Exam' %}
                 </div>
-              </fieldset>
+                <p class="font-semibold text-foreground leading-snug">
+                  Have you taken an English language exam in the past five years?
+                </p>
+              </div>
+
+              {# Segmented Yes/No for English exam #}
+              <div class="w-full sm:w-72">
+                <fieldset role="radiogroup" aria-label="English exam in past 5 years" class="w-full">
+                  <div class="flex w-full overflow-hidden rounded-md border border-input shadow-sm">
+                    {# YES #}
+                    <input
+                      type="radio"
+                      name="{{ form.has_recent_english_exam.html_name }}"
+                      id="exam_yes"
+                      value="True"
+                      class="peer/examYes sr-only"
+                      {% with v=form.has_recent_english_exam.value|stringformat:'s' %}
+                        {% if v == 'True' or v == '' %}checked{% endif %}
+                      {% endwith %}
+                    />
+                    <label
+                      for="exam_yes"
+                      class="flex-1 cursor-pointer select-none px-4 py-2 text-center text-sm font-medium
+                            transition-colors rounded-l-md
+                            bg-background text-foreground hover:bg-muted/70
+                            peer-checked/examYes:bg-green-600 peer-checked/examYes:text-white
+                            peer-checked/examYes:hover:bg-green-600"
+                    >Yes</label>
+
+                    {# NO #}
+                    <input
+                      type="radio"
+                      name="{{ form.has_recent_english_exam.html_name }}"
+                      id="exam_no"
+                      value="False"
+                      class="peer/examNo sr-only"
+                      {% if form.has_recent_english_exam.value|stringformat:'s' == 'False' %}checked{% endif %}
+                    />
+                    <label
+                      for="exam_no"
+                      class="flex-1 cursor-pointer select-none px-4 py-2 text-center text-sm font-medium
+                            transition-colors -ml-px rounded-r-md
+                            bg-background text-foreground hover:bg-muted/70
+                            peer-checked/examNo:bg-red-600 peer-checked/examNo:text-white
+                            peer-checked/examNo:hover:bg-red-600"
+                    >No</label>
+                  </div>
+                </fieldset>
+              </div>
             </div>
           </div>
-        </div>
+
 
         {% if form.has_recent_english_exam.errors %}
           <p class="text-sm text-destructive">{{ form.has_recent_english_exam.errors.0 }}</p>
@@ -237,146 +238,129 @@
 
 
         {# Keep the panel in-flow: no "hidden" class #}
-        <div
-          id="exam-details"
-          data-open="false"
-          class="group/exam overflow-hidden max-h-0 opacity-0 transition-[max-height,opacity] duration-500 ease-in-out"
-        >
+        {% with v=form.has_recent_english_exam.value|stringformat:'s' %}
           <div
-            class="rounded-xl border border-blue-200 bg-blue-50 p-4 mt-4
-            opacity-0 translate-y-1 transition-all duration-500
-            group-data-[open=true]/exam:opacity-100 group-data-[open=true]/exam:translate-y-0"
-          >
-            <p class="text-sm font-medium text-blue-700">
-              Please select and provide your most recent English language exam test scores.
-            </p>
+            id="exam-details"
+            data-open="{% if v == 'True' %}true{% else %}false{% endif %}"
+            role="region"
+            aria-hidden="{% if v == 'True' %}false{% else %}true{% endif %}"
+            class="group/exam relative isolate z-20 max-h-0 opacity-0
+                  transition-[max-height,opacity] duration-500 ease-in-out">
+            <div class="rounded-xl border border-blue-200 bg-blue-50 p-4 mt-4
+                        opacity-0 translate-y-1 transition-all duration-500
+                        group-data-[open=true]/exam:opacity-100 group-data-[open=true]/exam:translate-y-0">
+
+              <p class="text-sm font-medium text-blue-700">
+                Please select and provide your most recent English language exam test scores.
+              </p>
 
 
-            {# --- Exam type + date (same line) --- #}
-            <div class="mt-4 grid gap-4 sm:grid-cols-2">
-              <div class="space-y-2">
-                <label for="id_exam_type" class="block text-sm font-medium text-foreground">
-                  Select the exam taken:
-                </label>
-                <c-select
-                  id="id_exam_type"
-                  name="{{ form.exam_type.html_name }}"
-                  value="{{ form.exam_type.value|default:'' }}"
-                  class="w-full sm:w-80"
-                >
-                  <c-select.trigger class="w-full">
-                    <c-select.value placeholder="Select exam..." />
-                  </c-select.trigger>
-                  <c-select.content>
-                    <c-select.item value="ielts">IELTS</c-select.item>
-                    <c-select.item value="toefl">TOEFL</c-select.item>
-                    <c-select.item value="c1">Cambridge C1 Advanced</c-select.item>
-                    <c-select.item value="c2">Cambridge C2 Proficiency</c-select.item>
-                  </c-select.content>
-                </c-select>
-                {% if form.exam_type.errors %}
-                  <p class="text-sm text-destructive">{{ form.exam_type.errors.0 }}</p>
-                {% endif %}
-              </div>
-
-              <div class="space-y-2">
-                <label class="block text-sm font-medium text-foreground">
-                  and enter the date you took it:
-                </label>
-
-                <div class="grid grid-cols-3 gap-2">
-                  {# Day #}
+              {# --- Exam type + date (same line) --- #}
+              <div class="mt-4 grid gap-4 sm:grid-cols-2">
+                <div class="space-y-2">
+                  <label for="id_exam_type" class="block text-sm font-medium text-foreground">
+                    Select the exam taken:
+                  </label>
                   <c-select
-                    id="id_exam_day"
-                    name="{{ form.exam_day.html_name }}"
-                    value="{{ form.exam_day.value|default:'' }}"
-                    class="w-full"
+                    id="id_exam_type"
+                    name="{{ form.exam_type.html_name }}"
+                    value="{{ form.exam_type.value|default:'' }}"
+                    class="w-full sm:w-80"
                   >
                     <c-select.trigger class="w-full">
-                      <c-select.value placeholder="Day" />
+                      <c-select.value placeholder="Select exam..." />
                     </c-select.trigger>
-                    <c-select.content>
-                      {% for val, label in form.exam_day.field.choices %}
-                        <c-select.item value="{{ val }}">{{ label }}</c-select.item>
-                      {% endfor %}
+                    <c-select.content class="z-50 max-h-64 overflow-auto">
+                      <c-select.item value="ielts">IELTS</c-select.item>
+                      <c-select.item value="toefl">TOEFL</c-select.item>
+                      <c-select.item value="c1">Cambridge C1 Advanced</c-select.item>
+                      <c-select.item value="c2">Cambridge C2 Proficiency</c-select.item>
                     </c-select.content>
                   </c-select>
-
-                  {# Month #}
-                  <c-select
-                    id="id_exam_month"
-                    name="{{ form.exam_month.html_name }}"
-                    value="{{ form.exam_month.value|default:'' }}"
-                    class="w-full"
-                  >
-                    <c-select.trigger class="w-full">
-                      <c-select.value placeholder="Month" />
-                    </c-select.trigger>
-                    <c-select.content>
-                      {% for val, label in form.exam_month.field.choices %}
-                        <c-select.item value="{{ val }}">{{ label }}</c-select.item>
-                      {% endfor %}
-                    </c-select.content>
-                  </c-select>
-
-                  {# Year #}
-                  <c-select
-                    id="id_exam_year"
-                    name="{{ form.exam_year.html_name }}"
-                    value="{{ form.exam_year.value|default:'' }}"
-                    class="w-full"
-                  >
-                    <c-select.trigger class="w-full">
-                      <c-select.value placeholder="Year" />
-                    </c-select.trigger>
-                    <c-select.content>
-                      {% for val, label in form.exam_year.field.choices %}
-                        <c-select.item value="{{ val }}">{{ label }}</c-select.item>
-                      {% endfor %}
-                    </c-select.content>
-                  </c-select>
+                  {% if form.exam_type.errors %}
+                    <p class="text-sm text-destructive">{{ form.exam_type.errors.0 }}</p>
+                  {% endif %}
                 </div>
 
-                {# Error display for any of the three #}
-                {% if form.exam_day.errors %}
-                  <p class="text-sm text-destructive">{{ form.exam_day.errors.0 }}</p>
-                {% endif %}
-                {% if form.exam_month.errors %}
-                  <p class="text-sm text-destructive">{{ form.exam_month.errors.0 }}</p>
-                {% endif %}
-                {% if form.exam_year.errors %}
-                  <p class="text-sm text-destructive">{{ form.exam_year.errors.0 }}</p>
-                {% endif %}
+                <div class="space-y-2">
+                  <label class="block text-sm font-medium text-foreground">
+                    and enter the date you took it:
+                  </label>
+
+                  <div class="grid grid-cols-3 gap-2">
+                    {# Day #}
+                    <c-select
+                      id="id_exam_day"
+                      name="{{ form.exam_day.html_name }}"
+                      value="{{ form.exam_day.value|default:'' }}"
+                      class="w-full"
+                    >
+                      <c-select.trigger class="w-full">
+                        <c-select.value placeholder="Day" />
+                      </c-select.trigger>
+                      <c-select.content class="z-50 max-h-64 overflow-auto">
+                        {% for val, label in form.exam_day.field.choices %}
+                          <c-select.item value="{{ val }}">{{ label }}</c-select.item>
+                        {% endfor %}
+                      </c-select.content>
+                    </c-select>
+
+                    {# Month #}
+                    <c-select
+                      id="id_exam_month"
+                      name="{{ form.exam_month.html_name }}"
+                      value="{{ form.exam_month.value|default:'' }}"
+                      class="w-full"
+                    >
+                      <c-select.trigger class="w-full">
+                        <c-select.value placeholder="Month" />
+                      </c-select.trigger>
+                      <c-select.content class="z-50 max-h-64 overflow-auto">
+                        {% for val, label in form.exam_month.field.choices %}
+                          <c-select.item value="{{ val }}">{{ label }}</c-select.item>
+                        {% endfor %}
+                      </c-select.content>
+                    </c-select>
+
+                    {# Year #}
+                    <c-select
+                      id="id_exam_year"
+                      name="{{ form.exam_year.html_name }}"
+                      value="{{ form.exam_year.value|default:'' }}"
+                      class="w-full"
+                    >
+                      <c-select.trigger class="w-full">
+                        <c-select.value placeholder="Year" />
+                      </c-select.trigger>
+                      <c-select.content class="z-50 max-h-64 overflow-auto">
+                        {% for val, label in form.exam_year.field.choices %}
+                          <c-select.item value="{{ val }}">{{ label }}</c-select.item>
+                        {% endfor %}
+                      </c-select.content>
+                    </c-select>
+                  </div>
+
+                  {# Error display for any of the three #}
+                  {% if form.exam_day.errors %}
+                    <p class="text-sm text-destructive">{{ form.exam_day.errors.0 }}</p>
+                  {% endif %}
+                  {% if form.exam_month.errors %}
+                    <p class="text-sm text-destructive">{{ form.exam_month.errors.0 }}</p>
+                  {% endif %}
+                  {% if form.exam_year.errors %}
+                    <p class="text-sm text-destructive">{{ form.exam_year.errors.0 }}</p>
+                  {% endif %}
+                </div>
               </div>
+
+
+
+
+
+
             </div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
           </div>
-        </div>
-
-
-
-
-
-
-
-
-
-
-
+        {% endwith %}
 
 
 
@@ -386,7 +370,7 @@
           <button
             type="submit"
             id="save-profile"
-            class="inline-flex w-full items-center justify-center gap-2 rounded-md border border-input
+            class="inline-flex z-0 w-full items-center justify-center gap-2 rounded-md border border-input
                    bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm
                    transition-colors hover:bg-primary/90 focus-visible:outline-none
                    focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none
