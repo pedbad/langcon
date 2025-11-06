@@ -236,70 +236,122 @@
         {% endif %}
 
 
+        {# Keep the panel in-flow: no "hidden" class #}
         <div
           id="exam-details"
-          class="hidden opacity-0 transition-all duration-500 ease-in-out">
-          <div class="rounded-xl border border-blue-200 bg-blue-50 p-4 mt-4">
+          data-open="false"
+          class="group/exam overflow-hidden max-h-0 opacity-0 transition-[max-height,opacity] duration-500 ease-in-out"
+        >
+          <div
+            class="rounded-xl border border-blue-200 bg-blue-50 p-4 mt-4
+            opacity-0 translate-y-1 transition-all duration-500
+            group-data-[open=true]/exam:opacity-100 group-data-[open=true]/exam:translate-y-0"
+          >
             <p class="text-sm font-medium text-blue-700">
               Please select and provide your most recent English language exam test scores.
             </p>
 
 
+            {# --- Exam type + date (same line) --- #}
+            <div class="mt-4 grid gap-4 sm:grid-cols-2">
+              <div class="space-y-2">
+                <label for="id_exam_type" class="block text-sm font-medium text-foreground">
+                  Select the exam taken:
+                </label>
+                <c-select
+                  id="id_exam_type"
+                  name="{{ form.exam_type.html_name }}"
+                  value="{{ form.exam_type.value|default:'' }}"
+                  class="w-full sm:w-80"
+                >
+                  <c-select.trigger class="w-full">
+                    <c-select.value placeholder="Select exam..." />
+                  </c-select.trigger>
+                  <c-select.content>
+                    <c-select.item value="ielts">IELTS</c-select.item>
+                    <c-select.item value="toefl">TOEFL</c-select.item>
+                    <c-select.item value="c1">Cambridge C1 Advanced</c-select.item>
+                    <c-select.item value="c2">Cambridge C2 Proficiency</c-select.item>
+                  </c-select.content>
+                </c-select>
+                {% if form.exam_type.errors %}
+                  <p class="text-sm text-destructive">{{ form.exam_type.errors.0 }}</p>
+                {% endif %}
+              </div>
 
-                    {# --- Exam type + date (same line) --- #}
-<div class="mt-4 grid gap-4 sm:grid-cols-2">
-  <div class="space-y-2">
-    <label for="id_exam_type" class="block text-sm font-medium text-foreground">
-      Select the exam taken:
-    </label>
-    <c-select
-      id="id_exam_type"
-      name="{{ form.exam_type.html_name }}"
-      value="{{ form.exam_type.value|default:'' }}"
-      class="w-full sm:w-80"
-    >
-      <c-select.trigger class="w-full">
-        <c-select.value placeholder="Select exam..." />
-      </c-select.trigger>
+              <div class="space-y-2">
+                <label class="block text-sm font-medium text-foreground">
+                  and enter the date you took it:
+                </label>
 
-      <c-select.content>
-        <c-select.item value="ielts">IELTS</c-select.item>
-        <c-select.item value="toefl">TOEFL</c-select.item>
-        <c-select.item value="c1">Cambridge C1 Advanced</c-select.item>
-        <c-select.item value="c2">Cambridge C2 Proficiency</c-select.item>
-      </c-select.content>
-    </c-select>
-    {% if form.exam_type.errors %}
-      <p class="text-sm text-destructive">{{ form.exam_type.errors.0 }}</p>
-    {% endif %}
-  </div>
+                <div class="grid grid-cols-3 gap-2">
+                  {# Day #}
+                  <c-select
+                    id="id_exam_day"
+                    name="{{ form.exam_day.html_name }}"
+                    value="{{ form.exam_day.value|default:'' }}"
+                    class="w-full"
+                  >
+                    <c-select.trigger class="w-full">
+                      <c-select.value placeholder="Day" />
+                    </c-select.trigger>
+                    <c-select.content>
+                      {% for val, label in form.exam_day.field.choices %}
+                        <c-select.item value="{{ val }}">{{ label }}</c-select.item>
+                      {% endfor %}
+                    </c-select.content>
+                  </c-select>
 
-  <div class="space-y-2">
-    <label class="block text-sm font-medium text-foreground">
-      and enter the date you took it:
-    </label>
-    <div class="grid grid-cols-3 gap-2">
-      <div>
-        {{ form.exam_day }}
-      </div>
-      <div>
-        {{ form.exam_month }}
-      </div>
-      <div>
-        {{ form.exam_year }}
-      </div>
-    </div>
-    {% if form.exam_day.errors %}
-      <p class="text-sm text-destructive">{{ form.exam_day.errors.0 }}</p>
-    {% endif %}
-    {% if form.exam_month.errors %}
-      <p class="text-sm text-destructive">{{ form.exam_month.errors.0 }}</p>
-    {% endif %}
-    {% if form.exam_year.errors %}
-      <p class="text-sm text-destructive">{{ form.exam_year.errors.0 }}</p>
-    {% endif %}
-  </div>
-</div>
+                  {# Month #}
+                  <c-select
+                    id="id_exam_month"
+                    name="{{ form.exam_month.html_name }}"
+                    value="{{ form.exam_month.value|default:'' }}"
+                    class="w-full"
+                  >
+                    <c-select.trigger class="w-full">
+                      <c-select.value placeholder="Month" />
+                    </c-select.trigger>
+                    <c-select.content>
+                      {% for val, label in form.exam_month.field.choices %}
+                        <c-select.item value="{{ val }}">{{ label }}</c-select.item>
+                      {% endfor %}
+                    </c-select.content>
+                  </c-select>
+
+                  {# Year #}
+                  <c-select
+                    id="id_exam_year"
+                    name="{{ form.exam_year.html_name }}"
+                    value="{{ form.exam_year.value|default:'' }}"
+                    class="w-full"
+                  >
+                    <c-select.trigger class="w-full">
+                      <c-select.value placeholder="Year" />
+                    </c-select.trigger>
+                    <c-select.content>
+                      {% for val, label in form.exam_year.field.choices %}
+                        <c-select.item value="{{ val }}">{{ label }}</c-select.item>
+                      {% endfor %}
+                    </c-select.content>
+                  </c-select>
+                </div>
+
+                {# Error display for any of the three #}
+                {% if form.exam_day.errors %}
+                  <p class="text-sm text-destructive">{{ form.exam_day.errors.0 }}</p>
+                {% endif %}
+                {% if form.exam_month.errors %}
+                  <p class="text-sm text-destructive">{{ form.exam_month.errors.0 }}</p>
+                {% endif %}
+                {% if form.exam_year.errors %}
+                  <p class="text-sm text-destructive">{{ form.exam_year.errors.0 }}</p>
+                {% endif %}
+              </div>
+            </div>
+
+
+
 
 
 

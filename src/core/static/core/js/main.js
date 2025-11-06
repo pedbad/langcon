@@ -66,29 +66,36 @@
 
     /**
      * Apply show/hide styles to the exam details block with a smooth transition.
-     * - Visibility: toggles `hidden`, `opacity-100`, `opacity-0`
-     * - Height: animates via max-height to avoid layout jumps
+     * - State is driven by a data attribute: `data-open="true|false"` on #exam-details.
+     * - We animate height via `max-height` and fade via `opacity` on the container.
+     * - Child elements (e.g., ShadCN triggers) fade/slide using
+     *   Tailwind group selectors: `group-[data-open=true]/exam:*`.
+     * - We intentionally DO NOT toggle `hidden`; keeping the element in-flow
+     *   allows children to transition with the panel instead of popping in.
      */
     function renderExamDetails() {
       if (!examDetailsEl) return;
 
       const show = isExamYesSelected();
-      // Toggle visibility classes
-      examDetailsEl.classList.toggle("hidden", !show);
-      examDetailsEl.classList.toggle("opacity-100", show);
-      examDetailsEl.classList.toggle("opacity-0", !show);
 
-      // Animate height (fallback-safe)
+      // Toggle the data attribute (drives child transitions)
+      examDetailsEl.dataset.open = show ? "true" : "false";
+
+      // Opacity is handled by CSS via the data attribute; keep height animated here
       if (show) {
-        // Set to the scroll height for a smooth expand
+        // First measure content height
+        // Set to a large-enough value to trigger transition
         examDetailsEl.style.maxHeight = examDetailsEl.scrollHeight + "px";
+        examDetailsEl.style.opacity = "1"; // optional; CSS handles it but harmless
       } else {
-        // Collapse to zero; content remains in DOM (accessible to screen readers if not `hidden`)
+        // Collapse smoothly
         examDetailsEl.style.maxHeight = "0px";
+        examDetailsEl.style.opacity = "0"; // optional
       }
 
       console.log("[exam] render", { show });
     }
+
 
     /**
      * Event delegation: listen for changes on the entire document.
