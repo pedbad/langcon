@@ -16,7 +16,10 @@ def student_profile_entry(request):
     # Safe either way:
     # - If signal already created it, this is a no-op.
     # - If not (old users), this creates it on first visit.
-    profile, _ = Profile.objects.get_or_create(user=request.user)
+    profile, _ = Profile.objects.get_or_create(
+        user=request.user,
+        defaults={"phone": ""},  # <-- keep this to allow first-time creation
+    )
 
     if request.method == "POST":
         # Prevent editing if locked

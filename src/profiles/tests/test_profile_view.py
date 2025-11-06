@@ -1,13 +1,15 @@
 # src/profiles/tests/test_profile_view.py
 """
-Profiles: view + form integration tests.
+Profiles: view form integration tests.
 
 Covers:
 - Auto-creation of Profile on first visit
-- Rendering of phone + icon, subject area select
+- Rendering of phone icon, subject area select
 - Required validation for phone/subject_area
-- Visa + English-exam decision fields (Yes/No) and persistence
+- Visa English-exam decision fields (Yes/No) and persistence
 """
+
+from datetime import date
 
 from django.contrib.auth import get_user_model
 from django.urls import reverse
@@ -32,7 +34,7 @@ def student_user(db):
 
 
 # -----------------------------------------------------------------------------
-# View creates profile + basic render
+# View creates profile basic render
 # -----------------------------------------------------------------------------
 @pytest.mark.django_db
 def test_profile_view_creates_profile_and_renders(client, settings):
@@ -59,7 +61,7 @@ def test_profile_view_creates_profile_and_renders(client, settings):
 
 
 # -----------------------------------------------------------------------------
-# Phone field rendering + validation
+# Phone field rendering validation
 # -----------------------------------------------------------------------------
 @pytest.mark.django_db
 def test_profile_page_renders_phone_input_and_icon(client, student_user, settings):
@@ -87,7 +89,7 @@ def test_phone_is_required(client, student_user):
 
 
 # -----------------------------------------------------------------------------
-# Subject area rendering + validation
+# Subject area rendering validation
 # -----------------------------------------------------------------------------
 @pytest.mark.django_db
 def test_profile_page_renders_subject_area_select(client, student_user):
@@ -97,9 +99,9 @@ def test_profile_page_renders_subject_area_select(client, student_user):
     resp = client.get(reverse("profiles:profile"))
     assert resp.status_code == 200
     assert b'name="subject_area"' in resp.content
-    assert b"Art and Humanities" in resp.content
+    assert b"Arts and Humanities" in resp.content
     assert b"Computing" in resp.content
-    assert b"Generic" in resp.content
+    assert b"Other" in resp.content
 
 
 @pytest.mark.django_db
@@ -148,9 +150,13 @@ def test_english_exam_answer_required(client, student_user):
 
 
 @pytest.mark.django_db
-def test_english_exam_yes_saves(client, student_user):
-    """POST with exam decision 'Yes' persists boolean True on the profile."""
+def test_english_exam_yes_requires_details_form_roundtrip(client, student_user):
     client.force_login(student_user)
+
+    # Use a valid year from the dropdown but make it exactly 5 years + 1 day old
+    from datetime import timedelta
+
+    too_old_date = date.today() - timedelta(days=5 * 365 + 2)  # 5 years + 2 days
 
     resp = client.post(
         reverse("profiles:profile"),
@@ -159,10 +165,11 @@ def test_english_exam_yes_saves(client, student_user):
             "subject_area": "computing",
             "requires_uk_student_visa": "False",
             "has_recent_english_exam": "True",
+            "exam_type": "ielts",
+            "exam_day": str(too_old_date.day),
+            "exam_month": str(too_old_date.month),
+            "exam_year": str(too_old_date.year),
         },
     )
-    assert resp.status_code == 302
-
-    student_user.refresh_from_db()
-    p = student_user.profile
-    assert p.has_recent_english_exam is True
+    assert resp.status_code == 200
+    assert b"Exam date must be within the last five years." in resp.content

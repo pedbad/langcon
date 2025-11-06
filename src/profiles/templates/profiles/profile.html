@@ -70,27 +70,44 @@
             <p class="mt-1 text-xs text-muted-foreground">Include country code if possible (e.g. +44 …).</p>
           </div>
 
+           {# Subject area Schadcn combobox #}
           <div>
             <label for="id_subject_area" class="mb-1 block text-sm font-medium text-foreground">
-              Subject Area
+              Please select a subject area that best describes your field of study.
             </label>
 
-            <div class="relative">
-              {{ form.subject_area }}
-              <span class="pointer-events-none absolute inset-y-0 right-3 grid place-items-center">
-                {% icon 'expand_more' class_='h-5 w-5 text-muted-foreground/80' label='Open' %}
-              </span>
-            </div>
-
+            {# ShadCN-Django Combobox bound to the Django field #}
+            <c-combobox
+              id="id_subject_area"
+              name="{{ form.subject_area.html_name }}"
+              value="{{ form.subject_area.value|default:'other' }}"
+              placeholder="Search subject area…"
+              button_text="Select subject area…"
+              button_type="button"
+              width="w-full"
+              required="true"
+              :options="[
+                {'value': 'arts_humanities', 'label': 'Arts and Humanities'},
+                {'value': 'computing', 'label': 'Computing'},
+                {'value': 'education', 'label': 'Education'},
+                {'value': 'engineering', 'label': 'Engineering'},
+                {'value': 'environment', 'label': 'Environment'},
+                {'value': 'medicine', 'label': 'Medicine'},
+                {'value': 'physical_sciences', 'label': 'Physical Sciences'},
+                {'value': 'social_sciences', 'label': 'Social Sciences'},
+                {'value': 'other', 'label': 'Other'}
+              ]"
+            />
 
             {% if form.subject_area.errors %}
               <p class="mt-1 text-sm text-destructive">{{ form.subject_area.errors.0 }}</p>
             {% endif %}
+
+
+
           </div>
-
-
-
         </div>
+
 
         {# Visa question banner #}
         <div class="rounded-xl bg-sky-50 border border-sky-200 p-4">
@@ -227,36 +244,82 @@
               Please select and provide your most recent English language exam test scores.
             </p>
 
-            {# --- Exam type (Combobox) --- #}
-{# --- Exam type (Combobox) --- #}
-<div class="space-y-2">
-  <label class="block text-base font-semibold">Select the exam taken:</label>
 
-  {% c combobox name=form.exam_type.html_name value=form.exam_type.value|default_if_none:'' %}
-    {# Trigger button (non-submitting) with full-width styling #}
-    {% c combobox/trigger class="w-full justify-between rounded-md border border-input bg-muted/40 px-4 py-3 text-sm" %}
-    {% endc %}
 
-    {# Menu #}
-    {% c combobox/content class="min-w-[28rem] z-50" side="bottom" side_offset="8" %}
-      {% c combobox/search placeholder="Search exam..." %}{% endc %}
-      {% c combobox/empty %}No results.{% endc %}
+                    {# --- Exam type + date (same line) --- #}
+<div class="mt-4 grid gap-4 sm:grid-cols-2">
+  <div class="space-y-2">
+    <label for="id_exam_type" class="block text-sm font-medium text-foreground">
+      Select the exam taken:
+    </label>
+    <c-select
+      id="id_exam_type"
+      name="{{ form.exam_type.html_name }}"
+      value="{{ form.exam_type.value|default:'' }}"
+      class="w-full sm:w-80"
+    >
+      <c-select.trigger class="w-full">
+        <c-select.value placeholder="Select exam..." />
+      </c-select.trigger>
 
-      {% c combobox/group label="Exams" %}
-        {% c combobox/item value="" %}Select exam...{% endc %}
-        {% c combobox/item value="ielts" %}IELTS{% endc %}
-        {% c combobox/item value="toefl" %}TOEFL{% endc %}
-        {% c combobox/item value="c1" %}Cambridge C1 Advanced{% endc %}
-        {% c combobox/item value="c2" %}Cambridge C2 Proficiency{% endc %}
-      {% endc %}
-    {% endc %}
-  {% endc %}
+      <c-select.content>
+        <c-select.item value="ielts">IELTS</c-select.item>
+        <c-select.item value="toefl">TOEFL</c-select.item>
+        <c-select.item value="c1">Cambridge C1 Advanced</c-select.item>
+        <c-select.item value="c2">Cambridge C2 Proficiency</c-select.item>
+      </c-select.content>
+    </c-select>
+    {% if form.exam_type.errors %}
+      <p class="text-sm text-destructive">{{ form.exam_type.errors.0 }}</p>
+    {% endif %}
+  </div>
+
+  <div class="space-y-2">
+    <label class="block text-sm font-medium text-foreground">
+      and enter the date you took it:
+    </label>
+    <div class="grid grid-cols-3 gap-2">
+      <div>
+        {{ form.exam_day }}
+      </div>
+      <div>
+        {{ form.exam_month }}
+      </div>
+      <div>
+        {{ form.exam_year }}
+      </div>
+    </div>
+    {% if form.exam_day.errors %}
+      <p class="text-sm text-destructive">{{ form.exam_day.errors.0 }}</p>
+    {% endif %}
+    {% if form.exam_month.errors %}
+      <p class="text-sm text-destructive">{{ form.exam_month.errors.0 }}</p>
+    {% endif %}
+    {% if form.exam_year.errors %}
+      <p class="text-sm text-destructive">{{ form.exam_year.errors.0 }}</p>
+    {% endif %}
+  </div>
 </div>
+
+
+
+
+
+
+
+
+
 
 
 
           </div>
         </div>
+
+
+
+
+
+
 
 
 

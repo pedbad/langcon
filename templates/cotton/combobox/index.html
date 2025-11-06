@@ -5,6 +5,7 @@
     selected_value=""
     default_open="false"
     name=""
+    required="false"
 />
 
 <div
@@ -94,11 +95,13 @@
 >
     <!-- Hidden input field to store the selected value -->
     {% if name %}
-    <input type="hidden" name="{{ name }}" x-bind:value="value" />
+    <input type="hidden" name="{{ name }}" x-bind:value="value" x-bind:required="{{ required|lower }}" />
     {% endif %}
+
   <c-popover :open="open" @open-change="open = $event">
     <c-popover.trigger>
       <c-button
+        type="button"
         variant="outline"
         role="combobox"
         x-bind:aria-expanded="open"

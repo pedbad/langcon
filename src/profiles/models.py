@@ -1,7 +1,12 @@
 # src/profiles/models.py
+from datetime import date
+
 from django.conf import settings
+from django.core.exceptions import ValidationError
 from django.core.validators import RegexValidator
 from django.db import models
+from django.db.models import CheckConstraint, Q
+from django.utils.translation import gettext_lazy as _
 
 
 class Profile(models.Model):
@@ -13,8 +18,6 @@ class Profile(models.Model):
 
     # ────────────────────────────────────────────────────────────────
     # User association
-    # Each Profile belongs to exactly one CustomUser instance.
-    # When the user is deleted, their Profile is also removed.
     # ────────────────────────────────────────────────────────────────
     user = models.OneToOneField(
         settings.AUTH_USER_MODEL,
@@ -25,12 +28,10 @@ class Profile(models.Model):
 
     # ────────────────────────────────────────────────────────────────
     # Contact information
-    # Required phone number used for admin or teacher communication.
-    # Validation ensures only digits, spaces, '+' or '-' are accepted.
     # ────────────────────────────────────────────────────────────────
     phone = models.CharField(
         max_length=20,
-        blank=False,  # 🔒 required at form and DB level
+        blank=False,
         validators=[
             RegexValidator(
                 regex=r"^\+?[0-9\s\-]{7,20}$",
@@ -42,11 +43,9 @@ class Profile(models.Model):
 
     # ────────────────────────────────────────────────────────────────
     # Subject Area
-    # Used to group students by their academic domain.
-    # This field appears as a dropdown in the student profile form.
     # ────────────────────────────────────────────────────────────────
     SUBJECT_AREA_CHOICES = [
-        ("arts_humanities", "Art and Humanities"),
+        ("arts_humanities", "Arts and Humanities"),
         ("computing", "Computing"),
         ("education", "Education"),
         ("engineering", "Engineering"),
@@ -60,14 +59,12 @@ class Profile(models.Model):
     subject_area = models.CharField(
         max_length=50,
         choices=SUBJECT_AREA_CHOICES,
-        default="other",  # Ensures existing profiles migrate cleanly
+        default="other",
         help_text="Student's main subject area (required).",
     )
 
     # ────────────────────────────────────────────────────────────────
     # UK Student Visa Requirement
-    # Indicates whether the student requires a visa to study in the UK.
-    # This field appears as a Yes/No dropdown banner in the student profile form.
     # ────────────────────────────────────────────────────────────────
     requires_uk_student_visa = models.BooleanField(
         null=False,
@@ -77,9 +74,6 @@ class Profile(models.Model):
 
     # ────────────────────────────────────────────────────────────────
     # English Exam (past five years)
-    # Records whether the student has taken an English language exam
-    # in the past five years. Additional fields (exam type/scores) will
-    # be collected only if this is True.
     # ────────────────────────────────────────────────────────────────
     has_recent_english_exam = models.BooleanField(
         null=False,
@@ -87,49 +81,88 @@ class Profile(models.Model):
         help_text="Has the student taken an English language exam in the last five years?",
     )
 
-    # ────────────────────────────────────────────────────────────────
-    # 🔒 Locking and auditing
-    # is_locked prevents further student edits once approved.
-    # created_at / updated_at provide basic audit metadata.
-    # ────────────────────────────────────────────────────────────────
-    is_locked = models.BooleanField(default=False)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-
-    # ────────────────────────────────────────────────────────────────
-    # English Exam Type
-    # Dropdown appears when student selects "Yes" to having taken an exam.
-    # ────────────────────────────────────────────────────────────────
+    # Dropdown appears when student selects "Yes".
     TEST_CHOICES = (
-        ("", "Select exam..."),  # Empty default for form placeholder
+        ("", "Select exam..."),  # placeholder for form
         ("ielts", "IELTS"),
         ("toefl", "TOEFL"),
         ("c1", "Cambridge C1 Advanced"),
         ("c2", "Cambridge C2 Proficiency"),
     )
-
     exam_type = models.CharField(
         max_length=20,
         choices=TEST_CHOICES,
-        blank=True,
+        blank=True,  # optional in DB; conditional in validation
         help_text="The type of English language exam taken.",
     )
+
+    # stored date for the taken exam (optional in DB; conditional in validation)
+    exam_date = models.DateField(
+        null=True,
+        blank=True,
+        help_text="Date of the most recent English exam (required if an exam was taken).",
+    )
+
+    # ────────────────────────────────────────────────────────────────
+    # 🔒 Locking and auditing
+    # ────────────────────────────────────────────────────────────────
+    is_locked = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
         ordering = ["-created_at"]
         verbose_name = "Profile"
         verbose_name_plural = "Profiles"
+        # Optional DB guardrail (MySQL 8+ enforces CHECK):
+        constraints = [
+            CheckConstraint(
+                name="exam_requires_type_and_date",
+                condition=(  # ← Changed from 'check' to 'condition'
+                    Q(has_recent_english_exam=False)
+                    | (~Q(exam_type="") & Q(exam_date__isnull=False))
+                ),
+            ),
+        ]
 
     def __str__(self) -> str:
-        """Readable string representation for admin/debug."""
         user_ident = getattr(self.user, "email", str(self.user))
         return f"Profile<{user_ident}>"
 
     # ────────────────────────────────────────────────────────────────
+    # Validation + normalization (conditional-required)
+    # ────────────────────────────────────────────────────────────────
+    def clean(self):
+        super().clean()
+        if self.has_recent_english_exam:
+            errors = {}
+            if not self.exam_type:
+                errors["exam_type"] = _("Please select the exam taken.")
+            if self.exam_date is None:
+                errors["exam_date"] = _("Please provide the exam date.")
+            else:
+                # Optional server-side window check
+                today = date.today()
+                min_date = date(today.year - 5, today.month, today.day)
+                if not (min_date <= self.exam_date <= today):
+                    errors["exam_date"] = _("Exam date must be within the last five years.")
+            if errors:
+                raise ValidationError(errors)
+
+    def save(self, *args, **kwargs):
+        # Normalize dependent fields when the switch is False
+        if not self.has_recent_english_exam:
+            self.exam_type = ""
+            self.exam_date = None
+        super().save(*args, **kwargs)
+
+    # ────────────────────────────────────────────────────────────────
     # Completion logic
-    # A profile is considered complete only when all required fields
-    # are filled and the profile is not locked.
-    # This will expand as new required fields are added.
     # ────────────────────────────────────────────────────────────────
     def is_complete(self) -> bool:
-        return bool(self.phone and self.subject_area and not self.is_locked)
+        base_ok = bool(self.phone and self.subject_area and not self.is_locked)
+        if not base_ok:
+            return False
+        if not self.has_recent_english_exam:
+            return True
+        return bool(self.exam_type and self.exam_date)
