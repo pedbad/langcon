@@ -81,7 +81,6 @@ class Profile(models.Model):
         help_text="Has the student taken an English language exam in the last five years?",
     )
 
-    # Dropdown appears when student selects "Yes".
     TEST_CHOICES = (
         ("", "Select exam..."),  # placeholder for form
         ("ielts", "IELTS"),
@@ -96,12 +95,40 @@ class Profile(models.Model):
         help_text="The type of English language exam taken.",
     )
 
-    # stored date for the taken exam (optional in DB; conditional in validation)
     exam_date = models.DateField(
         null=True,
         blank=True,
         help_text="Date of the most recent English exam (required if an exam was taken).",
     )
+
+    # ────────────────────────────────────────────────────────────────
+    # NEW: Generic exam scores (conditionally validated by exam_type)
+    # We use Decimal so IELTS 0.5 steps are representable and others (int ranges)
+    # still fit.  max_digits=5, decimal_places=1 comfortably stores e.g. 230.0.
+    # ────────────────────────────────────────────────────────────────
+    reading_score = models.DecimalField(
+        max_digits=5, decimal_places=1, null=True, blank=True, help_text="Reading score."
+    )
+    listening_score = models.DecimalField(
+        max_digits=5, decimal_places=1, null=True, blank=True, help_text="Listening score."
+    )
+    writing_score = models.DecimalField(
+        max_digits=5, decimal_places=1, null=True, blank=True, help_text="Writing score."
+    )
+    speaking_score = models.DecimalField(
+        max_digits=5, decimal_places=1, null=True, blank=True, help_text="Speaking score."
+    )
+    overall_score = models.DecimalField(
+        max_digits=5,
+        decimal_places=1,
+        null=True,
+        blank=True,
+        help_text="Overall score (auto-calculated by default).",
+    )
+
+    # Track whether the student explicitly edited the overall score.
+    # Later we will compute overall when this is False; otherwise we only range-check.
+    overall_manual_override = models.BooleanField(default=False)
 
     # ────────────────────────────────────────────────────────────────
     # 🔒 Locking and auditing
@@ -118,7 +145,7 @@ class Profile(models.Model):
         constraints = [
             CheckConstraint(
                 name="exam_requires_type_and_date",
-                condition=(  # ← Changed from 'check' to 'condition'
+                condition=(
                     Q(has_recent_english_exam=False)
                     | (~Q(exam_type="") & Q(exam_date__isnull=False))
                 ),
@@ -130,7 +157,20 @@ class Profile(models.Model):
         return f"Profile<{user_ident}>"
 
     # ────────────────────────────────────────────────────────────────
+    # Helpers
+    # ────────────────────────────────────────────────────────────────
+    def _clear_exam_scores(self):
+        """Reset all score fields and the manual override flag."""
+        self.reading_score = None
+        self.listening_score = None
+        self.writing_score = None
+        self.speaking_score = None
+        self.overall_score = None
+        self.overall_manual_override = False
+
+    # ────────────────────────────────────────────────────────────────
     # Validation + normalization (conditional-required)
+    # (In this step we keep existing requirements; score validation comes next.)
     # ────────────────────────────────────────────────────────────────
     def clean(self):
         super().clean()
@@ -146,6 +186,7 @@ class Profile(models.Model):
                 min_date = date(today.year - 5, today.month, today.day)
                 if not (min_date <= self.exam_date <= today):
                     errors["exam_date"] = _("Exam date must be within the last five years.")
+            # NOTE: Score presence/ranges will be added in the next step.
             if errors:
                 raise ValidationError(errors)
 
@@ -154,10 +195,14 @@ class Profile(models.Model):
         if not self.has_recent_english_exam:
             self.exam_type = ""
             self.exam_date = None
+            # NEW: also clear scores when no exam is declared
+            self._clear_exam_scores()
         super().save(*args, **kwargs)
 
     # ────────────────────────────────────────────────────────────────
     # Completion logic
+    # For this step we keep the original gating. In the next step we will
+    # require the four subscores (+ overall) when an exam is declared.
     # ────────────────────────────────────────────────────────────────
     def is_complete(self) -> bool:
         base_ok = bool(self.phone and self.subject_area and not self.is_locked)
