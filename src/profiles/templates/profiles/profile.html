@@ -448,7 +448,6 @@
                     <p class="text-sm text-destructive mt-1">{{ form.overall_score.errors.0 }}</p>
                   {% endif %}
                 </div>
-
               </div>
 
               {# Manual override toggle for overall ------------------------------------------- #}
@@ -461,6 +460,25 @@
               </div>
 
 
+              {# Cambridge extra notice (UX only for now) #}
+              {% with et=form.exam_type.value|stringformat:"s" %}
+                <div
+                  id="cambridge-extra"
+                  data-open="{% if et == 'c1' or et == 'c2' %}true{% else %}false{% endif %}"
+                  aria-hidden="{% if et == 'c1' or et == 'c2' %}false{% else %}true{% endif %}"
+                  class="relative mt-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3
+                        transition-[max-height,opacity] duration-300 ease-in-out
+                        max-h-0 opacity-0"
+                >
+                <p class="flex items-center gap-2 text-sm font-medium text-amber-800">
+                    {% icon 'other_admissions' class_='size-5 text-amber-800 -mt-[1px]' %}
+                    For <span class="font-semibold">Cambridge C1/C2</span> exams, please provide additional details:
+                  </p>
+                </div>
+              {% endwith %}
+
+
+
 
 
 
@@ -471,10 +489,6 @@
             </div>
           </div>
         {% endwith %}
-
-
-
-
 
         {% if not profile.is_locked %}
           <button
