@@ -24,7 +24,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 load_dotenv(BASE_DIR.parent / ".env")
 
 ENV = os.getenv("ENV", "dev")
-STATIC_VERSION = "2025-11-04-01"  # bump this when you want to bust cache
+STATIC_VERSION = "2025-11-09-01"  # bump this when you want to bust cache
 
 
 # Quick-start development settings - unsuitable for production

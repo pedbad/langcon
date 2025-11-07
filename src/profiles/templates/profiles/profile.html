@@ -452,12 +452,14 @@
               </div>
 
               {# Manual override toggle for overall ------------------------------------------- #}
-              <div class="mt-2 flex items-center gap-2">
-                {{ form.overall_manual_override }}
-                <label for="{{ form.overall_manual_override.id_for_label }}" class="text-sm text-foreground">
-                  {{ form.overall_manual_override.label }}
+              <div class="flex justify-end mt-2 lg:col-span-5">
+                <label for="{{ form.overall_manual_override.id_for_label }}"
+                      class="flex items-center gap-2 text-sm">
+                  {{ form.overall_manual_override }}
+                  <span>Overall manual override</span>
                 </label>
               </div>
+
 
 
 
