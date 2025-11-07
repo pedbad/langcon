@@ -78,6 +78,16 @@ EXAM_RULES = {
     },
 }
 
+# ────────────────────────────────────────────────────────────────
+# Cambridge grades (passes only). "-" is a placeholder in forms.
+# ────────────────────────────────────────────────────────────────
+CAMBRIDGE_GRADES = (
+    ("-", "-"),
+    ("a", "A"),
+    ("b", "B"),
+    ("c", "C"),
+)
+
 
 class Profile(models.Model):
     """
@@ -169,6 +179,13 @@ class Profile(models.Model):
         null=True,
         blank=True,
         help_text="Date of the most recent English exam (required if an exam was taken).",
+    )
+    
+    cambridge_grade = models.CharField(
+        max_length=1,
+        choices=CAMBRIDGE_GRADES,
+        blank=True,
+        help_text="Grade for Cambridge exams (A/B/C). Only for C1/C2.",
     )
 
     # ────────────────────────────────────────────────────────────────
@@ -271,79 +288,124 @@ class Profile(models.Model):
     # Validation + normalization
     # ────────────────────────────────────────────────────────────────
     def clean(self):
+        """
+        Server-side validation for the exam section.
+
+        Rules (summary):
+        - If has_recent_english_exam is False → no exam validation here.
+        - If True:
+            • exam_type is required and must be one of EXAM_RULES keys.
+            • exam_date is required and must be within the last 5 years (inclusive).
+            • If exam_type ∈ {c1, c2} (Cambridge), cambridge_grade is required (A/B/C).
+            • Validate the four sub-scores (presence, range, step).
+            • If all sub-scores are valid:
+                - If overall_manual_override is False → compute overall from subs.
+                - If True → validate overall_score range (+ IELTS 0.5 step rule).
+        """
         super().clean()
 
-        if self.has_recent_english_exam:
-            errors = {}
+        if not self.has_recent_english_exam:
+            # Nothing to validate when the student indicates no recent exam.
+            return
 
-            # ── Basic requirements (type + date window) ─────────────────
-            if not self.exam_type:
-                errors["exam_type"] = _("Please select the exam taken.")
+        errors: dict[str, list | str] = {}
 
-            date_ok = False
-            if self.exam_date is None:
-                errors["exam_date"] = _("Please provide the exam date.")
+        # ────────────────────────────────────────────────────────────────
+        # 1) Basic requirements (exam_type + date window)
+        # ────────────────────────────────────────────────────────────────
+        if not self.exam_type:
+            errors["exam_type"] = _("Please select the exam taken.")
+
+        date_ok = False
+        if self.exam_date is None:
+            errors["exam_date"] = _("Please provide the exam date.")
+        else:
+            today = date.today()
+            min_date = date(today.year - 5, today.month, today.day)
+            if not (min_date <= self.exam_date <= today):
+                errors["exam_date"] = _("Exam date must be within the last five years.")
             else:
-                today = date.today()
-                min_date = date(today.year - 5, today.month, today.day)
-                if not (min_date <= self.exam_date <= today):
-                    errors["exam_date"] = _("Exam date must be within the last five years.")
+                date_ok = True  # only true when present and in the allowed window
+
+        # Normalize and verify exam_type against known rules
+        et = (self.exam_type or "").lower()
+        if et not in EXAM_RULES:
+            # Unknown/invalid type → do not attempt further score validation yet
+            if self.exam_type:  # a non-empty bad value was supplied
+                errors["exam_type"] = _("Unknown exam type. Please choose one from the list.")
+
+        # ────────────────────────────────────────────────────────────────
+        # 2) Cambridge grade (only for C1/C2) — require A/B/C
+        # ────────────────────────────────────────────────────────────────
+        if et in {"c1", "c2"} and date_ok:
+            # Accept only A/B/C; "-" (placeholder) or blank is not allowed
+            if not self.cambridge_grade or self.cambridge_grade == "-":
+                errors["cambridge_grade"] = _("Please select your Cambridge grade (A, B, or C).")
+
+        # ────────────────────────────────────────────────────────────────
+        # 3) Sub-score validation (only when type is valid and date is OK)
+        # ────────────────────────────────────────────────────────────────
+        rules = None
+        sub_fields = ("reading_score", "listening_score", "writing_score", "speaking_score")
+        if et in EXAM_RULES and date_ok:
+            rules = EXAM_RULES[et]
+
+            for f in sub_fields:
+                v = _to_dec(getattr(self, f))
+                if v is None:
+                    errors[f] = _("Please enter a value.")
+                    continue
+
+                # Range guardrail (e.g., IELTS 0–9, C1 160–210, C2 200–230, TOEFL 0–30)
+                if not (rules["sub_min"] <= v <= rules["sub_max"]):
+                    errors[f] = _("Value must be between %(lo)s and %(hi)s.") % {
+                        "lo": rules["sub_min"],
+                        "hi": rules["sub_max"],
+                    }
+                    continue
+
+                # Step rule (IELTS 0.5, others integer)
+                if not _is_step(v, rules["sub_step"]):
+                    step_msg = (
+                        _("in 0.5 steps (e.g., 6.5)")
+                        if str(rules["sub_step"]) == "0.5"
+                        else _("in whole numbers")
+                    )
+                    errors[f] = _("Please enter a valid value ") + step_msg + "."
+
+        # ────────────────────────────────────────────────────────────
+        # 4) Overall score: compute or validate
+        # Only attempt if we had valid rules AND all four subs are valid
+        # ────────────────────────────────────────────────────────────
+        if rules is not None and not any(k in errors for k in sub_fields):
+            if self.overall_manual_override:
+                ov = _to_dec(self.overall_score)
+                if ov is None:
+                    errors["overall_score"] = _(
+                        "Please enter the overall score or turn off manual override."
+                    )
                 else:
-                    date_ok = True  # ← only true when date is present and within window
+                    # Range check against exam rule's overall min/max
+                    if not (rules["overall_min"] <= ov <= rules["overall_max"]):
+                        errors["overall_score"] = _(
+                            "Overall must be between %(lo)s and %(hi)s."
+                        ) % {"lo": rules["overall_min"], "hi": rules["overall_max"]}
 
-            # ── Only proceed to score validation when type & date are OK ─
-            et = (self.exam_type or "").lower()
-            if et not in EXAM_RULES:
-                # Unknown/empty type → don’t try to validate scores yet
-                if self.exam_type:  # user supplied a non-empty bad value
-                    errors["exam_type"] = _("Unknown exam type. Please choose one from the list.")
-            elif date_ok:
-                # Subscore presence & range/step checks
-                rules = EXAM_RULES[et]
-                sub_fields = ["reading_score", "listening_score", "writing_score", "speaking_score"]
-                for f in sub_fields:
-                    v = _to_dec(getattr(self, f))
-                    if v is None:
-                        errors[f] = _("Please enter a value.")
-                        continue
-                    if not (rules["sub_min"] <= v <= rules["sub_max"]):
-                        errors[f] = _(
-                            f"Value must be between {rules['sub_min']} and {rules['sub_max']}."
+                    # IELTS additional step rule for overall (nearest 0.5)
+                    if et == "ielts" and not _is_step(ov, Decimal("0.5")):
+                        errors["overall_score"] = _(
+                            "Overall must be in 0.5 steps (e.g., 6.5)."
                         )
-                        continue
-                    if not _is_step(v, rules["sub_step"]):
-                        step_msg = (
-                            "in 0.5 steps (e.g., 6.5)"
-                            if rules["sub_step"] == Decimal("0.5")
-                            else "in whole numbers"
-                        )
-                        errors[f] = _("Please enter a valid value ") + step_msg + "."
+            else:
+                # Auto-calculate overall per-rules (sum / avg→0.5 / avg→int)
+                self.overall_score = self._compute_overall_from_subs(rules)
 
-                # Only compute/check overall if all subs are valid
-                if not any(k in errors for k in sub_fields):
-                    if self.overall_manual_override:
-                        ov = _to_dec(self.overall_score)
-                        if ov is None:
-                            errors["overall_score"] = _(
-                                "Please enter the overall score or turn off manual override."
-                            )
-                        else:
-                            if not (rules["overall_min"] <= ov <= rules["overall_max"]):
-                                errors["overall_score"] = _(
-                                    "Overall must be between %(lo)s and %(hi)s."
-                                ) % {
-                                    "lo": rules["overall_min"],
-                                    "hi": rules["overall_max"],
-                                }
-                            if et == "ielts" and not _is_step(ov, Decimal("0.5")):
-                                errors["overall_score"] = _(
-                                    "Overall must be in 0.5 steps (e.g., 6.5)."
-                                )
-                    else:
-                        self.overall_score = self._compute_overall_from_subs(rules)
+        # ────────────────────────────────────────────────────────────────
+        # Finalize
+        # ────────────────────────────────────────────────────────────────
+        if errors:
+            raise ValidationError(errors)
 
-            if errors:
-                raise ValidationError(errors)
 
     def save(self, *args, **kwargs):
         # Normalize dependent fields when the switch is False
