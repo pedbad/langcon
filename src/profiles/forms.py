@@ -21,10 +21,11 @@ def _select_widget(*, element_id: str | None = None) -> forms.Select:
     return forms.Select(attrs=attrs)
 
 
-def _score_input_widget() -> forms.NumberInput:
+def _score_input_widget(step: str = "0.5") -> forms.NumberInput:
+    # Default step=0.5 (IELTS); we can override per-field (e.g., Use of English → "1")
     return forms.NumberInput(
         attrs={
-            "step": "0.5",  # JS will adjust per-exam
+            "step": step,
             "placeholder": "—",
             "class": (
                 "score-input w-full rounded-md border border-input bg-background px-3 py-2 text-sm "
@@ -104,7 +105,7 @@ class ProfileForm(forms.ModelForm):
         widget=_select_widget(element_id="id_exam_year"),
     )
 
-    # We keep this hidden so model.clean() can attach errors to “exam_date”
+    # Hidden relay so model.clean can attach errors to “exam_date”
     exam_date = forms.DateField(required=False, widget=forms.HiddenInput())
 
     # ─────────────────────────────
@@ -114,43 +115,50 @@ class ProfileForm(forms.ModelForm):
         label="Reading",
         required=False,
         min_value=0,
-        widget=_score_input_widget(),
+        widget=_score_input_widget(step="0.5"),
         help_text="Your reading score.",
     )
     listening_score = forms.DecimalField(
         label="Listening",
         required=False,
         min_value=0,
-        widget=_score_input_widget(),
+        widget=_score_input_widget(step="0.5"),
     )
     writing_score = forms.DecimalField(
         label="Writing",
         required=False,
         min_value=0,
-        widget=_score_input_widget(),
+        widget=_score_input_widget(step="0.5"),
     )
     speaking_score = forms.DecimalField(
         label="Speaking",
         required=False,
         min_value=0,
-        widget=_score_input_widget(),
+        widget=_score_input_widget(step="0.5"),
     )
     overall_score = forms.DecimalField(
         label="Overall",
         required=False,
         min_value=0,
-        widget=_score_input_widget(),
+        widget=_score_input_widget(step="0.5"),
     )
 
     # ─────────────────────────────
-    # Cambridge grade (only for C1/C2)
-    # No “-” in the dropdown; we inject a proper placeholder option.
+    # Cambridge only (C1/C2)
     # ─────────────────────────────
     cambridge_grade = forms.ChoiceField(
         label="Cambridge grade",
-        required=False,  # model.clean enforces only when exam_type is C1/C2
+        required=False,  # enforced in model.clean only for C1/C2
         widget=_select_widget(element_id="id_cambridge_grade"),
         help_text="Select A, B, or C (only for Cambridge C1/C2).",
+    )
+
+    cambridge_use_of_english = forms.DecimalField(
+        label="Use of English (score)",
+        required=False,  # optional; if present, model.clean validates
+        min_value=0,
+        widget=_score_input_widget(step="1"),  # integers for C1/C2 bands
+        help_text="Whole number score (only for Cambridge C1/C2).",
     )
 
     class Meta:
@@ -169,6 +177,7 @@ class ProfileForm(forms.ModelForm):
             "overall_score",
             "overall_manual_override",
             "cambridge_grade",
+            "cambridge_use_of_english",
         ]
         widgets = {
             "phone": forms.TextInput(
@@ -200,9 +209,10 @@ class ProfileForm(forms.ModelForm):
             self.initial.setdefault("exam_month", f"{ed.month}")
             self.initial.setdefault("exam_year", f"{ed.year}")
 
-        # Inject grade choices with a placeholder (no dash)
-        grade_choices = [("", "Select grade…")] + list(Profile.CAMBRIDGE_GRADES)
-        self.fields["cambridge_grade"].choices = grade_choices
+        # Inject grade choices with a placeholder (no dash shown)
+        self.fields["cambridge_grade"].choices = [("", "Select grade…")] + list(
+            Profile.CAMBRIDGE_GRADES
+        )
 
     # ────────────────────────────────────────────────────────────────
     # Simple normalisations

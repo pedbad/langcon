@@ -475,35 +475,56 @@
                     For <span class="font-semibold">Cambridge C1/C2</span> exams, please provide additional details:
                   </p>
 
-                  {# Cambridge Grade select #}
-                  <div class="space-y-2">
-                    <label for="id_cambridge_grade" class="block text-sm font-medium text-foreground">
-                      Grade
-                    </label>
+                  {# Grade (left) + Use of English (right) — stack on mobile, 2-cols on sm+ #}
+                  <div class="grid gap-4 sm:grid-cols-2">
+                    {# Cambridge Grade select #}
+                    <div class="space-y-2">
+                      <label for="id_cambridge_grade" class="block text-sm font-medium text-foreground">Grade</label>
 
-                    <c-select
-                      id="id_cambridge_grade"
-                      name="{{ form.cambridge_grade.html_name }}"
-                      value="{{ form.cambridge_grade.value|default:'' }}"
-                      class="w-full sm:w-60"
-                    >
-                      <c-select.trigger class="w-full">
-                        <c-select.value placeholder="Select grade…" />
-                      </c-select.trigger>
-                      <c-select.content class="z-50 max-h-64 overflow-auto">
-                        <c-select.item value="a">A</c-select.item>
-                        <c-select.item value="b">B</c-select.item>
-                        <c-select.item value="c">C</c-select.item>
-                      </c-select.content>
-                    </c-select>
+                      <c-select
+                        id="id_cambridge_grade"
+                        name="{{ form.cambridge_grade.html_name }}"
+                        value="{{ form.cambridge_grade.value|default:'' }}"
+                        class="w-full sm:w-60"
+                      >
+                        <c-select.trigger class="w-full">
+                          <c-select.value placeholder="Select grade…" />
+                        </c-select.trigger>
+                        <c-select.content class="z-50 max-h-64 overflow-auto">
+                          <c-select.item value="a">A</c-select.item>
+                          <c-select.item value="b">B</c-select.item>
+                          <c-select.item value="c">C</c-select.item>
+                        </c-select.content>
+                      </c-select>
 
-                    {% if form.cambridge_grade.errors %}
-                      <p class="text-sm text-destructive">{{ form.cambridge_grade.errors.0 }}</p>
-                    {% endif %}
-                    <p class="text-xs text-muted-foreground">Required for Cambridge C1/C2 exams.</p>
+                      {% if form.cambridge_grade.errors %}
+                        <p class="text-sm text-destructive">{{ form.cambridge_grade.errors.0 }}</p>
+                      {% endif %}
+                      <p class="text-xs text-muted-foreground">Required for Cambridge C1/C2 exams.</p>
+                    </div>
+
+                    {# Use of English score (integer) #}
+                    <div class="space-y-2">
+                      <label for="{{ form.cambridge_use_of_english.id_for_label }}" class="block text-sm font-medium text-foreground">
+                        Use of English (score)
+                      </label>
+
+                      <div class="flex items-center rounded-md shadow-sm">
+                        <span class="inline-flex items-center rounded-l-md border border-input bg-muted px-2 text-muted-foreground shrink-0">
+                          {% icon 'school' class_='size-4 opacity-70' %}
+                        </span>
+                        {{ form.cambridge_use_of_english }}
+                      </div>
+
+                      {% if form.cambridge_use_of_english.errors %}
+                        <p class="text-sm text-destructive">{{ form.cambridge_use_of_english.errors.0 }}</p>
+                      {% endif %}
+                      <p class="text-xs text-muted-foreground">Whole number; shown only for Cambridge C1/C2.</p>
+                    </div>
                   </div>
                 </div>
               {% endwith %}
+
 
 
 
