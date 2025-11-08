@@ -1,8 +1,37 @@
+# src/profiles/forms.py
 from datetime import date
 
 from django import forms
 
 from .models import Profile
+
+
+# ────────────────────────────────────────────────────────────────
+# Tiny helpers to keep the form tidy
+# ────────────────────────────────────────────────────────────────
+def _select_widget(*, element_id: str | None = None) -> forms.Select:
+    cls = (
+        "w-full rounded-md border border-input bg-background px-3 py-2 text-sm "
+        "shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring "
+        "appearance-none pr-10"
+    )
+    attrs = {"class": cls}
+    if element_id:
+        attrs["id"] = element_id
+    return forms.Select(attrs=attrs)
+
+
+def _score_input_widget() -> forms.NumberInput:
+    return forms.NumberInput(
+        attrs={
+            "step": "0.5",  # JS will adjust per-exam
+            "placeholder": "—",
+            "class": (
+                "score-input w-full rounded-md border border-input bg-background px-3 py-2 text-sm "
+                "shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+            ),
+        }
+    )
 
 
 def _day_choices():
@@ -32,23 +61,16 @@ def _year_choices(span=5):
 
 
 class ProfileForm(forms.ModelForm):
-    # Visa Yes/No (you already had these)
+    # ─────────────────────────────
+    # Visa + Exam “switch” fields
+    # ─────────────────────────────
     requires_uk_student_visa = forms.TypedChoiceField(
         label="Do you require a student visa to study in the UK?",
         choices=(("True", "Yes"), ("False", "No")),
         coerce=lambda v: v == "True",
         required=True,
         initial="True",
-        widget=forms.Select(
-            attrs={
-                "id": "id_requires_uk_student_visa",
-                "class": (
-                    "w-full rounded-md border border-input bg-background px-3 py-2 text-sm "
-                    "shadow-sm focus-visible:outline-none "
-                    "focus-visible:ring-1 focus-visible:ring-ring"
-                ),
-            }
-        ),
+        widget=_select_widget(element_id="id_requires_uk_student_visa"),
     )
 
     has_recent_english_exam = forms.TypedChoiceField(
@@ -57,114 +79,78 @@ class ProfileForm(forms.ModelForm):
         coerce=lambda v: v == "True",
         required=True,
         initial="False",
-        widget=forms.Select(
-            attrs={
-                "id": "id_has_recent_english_exam",
-                "class": (
-                    "w-full rounded-md border border-input bg-background px-3 py-2 text-sm "
-                    "shadow-sm focus-visible:outline-none "
-                    "focus-visible:ring-1 focus-visible:ring-ring"
-                ),
-            }
-        ),
+        widget=_select_widget(element_id="id_has_recent_english_exam"),
     )
 
-    # --- Date parts for exam_date (conditionally required) ---
+    # ─────────────────────────────
+    # Exam date (split D/M/Y)
+    # ─────────────────────────────
     exam_day = forms.ChoiceField(
         label="Day",
         choices=_day_choices(),
         required=False,
-        widget=forms.Select(
-            attrs={
-                "id": "id_exam_day",
-                "class": (
-                    "w-full rounded-md border border-input bg-background px-2 py-2 text-sm "
-                    "shadow-sm focus-visible:outline-none focus-visible:ring-1 "
-                    "focus-visible:ring-ring"
-                ),
-            }
-        ),
+        widget=_select_widget(element_id="id_exam_day"),
     )
     exam_month = forms.ChoiceField(
         label="Month",
         choices=_month_choices(),
         required=False,
-        widget=forms.Select(
-            attrs={
-                "id": "id_exam_month",
-                "class": (
-                    "w-full rounded-md border border-input bg-background px-2 py-2 text-sm "
-                    "shadow-sm focus-visible:outline-none focus-visible:ring-1 "
-                    "focus-visible:ring-ring"
-                ),
-            }
-        ),
+        widget=_select_widget(element_id="id_exam_month"),
     )
     exam_year = forms.ChoiceField(
         label="Year",
         choices=_year_choices(span=5),
         required=False,
-        widget=forms.Select(
-            attrs={
-                "id": "id_exam_year",
-                "class": (
-                    "w-full rounded-md border border-input bg-background px-2 py-2 text-sm "
-                    "shadow-sm focus-visible:outline-none focus-visible:ring-1 "
-                    "focus-visible:ring-ring"
-                ),
-            }
-        ),
+        widget=_select_widget(element_id="id_exam_year"),
     )
 
-    # Accept model.clean() errors keyed to "exam_date" without writing it back from the form
+    # We keep this hidden so model.clean() can attach errors to “exam_date”
     exam_date = forms.DateField(required=False, widget=forms.HiddenInput())
 
-    # ────────────────────────────────────────────────────────────────
-    # Exam sub-scores and overall
-    # ────────────────────────────────────────────────────────────────
-    COMMON_SCORE_INPUT_ATTRS = {
-        "step": "0.5",  # default; JS will adjust per exam type
-        "placeholder": "—",
-        "class": (
-            "score-input w-full rounded-md border border-input bg-background px-3 py-2 text-sm "
-            "shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-        ),
-    }
-
+    # ─────────────────────────────
+    # Exam scores
+    # ─────────────────────────────
     reading_score = forms.DecimalField(
         label="Reading",
         required=False,
         min_value=0,
-        widget=forms.NumberInput(attrs=COMMON_SCORE_INPUT_ATTRS),
+        widget=_score_input_widget(),
         help_text="Your reading score.",
     )
-
     listening_score = forms.DecimalField(
         label="Listening",
         required=False,
         min_value=0,
-        widget=forms.NumberInput(attrs=COMMON_SCORE_INPUT_ATTRS),
+        widget=_score_input_widget(),
     )
-
     writing_score = forms.DecimalField(
         label="Writing",
         required=False,
         min_value=0,
-        widget=forms.NumberInput(attrs=COMMON_SCORE_INPUT_ATTRS),
+        widget=_score_input_widget(),
     )
-
     speaking_score = forms.DecimalField(
         label="Speaking",
         required=False,
         min_value=0,
-        widget=forms.NumberInput(attrs=COMMON_SCORE_INPUT_ATTRS),
+        widget=_score_input_widget(),
     )
-
     overall_score = forms.DecimalField(
         label="Overall",
         required=False,
         min_value=0,
-        widget=forms.NumberInput(attrs=COMMON_SCORE_INPUT_ATTRS),
+        widget=_score_input_widget(),
+    )
+
+    # ─────────────────────────────
+    # Cambridge grade (only for C1/C2)
+    # No “-” in the dropdown; we inject a proper placeholder option.
+    # ─────────────────────────────
+    cambridge_grade = forms.ChoiceField(
+        label="Cambridge grade",
+        required=False,  # model.clean enforces only when exam_type is C1/C2
+        widget=_select_widget(element_id="id_cambridge_grade"),
+        help_text="Select A, B, or C (only for Cambridge C1/C2).",
     )
 
     class Meta:
@@ -175,13 +161,14 @@ class ProfileForm(forms.ModelForm):
             "requires_uk_student_visa",
             "has_recent_english_exam",
             "exam_type",
-            # (exam_date handled by day/month/year)
+            # (exam_date assembled from the split fields)
             "reading_score",
             "listening_score",
             "writing_score",
             "speaking_score",
             "overall_score",
             "overall_manual_override",
+            "cambridge_grade",
         ]
         widgets = {
             "phone": forms.TextInput(
@@ -196,41 +183,34 @@ class ProfileForm(forms.ModelForm):
                     ),
                 }
             ),
-            "subject_area": forms.Select(
-                attrs={
-                    "required": True,
-                    "class": (
-                        "w-full rounded-md border border-input bg-background px-3 py-2 text-sm "
-                        "shadow-sm focus-visible:outline-none "
-                        "focus-visible:ring-1 focus-visible:ring-ring appearance-none pr-10"
-                    ),
-                }
-            ),
-            "exam_type": forms.Select(
-                attrs={
-                    "class": (
-                        "w-full rounded-md border border-input bg-background px-3 py-2 text-sm "
-                        "shadow-sm focus-visible:outline-none focus-visible:ring-1 "
-                        "focus-visible:ring-ring appearance-none pr-10"
-                    ),
-                }
-            ),
+            "subject_area": _select_widget(element_id="id_subject_area"),
+            "exam_type": _select_widget(element_id="id_exam_type"),
         }
 
+    # ────────────────────────────────────────────────────────────────
+    # Init: seed split date + inject Cambridge grade choices
+    # ────────────────────────────────────────────────────────────────
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        # Prefill day/month/year from existing exam_date when editing
+        # Prefill D/M/Y from existing exam_date
         ed = getattr(self.instance, "exam_date", None)
         if ed:
             self.initial.setdefault("exam_day", f"{ed.day}")
             self.initial.setdefault("exam_month", f"{ed.month}")
             self.initial.setdefault("exam_year", f"{ed.year}")
 
-    def clean_phone(self):
-        v = (self.cleaned_data.get("phone") or "").strip()
-        return v
+        # Inject grade choices with a placeholder (no dash)
+        grade_choices = [("", "Select grade…")] + list(Profile.CAMBRIDGE_GRADES)
+        self.fields["cambridge_grade"].choices = grade_choices
 
+    # ────────────────────────────────────────────────────────────────
+    # Simple normalisations
+    # ────────────────────────────────────────────────────────────────
+    def clean_phone(self):
+        return (self.cleaned_data.get("phone") or "").strip()
+
+    # Assemble exam_date and mirror to instance so model.clean() can validate
     def clean(self):
         cleaned = super().clean()
         has_exam = cleaned.get("has_recent_english_exam") is True
@@ -244,39 +224,30 @@ class ProfileForm(forms.ModelForm):
 
             assembled = None
             if d and m and y:
-                from datetime import date
-
                 try:
                     assembled = date(int(y), int(m), int(d))
                 except ValueError:
                     self.add_error("exam_day", "Enter a valid exam date.")
-
-                if assembled:
+                else:
                     today = date.today()
                     min_date = date(today.year - 5, today.month, today.day)
                     if not (min_date <= assembled <= today):
                         self.add_error("exam_day", "Exam date must be within the last five years.")
                         assembled = None
             else:
-                # missing any part
-                if not d or not m or not y:
-                    msg = "Please provide the exam date (day, month, and year)."
-                    if not d:
-                        self.add_error("exam_day", msg)
-                    if not m:
-                        self.add_error("exam_month", msg)
-                    if not y:
-                        self.add_error("exam_year", msg)
+                msg = "Please provide the exam date (day, month, and year)."
+                if not d:
+                    self.add_error("exam_day", msg)
+                if not m:
+                    self.add_error("exam_month", msg)
+                if not y:
+                    self.add_error("exam_year", msg)
 
-            # 🔐 write both fields onto the instance before model.clean()
             if self.instance:
                 self.instance.exam_type = exam_type or ""
                 self.instance.exam_date = assembled
-            # expose assembled date via cleaned_data (non-model field)
             cleaned["exam_date"] = assembled
-
         else:
-            # switch OFF → normalize on the instance as well
             if self.instance:
                 self.instance.exam_type = ""
                 self.instance.exam_date = None

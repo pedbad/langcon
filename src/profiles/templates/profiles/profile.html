@@ -470,12 +470,41 @@
                         transition-[max-height,opacity] duration-300 ease-in-out
                         max-h-0 opacity-0"
                 >
-                <p class="flex items-center gap-2 text-sm font-medium text-amber-800">
+                  <p class="flex items-center gap-2 text-sm font-medium text-amber-800 mb-3">
                     {% icon 'other_admissions' class_='size-5 text-amber-800 -mt-[1px]' %}
                     For <span class="font-semibold">Cambridge C1/C2</span> exams, please provide additional details:
                   </p>
+
+                  {# Cambridge Grade select #}
+                  <div class="space-y-2">
+                    <label for="id_cambridge_grade" class="block text-sm font-medium text-foreground">
+                      Grade
+                    </label>
+
+                    <c-select
+                      id="id_cambridge_grade"
+                      name="{{ form.cambridge_grade.html_name }}"
+                      value="{{ form.cambridge_grade.value|default:'' }}"
+                      class="w-full sm:w-60"
+                    >
+                      <c-select.trigger class="w-full">
+                        <c-select.value placeholder="Select grade…" />
+                      </c-select.trigger>
+                      <c-select.content class="z-50 max-h-64 overflow-auto">
+                        <c-select.item value="a">A</c-select.item>
+                        <c-select.item value="b">B</c-select.item>
+                        <c-select.item value="c">C</c-select.item>
+                      </c-select.content>
+                    </c-select>
+
+                    {% if form.cambridge_grade.errors %}
+                      <p class="text-sm text-destructive">{{ form.cambridge_grade.errors.0 }}</p>
+                    {% endif %}
+                    <p class="text-xs text-muted-foreground">Required for Cambridge C1/C2 exams.</p>
+                  </div>
                 </div>
               {% endwith %}
+
 
 
 

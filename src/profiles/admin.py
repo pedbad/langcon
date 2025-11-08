@@ -12,10 +12,11 @@ class ProfileAdmin(admin.ModelAdmin):
         "is_locked",
         "subject_area",
         "phone",
-        # 💡 show visa + exam quick info in list
         "requires_uk_student_visa",
         "has_recent_english_exam",
         "exam_type",
+        "cambridge_grade",
+        "cambridge_use_of_english",
         "created_at",
         "updated_at",
     )
@@ -23,7 +24,6 @@ class ProfileAdmin(admin.ModelAdmin):
     list_filter = (
         "is_locked",
         "subject_area",
-        # 💡 filters for new fields
         "requires_uk_student_visa",
         "has_recent_english_exam",
         "exam_type",
@@ -38,7 +38,6 @@ class ProfileAdmin(admin.ModelAdmin):
     fieldsets = (
         (None, {"fields": ("user", "is_locked")}),
         ("Contact & Area", {"fields": ("phone", "subject_area")}),
-        # 💡 group visa + exam fields so they’re visible/editable in admin
         ("Visa", {"fields": ("requires_uk_student_visa",)}),
         (
             "English Exam",
@@ -46,11 +45,15 @@ class ProfileAdmin(admin.ModelAdmin):
                 "fields": (
                     "has_recent_english_exam",
                     "exam_type",
-                    # keep the future fields commented until we add them
-                    # "exam_date",
-                    # "overall_score", "reading_score", "listening_score",
-                    # "writing_score", "speaking_score",
-                    # "cambridge_grade", "cambridge_use_of_english",
+                    "exam_date",
+                    "reading_score",
+                    "listening_score",
+                    "writing_score",
+                    "speaking_score",
+                    "overall_score",
+                    "overall_manual_override",
+                    "cambridge_grade",
+                    "cambridge_use_of_english",
                 )
             },
         ),

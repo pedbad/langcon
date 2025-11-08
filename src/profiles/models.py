@@ -1,9 +1,4 @@
-# src/profiles/models.py
 from datetime import date
-
-# ────────────────────────────────────────────────────────────────
-# Score helpers (keep math consistent server-side)
-# ────────────────────────────────────────────────────────────────
 from decimal import Decimal, ROUND_HALF_UP
 
 from django.conf import settings
@@ -14,8 +9,10 @@ from django.db.models import CheckConstraint, Q
 from django.utils.translation import gettext_lazy as _
 
 
+# ────────────────────────────────────────────────────────────────
+# Decimal helpers (keep math consistent server-side)
+# ────────────────────────────────────────────────────────────────
 def _to_dec(x):
-    """Coerce to Decimal or return None."""
     if x is None:
         return None
     if isinstance(x, Decimal):
@@ -36,13 +33,14 @@ def _nearest_half(x: Decimal) -> Decimal:
 
 
 def _is_step(x: Decimal, step: Decimal) -> bool:
-    """True if x is a multiple of step (within Decimal arithmetic)."""
-    # Avoid modulo on Decimals with fractional steps by scaling
+    """True if x is a multiple of step (robust with Decimals)."""
     q = (x / step).quantize(Decimal("1"), rounding=ROUND_HALF_UP)
     return (q * step) == x
 
 
+# ────────────────────────────────────────────────────────────────
 # Rules for each exam type
+# ────────────────────────────────────────────────────────────────
 EXAM_RULES = {
     "ielts": {
         "sub_min": Decimal("0.0"),
@@ -50,7 +48,7 @@ EXAM_RULES = {
         "sub_step": Decimal("0.5"),
         "overall_min": Decimal("0.0"),
         "overall_max": Decimal("9.0"),
-        "overall_kind": "avg_half",  # average of subs, rounded to nearest 0.5
+        "overall_kind": "avg_half",  # average of subs → nearest 0.5
     },
     "toefl": {
         "sub_min": Decimal("0"),
@@ -66,7 +64,7 @@ EXAM_RULES = {
         "sub_step": Decimal("1"),
         "overall_min": Decimal("160"),
         "overall_max": Decimal("210"),
-        "overall_kind": "avg_int",  # average of subs, rounded to nearest int
+        "overall_kind": "avg_int",  # average of subs → nearest int
     },
     "c2": {
         "sub_min": Decimal("200"),
@@ -78,27 +76,13 @@ EXAM_RULES = {
     },
 }
 
-# ────────────────────────────────────────────────────────────────
-# Cambridge grades (passes only). "-" is a placeholder in forms.
-# ────────────────────────────────────────────────────────────────
-CAMBRIDGE_GRADES = (
-    ("-", "-"),
-    ("a", "A"),
-    ("b", "B"),
-    ("c", "C"),
-)
-
 
 class Profile(models.Model):
     """
-    Stores additional student-specific details that extend the CustomUser model.
-    A profile is automatically created for each student upon registration
-    (if PROFILES_AUTO_CREATE = True).
+    Student profile extending the CustomUser model.
     """
 
-    # ────────────────────────────────────────────────────────────────
-    # User association
-    # ────────────────────────────────────────────────────────────────
+    # ── User association ───────────────────────────────────────────
     user = models.OneToOneField(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
@@ -106,12 +90,9 @@ class Profile(models.Model):
         help_text="Linked user account for this profile.",
     )
 
-    # ────────────────────────────────────────────────────────────────
-    # Contact information
-    # ────────────────────────────────────────────────────────────────
+    # ── Contact ───────────────────────────────────────────────────
     phone = models.CharField(
         max_length=20,
-        blank=False,
         validators=[
             RegexValidator(
                 regex=r"^\+?[0-9\s\-]{7,20}$",
@@ -121,9 +102,7 @@ class Profile(models.Model):
         help_text="Student contact number (required).",
     )
 
-    # ────────────────────────────────────────────────────────────────
-    # Subject Area
-    # ────────────────────────────────────────────────────────────────
+    # ── Subject area ───────────────────────────────────────────────
     SUBJECT_AREA_CHOICES = [
         ("arts_humanities", "Arts and Humanities"),
         ("computing", "Computing"),
@@ -135,7 +114,6 @@ class Profile(models.Model):
         ("social_sciences", "Social Sciences"),
         ("other", "Other"),
     ]
-
     subject_area = models.CharField(
         max_length=50,
         choices=SUBJECT_AREA_CHOICES,
@@ -143,26 +121,20 @@ class Profile(models.Model):
         help_text="Student's main subject area (required).",
     )
 
-    # ────────────────────────────────────────────────────────────────
-    # UK Student Visa Requirement
-    # ────────────────────────────────────────────────────────────────
+    # ── Visa ───────────────────────────────────────────────────────
     requires_uk_student_visa = models.BooleanField(
-        null=False,
         default=True,
         help_text="Whether the student requires a visa to study in the UK.",
     )
 
-    # ────────────────────────────────────────────────────────────────
-    # English Exam (past five years)
-    # ────────────────────────────────────────────────────────────────
+    # ── English Exam (past five years) ─────────────────────────────
     has_recent_english_exam = models.BooleanField(
-        null=False,
         default=False,
         help_text="Has the student taken an English language exam in the last five years?",
     )
 
     TEST_CHOICES = (
-        ("", "Select exam..."),  # placeholder for form
+        ("", "Select exam..."),  # placeholder for forms
         ("ielts", "IELTS"),
         ("toefl", "TOEFL"),
         ("c1", "Cambridge C1 Advanced"),
@@ -171,7 +143,7 @@ class Profile(models.Model):
     exam_type = models.CharField(
         max_length=20,
         choices=TEST_CHOICES,
-        blank=True,  # optional in DB; conditional in validation
+        blank=True,  # conditional-required via clean()
         help_text="The type of English language exam taken.",
     )
 
@@ -180,46 +152,35 @@ class Profile(models.Model):
         blank=True,
         help_text="Date of the most recent English exam (required if an exam was taken).",
     )
-    
+
+    # ── Cambridge grade (for C1/C2) ────────────────────────────────
+    CAMBRIDGE_GRADES = (("a", "A"), ("b", "B"), ("c", "C"))
     cambridge_grade = models.CharField(
         max_length=1,
         choices=CAMBRIDGE_GRADES,
         blank=True,
+        null=True,
         help_text="Grade for Cambridge exams (A/B/C). Only for C1/C2.",
     )
 
-    # ────────────────────────────────────────────────────────────────
-    # NEW: Generic exam scores (conditionally validated by exam_type)
-    # We use Decimal so IELTS 0.5 steps are representable and others (int ranges)
-    # still fit.  max_digits=5, decimal_places=1 comfortably stores e.g. 230.0.
-    # ────────────────────────────────────────────────────────────────
-    reading_score = models.DecimalField(
-        max_digits=5, decimal_places=1, null=True, blank=True, help_text="Reading score."
-    )
-    listening_score = models.DecimalField(
-        max_digits=5, decimal_places=1, null=True, blank=True, help_text="Listening score."
-    )
-    writing_score = models.DecimalField(
-        max_digits=5, decimal_places=1, null=True, blank=True, help_text="Writing score."
-    )
-    speaking_score = models.DecimalField(
-        max_digits=5, decimal_places=1, null=True, blank=True, help_text="Speaking score."
-    )
-    overall_score = models.DecimalField(
+    # Cambridge “Use of English” score (only for C1/C2)
+    cambridge_use_of_english = models.DecimalField(
         max_digits=5,
         decimal_places=1,
-        null=True,
         blank=True,
-        help_text="Overall score (auto-calculated by default).",
+        null=True,
+        help_text="Cambridge Use of English score (only for C1/C2).",
     )
 
-    # Track whether the student explicitly edited the overall score.
-    # Later we will compute overall when this is False; otherwise we only range-check.
+    # ── Scores ─────────────────────────────────────────────────────
+    reading_score = models.DecimalField(max_digits=5, decimal_places=1, null=True, blank=True)
+    listening_score = models.DecimalField(max_digits=5, decimal_places=1, null=True, blank=True)
+    writing_score = models.DecimalField(max_digits=5, decimal_places=1, null=True, blank=True)
+    speaking_score = models.DecimalField(max_digits=5, decimal_places=1, null=True, blank=True)
+    overall_score = models.DecimalField(max_digits=5, decimal_places=1, null=True, blank=True)
     overall_manual_override = models.BooleanField(default=False)
 
-    # ────────────────────────────────────────────────────────────────
-    # 🔒 Locking and auditing
-    # ────────────────────────────────────────────────────────────────
+    # ── Locking + timestamps ───────────────────────────────────────
     is_locked = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -228,14 +189,11 @@ class Profile(models.Model):
         ordering = ["-created_at"]
         verbose_name = "Profile"
         verbose_name_plural = "Profiles"
-        # Optional DB guardrail (MySQL 8+ enforces CHECK):
         constraints = [
             CheckConstraint(
                 name="exam_requires_type_and_date",
-                condition=(
-                    Q(has_recent_english_exam=False)
-                    | (~Q(exam_type="") & Q(exam_date__isnull=False))
-                ),
+                condition=Q(has_recent_english_exam=False)
+                | (~Q(exam_type="") & Q(exam_date__isnull=False)),
             ),
         ]
 
@@ -243,76 +201,54 @@ class Profile(models.Model):
         user_ident = getattr(self.user, "email", str(self.user))
         return f"Profile<{user_ident}>"
 
-    # ────────────────────────────────────────────────────────────────
-    # Helpers
-    # ────────────────────────────────────────────────────────────────
+    # ── Helpers ────────────────────────────────────────────────────
     def _clear_exam_scores(self):
-        """Reset all score fields and the manual override flag."""
         self.reading_score = None
         self.listening_score = None
         self.writing_score = None
         self.speaking_score = None
         self.overall_score = None
         self.overall_manual_override = False
+        self.cambridge_grade = None
+        self.cambridge_use_of_english = None
 
     def _compute_overall_from_subs(self, rules: dict) -> Decimal:
-        """
-        Compute overall from sub-scores using the selected exam rules.
-        - IELTS: average → nearest 0.5 (clamped to 0–9)
-        - TOEFL: sum (clamped to 0–120)
-        - C1/C2: average → nearest int (clamped to band range)
-        """
         subs = [
             _to_dec(self.reading_score),
             _to_dec(self.listening_score),
             _to_dec(self.writing_score),
             _to_dec(self.speaking_score),
         ]
-        # All subs are assumed present/validated before calling
         if rules["overall_kind"] == "sum_int":
             total = sum(subs, Decimal("0"))
             return _clamp(total, rules["overall_min"], rules["overall_max"])
-        elif rules["overall_kind"] == "avg_half":
+        if rules["overall_kind"] == "avg_half":
             avg = sum(subs, Decimal("0")) / Decimal("4")
-            rounded = _nearest_half(avg)
-            return _clamp(rounded, rules["overall_min"], rules["overall_max"])
-        elif rules["overall_kind"] == "avg_int":
+            return _clamp(_nearest_half(avg), rules["overall_min"], rules["overall_max"])
+        if rules["overall_kind"] == "avg_int":
             avg = sum(subs, Decimal("0")) / Decimal("4")
-            # round to nearest integer
             rounded = avg.to_integral_value(rounding=ROUND_HALF_UP)
             return _clamp(rounded, rules["overall_min"], rules["overall_max"])
-        # Fallback (should not happen)
         return _to_dec(self.overall_score)
 
-    # ────────────────────────────────────────────────────────────────
-    # Validation + normalization
-    # ────────────────────────────────────────────────────────────────
+    # ── Validation + normalization ─────────────────────────────────
     def clean(self):
         """
-        Server-side validation for the exam section.
-
-        Rules (summary):
-        - If has_recent_english_exam is False → no exam validation here.
-        - If True:
-            • exam_type is required and must be one of EXAM_RULES keys.
-            • exam_date is required and must be within the last 5 years (inclusive).
-            • If exam_type ∈ {c1, c2} (Cambridge), cambridge_grade is required (A/B/C).
-            • Validate the four sub-scores (presence, range, step).
-            • If all sub-scores are valid:
-                - If overall_manual_override is False → compute overall from subs.
-                - If True → validate overall_score range (+ IELTS 0.5 step rule).
+        Validation rules when has_recent_english_exam is True:
+        - exam_type required, must be one of EXAM_RULES keys
+        - exam_date required, within last 5 years (inclusive)
+        - if C1/C2 → cambridge_grade required
+        - validate 4 subscores (presence, range, step)
+        - overall: compute unless manual override is on; then range/step-check
         """
         super().clean()
 
         if not self.has_recent_english_exam:
-            # Nothing to validate when the student indicates no recent exam.
             return
 
         errors: dict[str, list | str] = {}
 
-        # ────────────────────────────────────────────────────────────────
-        # 1) Basic requirements (exam_type + date window)
-        # ────────────────────────────────────────────────────────────────
+        # 1) exam_type + exam_date
         if not self.exam_type:
             errors["exam_type"] = _("Please select the exam taken.")
 
@@ -325,46 +261,45 @@ class Profile(models.Model):
             if not (min_date <= self.exam_date <= today):
                 errors["exam_date"] = _("Exam date must be within the last five years.")
             else:
-                date_ok = True  # only true when present and in the allowed window
+                date_ok = True
 
-        # Normalize and verify exam_type against known rules
         et = (self.exam_type or "").lower()
         if et not in EXAM_RULES:
-            # Unknown/invalid type → do not attempt further score validation yet
-            if self.exam_type:  # a non-empty bad value was supplied
+            if self.exam_type:
                 errors["exam_type"] = _("Unknown exam type. Please choose one from the list.")
 
-        # ────────────────────────────────────────────────────────────────
-        # 2) Cambridge grade (only for C1/C2) — require A/B/C
-        # ────────────────────────────────────────────────────────────────
+        # 2) Cambridge grade only for C1/C2
         if et in {"c1", "c2"} and date_ok:
-            # Accept only A/B/C; "-" (placeholder) or blank is not allowed
-            if not self.cambridge_grade or self.cambridge_grade == "-":
+            if not self.cambridge_grade:
                 errors["cambridge_grade"] = _("Please select your Cambridge grade (A, B, or C).")
+            # Optional: Use of English score — validate if provided
+            uoe = _to_dec(self.cambridge_use_of_english)
+            if uoe is not None:
+                rules_c = EXAM_RULES[et]  # C1 or C2 rules
+                if not (rules_c["sub_min"] <= uoe <= rules_c["sub_max"]):
+                    errors["cambridge_use_of_english"] = _(
+                        "Use of English must be between %(lo)s and %(hi)s."
+                    ) % {"lo": rules_c["sub_min"], "hi": rules_c["sub_max"]}
+                # C1/C2 step is integer
+                if not _is_step(uoe, rules_c["sub_step"]):
+                    errors["cambridge_use_of_english"] = _("Please enter a whole number.")
 
-        # ────────────────────────────────────────────────────────────────
-        # 3) Sub-score validation (only when type is valid and date is OK)
-        # ────────────────────────────────────────────────────────────────
+        # 3) Sub-scores (only if exam type and date are ok)
         rules = None
         sub_fields = ("reading_score", "listening_score", "writing_score", "speaking_score")
         if et in EXAM_RULES and date_ok:
             rules = EXAM_RULES[et]
-
             for f in sub_fields:
                 v = _to_dec(getattr(self, f))
                 if v is None:
                     errors[f] = _("Please enter a value.")
                     continue
-
-                # Range guardrail (e.g., IELTS 0–9, C1 160–210, C2 200–230, TOEFL 0–30)
                 if not (rules["sub_min"] <= v <= rules["sub_max"]):
                     errors[f] = _("Value must be between %(lo)s and %(hi)s.") % {
                         "lo": rules["sub_min"],
                         "hi": rules["sub_max"],
                     }
                     continue
-
-                # Step rule (IELTS 0.5, others integer)
                 if not _is_step(v, rules["sub_step"]):
                     step_msg = (
                         _("in 0.5 steps (e.g., 6.5)")
@@ -373,10 +308,7 @@ class Profile(models.Model):
                     )
                     errors[f] = _("Please enter a valid value ") + step_msg + "."
 
-        # ────────────────────────────────────────────────────────────
-        # 4) Overall score: compute or validate
-        # Only attempt if we had valid rules AND all four subs are valid
-        # ────────────────────────────────────────────────────────────
+        # 4) Overall (compute or validate)
         if rules is not None and not any(k in errors for k in sub_fields):
             if self.overall_manual_override:
                 ov = _to_dec(self.overall_score)
@@ -385,59 +317,49 @@ class Profile(models.Model):
                         "Please enter the overall score or turn off manual override."
                     )
                 else:
-                    # Range check against exam rule's overall min/max
                     if not (rules["overall_min"] <= ov <= rules["overall_max"]):
                         errors["overall_score"] = _(
                             "Overall must be between %(lo)s and %(hi)s."
                         ) % {"lo": rules["overall_min"], "hi": rules["overall_max"]}
-
-                    # IELTS additional step rule for overall (nearest 0.5)
                     if et == "ielts" and not _is_step(ov, Decimal("0.5")):
-                        errors["overall_score"] = _(
-                            "Overall must be in 0.5 steps (e.g., 6.5)."
-                        )
+                        errors["overall_score"] = _("Overall must be in 0.5 steps (e.g., 6.5).")
             else:
-                # Auto-calculate overall per-rules (sum / avg→0.5 / avg→int)
                 self.overall_score = self._compute_overall_from_subs(rules)
 
-        # ────────────────────────────────────────────────────────────────
-        # Finalize
-        # ────────────────────────────────────────────────────────────────
         if errors:
             raise ValidationError(errors)
-
 
     def save(self, *args, **kwargs):
         # Normalize dependent fields when the switch is False
         if not self.has_recent_english_exam:
             self.exam_type = ""
             self.exam_date = None
+            self.cambridge_grade = None
+            self.cambridge_use_of_english = None
             self._clear_exam_scores()
         else:
             # If exam type is changed to an unknown or empty, wipe scores
             et = (self.exam_type or "").lower()
             if et not in EXAM_RULES:
                 self._clear_exam_scores()
+                self.cambridge_grade = None
+                self.cambridge_use_of_english = None
+            else:
+                # Not a Cambridge exam → clear Cambridge-only fields
+                if et not in {"c1", "c2"}:
+                    self.cambridge_grade = None
+                    self.cambridge_use_of_english = None
         super().save(*args, **kwargs)
 
-    # ────────────────────────────────────────────────────────────────
-    # Completion logic
-    # ────────────────────────────────────────────────────────────────
+    # ── Completion logic used by gating nav, etc. ──────────────────
     def is_complete(self) -> bool:
-        """
-        Profile is complete when:
-          - phone, subject_area present
-          - not locked
-          - if no recent exam → complete
-          - if recent exam → exam_type & date + 4 subscores + overall present
-        """
         base_ok = bool(self.phone and self.subject_area and not self.is_locked)
         if not base_ok:
             return False
         if not self.has_recent_english_exam:
             return True
 
-        all_scores_present = all(
+        subs_ok = all(
             getattr(self, f) is not None
             for f in (
                 "reading_score",
@@ -447,4 +369,9 @@ class Profile(models.Model):
                 "overall_score",
             )
         )
-        return bool(self.exam_type and self.exam_date and all_scores_present)
+        cambridge_ok = True
+        et = (self.exam_type or "").lower()
+        if et in {"c1", "c2"}:
+            cambridge_ok = bool(self.cambridge_grade)
+
+        return bool(self.exam_type and self.exam_date and subs_ok and cambridge_ok)
