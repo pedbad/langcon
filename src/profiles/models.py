@@ -6,6 +6,7 @@ from django.core.exceptions import ValidationError
 from django.core.validators import RegexValidator
 from django.db import models
 from django.db.models import CheckConstraint, Q
+from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
 
@@ -185,6 +186,21 @@ class Profile(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+    # ── Honour code / academic integrity confirmation ──────────────
+    academic_integrity_confirmed = models.BooleanField(
+        default=False,
+        help_text=(
+            "Student has confirmed the work will be their own unaided effort, "
+            "completed without the use of AI or large language models (LLMs)."
+        ),
+    )
+    academic_integrity_confirmed_at = models.DateTimeField(
+        null=True,
+        blank=True,
+        editable=False,
+        help_text="Timestamp when the student confirmed the honour code.",
+    )
+
     class Meta:
         ordering = ["-created_at"]
         verbose_name = "Profile"
@@ -268,20 +284,18 @@ class Profile(models.Model):
             if self.exam_type:
                 errors["exam_type"] = _("Unknown exam type. Please choose one from the list.")
 
-        # 2) Cambridge grade only for C1/C2
+        # 2) Cambridge grade only for C1/C2 (+ optional UoE score)
         if et in {"c1", "c2"} and date_ok:
             if not self.cambridge_grade:
                 errors["cambridge_grade"] = _("Please select your Cambridge grade (A, B, or C).")
-            # Optional: Use of English score — validate if provided
             uoe = _to_dec(self.cambridge_use_of_english)
             if uoe is not None:
-                rules_c = EXAM_RULES[et]  # C1 or C2 rules
+                rules_c = EXAM_RULES[et]
                 if not (rules_c["sub_min"] <= uoe <= rules_c["sub_max"]):
                     errors["cambridge_use_of_english"] = _(
                         "Use of English must be between %(lo)s and %(hi)s."
                     ) % {"lo": rules_c["sub_min"], "hi": rules_c["sub_max"]}
-                # C1/C2 step is integer
-                if not _is_step(uoe, rules_c["sub_step"]):
+                if not _is_step(uoe, rules_c["sub_step"]):  # integers for C1/C2
                     errors["cambridge_use_of_english"] = _("Please enter a whole number.")
 
         # 3) Sub-scores (only if exam type and date are ok)
@@ -329,7 +343,22 @@ class Profile(models.Model):
         if errors:
             raise ValidationError(errors)
 
+    # 🔧 make sure this is at CLASS LEVEL (not nested inside clean)
     def save(self, *args, **kwargs):
+        # Track confirmation timestamp transition (False -> True)
+        if self.pk is not None:
+            try:
+                previous = (
+                    type(self)
+                    .objects.only("academic_integrity_confirmed", "academic_integrity_confirmed_at")
+                    .get(pk=self.pk)
+                )
+                previously_confirmed = bool(previous.academic_integrity_confirmed)
+            except type(self).DoesNotExist:
+                previously_confirmed = False
+        else:
+            previously_confirmed = False
+
         # Normalize dependent fields when the switch is False
         if not self.has_recent_english_exam:
             self.exam_type = ""
@@ -338,27 +367,37 @@ class Profile(models.Model):
             self.cambridge_use_of_english = None
             self._clear_exam_scores()
         else:
-            # If exam type is changed to an unknown or empty, wipe scores
             et = (self.exam_type or "").lower()
             if et not in EXAM_RULES:
                 self._clear_exam_scores()
                 self.cambridge_grade = None
                 self.cambridge_use_of_english = None
-            else:
+            elif et not in {"c1", "c2"}:
                 # Not a Cambridge exam → clear Cambridge-only fields
-                if et not in {"c1", "c2"}:
-                    self.cambridge_grade = None
-                    self.cambridge_use_of_english = None
+                self.cambridge_grade = None
+                self.cambridge_use_of_english = None
+
+        # Set confirmation timestamp when the box is (newly) checked
+        if self.academic_integrity_confirmed and not previously_confirmed:
+            self.academic_integrity_confirmed_at = timezone.now()
+
         super().save(*args, **kwargs)
 
     # ── Completion logic used by gating nav, etc. ──────────────────
     def is_complete(self) -> bool:
+        # Base requirements + honour code
         base_ok = bool(self.phone and self.subject_area and not self.is_locked)
         if not base_ok:
             return False
+        if not self.academic_integrity_confirmed:
+            return False
+
+        # If no exam → complete after base + confirmation
         if not self.has_recent_english_exam:
             return True
 
+        # With exam → require exam_type + exam_date + subs + overall
+        # (plus Cambridge grade when applicable)
         subs_ok = all(
             getattr(self, f) is not None
             for f in (
@@ -369,9 +408,7 @@ class Profile(models.Model):
                 "overall_score",
             )
         )
-        cambridge_ok = True
         et = (self.exam_type or "").lower()
-        if et in {"c1", "c2"}:
-            cambridge_ok = bool(self.cambridge_grade)
+        cambridge_ok = True if et not in {"c1", "c2"} else bool(self.cambridge_grade)
 
         return bool(self.exam_type and self.exam_date and subs_ok and cambridge_ok)
