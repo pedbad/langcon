@@ -168,6 +168,28 @@ class ProfileForm(forms.ModelForm):
         help_text="Whole number score (only for Cambridge C1/C2).",
     )
 
+    # ─────────────────────────────
+    # Honour code / confirmation
+    # ─────────────────────────────
+    academic_integrity_confirmed = forms.BooleanField(
+        label=(
+            "I confirm that all the information provided is accurate and that all future work will "
+            "be my own unaided effort, completed without the use of AI or large language models."
+        ),
+        required=True,
+        widget=forms.CheckboxInput(
+            attrs={
+                "id": "id_academic_integrity_confirmed",
+                "class": (
+                    "h-[1.125rem] w-[1.125rem] appearance-none rounded-[0.25rem] "
+                    "border-[0.125rem] border-gray-400 outline-none cursor-pointer "
+                    "checked:border-red-600 checked:bg-red-600"
+                ),
+            }
+        ),
+        help_text="This confirmation is required to save your profile.",
+    )
+
     class Meta:
         model = Profile
         fields = [
@@ -185,6 +207,7 @@ class ProfileForm(forms.ModelForm):
             "overall_manual_override",
             "cambridge_grade",
             "cambridge_use_of_english",
+            "academic_integrity_confirmed",
         ]
         widgets = {
             "phone": forms.TextInput(

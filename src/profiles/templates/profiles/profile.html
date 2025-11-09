@@ -521,6 +521,51 @@
           </div>
         {% endwith %}
 
+        <!-- Honour Code Confirmation -->
+        <div class="mt-8 rounded-xl border border-red-300 bg-red-50 p-4 shadow-sm">
+          <div class="relative flex items-start">
+            <div class="flex h-6 items-center">
+              <input
+                id="id_academic_integrity_confirmed"
+                name="{{ form.academic_integrity_confirmed.name }}"
+                type="checkbox"
+                value="true"
+                {% if form.academic_integrity_confirmed.value %}checked{% endif %}
+                class="peer relative h-[1.125rem] w-[1.125rem] appearance-none rounded-[0.25rem]
+                      border-[0.125rem] border-gray-400 outline-none cursor-pointer
+                      checked:border-red-600 checked:bg-red-600
+                      hover:before:opacity-[0.04] focus:before:scale-100
+                      focus:before:opacity-[0.12] before:absolute before:h-[0.875rem]
+                      before:w-[0.875rem] before:rounded-full before:bg-transparent
+                      before:opacity-0 before:content-['']
+                      checked:after:absolute checked:after:content-['']
+                      checked:after:-mt-px checked:after:ms-[0.25rem]
+                      checked:after:block checked:after:h-[0.8125rem] checked:after:w-[0.375rem]
+                      checked:after:rotate-45 checked:after:border-[0.125rem]
+                      checked:after:border-l-0 checked:after:border-t-0
+                      checked:after:border-solid checked:after:border-white"
+              />
+            </div>
+            <div class="ml-3 text-sm leading-snug">
+              <label for="id_academic_integrity_confirmed"
+                    class="font-semibold text-red-700 cursor-pointer">
+                {{ form.academic_integrity_confirmed.label }}
+              </label>
+              <p class="text-xs text-muted-foreground mt-1">
+                {{ form.academic_integrity_confirmed.help_text }}
+              </p>
+              {% if form.academic_integrity_confirmed.errors %}
+                <p class="text-sm text-destructive mt-1">
+                  {{ form.academic_integrity_confirmed.errors.0 }}
+                </p>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+
+
+
+
         {# Save button or lock message #}
         {% if not profile.is_locked %}
           <button
