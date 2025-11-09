@@ -5,32 +5,39 @@ from django import forms
 
 from .models import Profile
 
+# ────────────────────────────────────────────────────────────────
+# Shared CSS atoms (tweak once → everywhere updates)
+# ────────────────────────────────────────────────────────────────
+BASE_INPUT = (
+    "w-full rounded-md border border-input bg-background text-sm shadow-sm "
+    "focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+)
+SELECT_APPEARANCE = "appearance-none pr-10"
+
+# For inputs that pair with a left addon icon:
+SCORE_INPUT_JOINED = "score-input h-10 rounded-r-md rounded-l-none -ml-px px-3 " + BASE_INPUT
+
+PHONE_INPUT = BASE_INPUT + " px-3 py-2"  # phone row keeps its own look
+SELECT_INPUT = BASE_INPUT + " px-3 py-2 " + SELECT_APPEARANCE
+
 
 # ────────────────────────────────────────────────────────────────
 # Tiny helpers to keep the form tidy
 # ────────────────────────────────────────────────────────────────
 def _select_widget(*, element_id: str | None = None) -> forms.Select:
-    cls = (
-        "w-full rounded-md border border-input bg-background px-3 py-2 text-sm "
-        "shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring "
-        "appearance-none pr-10"
-    )
-    attrs = {"class": cls}
+    attrs = {"class": SELECT_INPUT}
     if element_id:
         attrs["id"] = element_id
     return forms.Select(attrs=attrs)
 
 
-def _score_input_widget(step: str = "0.5") -> forms.NumberInput:
-    # Default step=0.5 (IELTS); we can override per-field (e.g., Use of English → "1")
+def _number_input_widget(*, step: str = "0.5") -> forms.NumberInput:
+    # Default step=0.5 (IELTS); Use "1" for integer-only fields (e.g. Use of English)
     return forms.NumberInput(
         attrs={
             "step": step,
             "placeholder": "—",
-            "class": (
-                "score-input w-full rounded-md border border-input bg-background px-3 py-2 text-sm "
-                "shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-            ),
+            "class": SCORE_INPUT_JOINED,
         }
     )
 
@@ -109,38 +116,38 @@ class ProfileForm(forms.ModelForm):
     exam_date = forms.DateField(required=False, widget=forms.HiddenInput())
 
     # ─────────────────────────────
-    # Exam scores
+    # Exam scores (left-addon friendly)
     # ─────────────────────────────
     reading_score = forms.DecimalField(
         label="Reading",
         required=False,
         min_value=0,
-        widget=_score_input_widget(step="0.5"),
+        widget=_number_input_widget(step="0.5"),
         help_text="Your reading score.",
     )
     listening_score = forms.DecimalField(
         label="Listening",
         required=False,
         min_value=0,
-        widget=_score_input_widget(step="0.5"),
+        widget=_number_input_widget(step="0.5"),
     )
     writing_score = forms.DecimalField(
         label="Writing",
         required=False,
         min_value=0,
-        widget=_score_input_widget(step="0.5"),
+        widget=_number_input_widget(step="0.5"),
     )
     speaking_score = forms.DecimalField(
         label="Speaking",
         required=False,
         min_value=0,
-        widget=_score_input_widget(step="0.5"),
+        widget=_number_input_widget(step="0.5"),
     )
     overall_score = forms.DecimalField(
         label="Overall",
         required=False,
         min_value=0,
-        widget=_score_input_widget(step="0.5"),
+        widget=_number_input_widget(step="0.5"),
     )
 
     # ─────────────────────────────
@@ -157,7 +164,7 @@ class ProfileForm(forms.ModelForm):
         label="Use of English (score)",
         required=False,  # optional; if present, model.clean validates
         min_value=0,
-        widget=_score_input_widget(step="1"),  # integers for C1/C2 bands
+        widget=_number_input_widget(step="1"),  # integers for C1/C2
         help_text="Whole number score (only for Cambridge C1/C2).",
     )
 
@@ -185,11 +192,7 @@ class ProfileForm(forms.ModelForm):
                     "id": "id_phone",
                     "placeholder": "Phone",
                     "required": True,
-                    "class": (
-                        "w-full rounded-md border border-input bg-background px-3 py-2 text-sm "
-                        "shadow-sm focus-visible:outline-none "
-                        "focus-visible:ring-1 focus-visible:ring-ring"
-                    ),
+                    "class": PHONE_INPUT,
                 }
             ),
             "subject_area": _select_widget(element_id="id_subject_area"),
@@ -209,7 +212,7 @@ class ProfileForm(forms.ModelForm):
             self.initial.setdefault("exam_month", f"{ed.month}")
             self.initial.setdefault("exam_year", f"{ed.year}")
 
-        # Inject grade choices with a placeholder (no dash shown)
+        # Placeholder (no dash) at top of Cambridge grade choices
         self.fields["cambridge_grade"].choices = [("", "Select grade…")] + list(
             Profile.CAMBRIDGE_GRADES
         )

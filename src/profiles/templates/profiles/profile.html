@@ -24,6 +24,7 @@
           </span>
         {% endif %}
       </div>
+
       {% c card/description %}
         <p class="leading-relaxed text-foreground/80 pb-1 border-b-2 border-b-blue-400">
           Your responses will be assessed by the ADTIS Director at the University of Cambridge Language Centre, who may contact you by e-mail to arrange a telephone interview to assess your competency in spoken English.
@@ -32,6 +33,7 @@
     {% endc %}
 
     {% c card/content %}
+      {# Header strip: student name + email #}
       <div class="border-l-2 border-primary/60 pl-3">
         <div class="flex flex-col gap-1 sm:flex-row sm:items-baseline sm:justify-between">
           <h2 class="flex items-center gap-2 text-lg font-semibold text-foreground">
@@ -54,12 +56,16 @@
       <form method="post" class="mt-6 space-y-5">
         {% csrf_token %}
 
-        {# Two-column details: Phone (left) + Subject Area (right) #}
+        {# ─────────────────────────────────────────────────────────────
+           Two-column: Phone (left) + Subject area (right)
+           ───────────────────────────────────────────────────────────── #}
         <div class="grid gap-4 sm:grid-cols-2">
+          {# Phone #}
           <div>
             <label for="id_phone" class="mb-1 block text-sm font-medium text-foreground">Phone</label>
             <div class="flex rounded-md shadow-sm">
-              <span class="inline-flex items-center rounded-l-md border border-input bg-muted px-3 text-muted-foreground shrink-0">
+              {# NOTE: addon uses fixed height (h-10) + no double border #}
+              <span class="inline-flex h-10 items-center rounded-l-md border border-input border-r-0 bg-muted px-3 text-muted-foreground shrink-0">
                 {% icon 'phone' class_='size-6 opacity-80 -mt-[1px]' label='Phone' %}
               </span>
               {{ form.phone }}
@@ -70,13 +76,12 @@
             <p class="mt-1 text-xs text-muted-foreground">Include country code if possible (e.g. +44 …).</p>
           </div>
 
-           {# Subject area Schadcn combobox #}
+          {# Subject area (Shadcn Combobox bound to Django field) #}
           <div>
             <label for="id_subject_area" class="mb-1 block text-sm font-medium text-foreground">
               Please select a subject area that best describes your field of study.
             </label>
 
-            {# ShadCN-Django Combobox bound to the Django field #}
             <c-combobox
               id="id_subject_area"
               name="{{ form.subject_area.html_name }}"
@@ -98,18 +103,15 @@
                 {'value': 'other', 'label': 'Other'}
               ]"
             />
-
             {% if form.subject_area.errors %}
               <p class="mt-1 text-sm text-destructive">{{ form.subject_area.errors.0 }}</p>
             {% endif %}
-
-
-
           </div>
         </div>
 
-
-        {# Visa question banner #}
+        {# ─────────────────────────────────────────────────────────────
+           Visa segmented control
+           ───────────────────────────────────────────────────────────── #}
         <div class="rounded-xl bg-sky-50 border border-sky-200 p-4">
           <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div class="flex items-center gap-3 min-w-0">
@@ -121,7 +123,6 @@
               </p>
             </div>
 
-            {# Segmented Yes/No for Visa #}
             <div class="w-full sm:w-72">
               <fieldset role="radiogroup" aria-label="UK Student Visa" class="w-full">
                 <div class="flex w-full overflow-hidden rounded-md border border-input shadow-sm">
@@ -132,18 +133,16 @@
                     id="visa_yes"
                     value="True"
                     class="peer/visaYes sr-only"
-                    {% with v=form.requires_uk_student_visa.value|stringformat:'s' %}
-                      {% if v == 'True' or v == '' %}checked{% endif %}
-                    {% endwith %}
+                    {% with v=form.requires_uk_student_visa.value|stringformat:'s' %}{% if v == 'True' or v == '' %}checked{% endif %}{% endwith %}
                   />
                   <label
                     for="visa_yes"
                     class="flex-1 cursor-pointer select-none px-4 py-2 text-center text-sm font-medium
                            transition-colors rounded-l-md
                            bg-background text-foreground hover:bg-muted/70
-                           peer-checked/visaYes:bg-green-600 peer-checked/visaYes:text-white
-                           peer-checked/visaYes:hover:bg-green-600"
-                  >Yes</label>
+                           peer-checked/visaYes:bg-green-600 peer-checked/visaYes:text-white">
+                    Yes
+                  </label>
 
                   {# NO #}
                   <input
@@ -159,93 +158,91 @@
                     class="flex-1 cursor-pointer select-none px-4 py-2 text-center text-sm font-medium
                            transition-colors -ml-px rounded-r-md
                            bg-background text-foreground hover:bg-muted/70
-                           peer-checked/visaNo:bg-red-600 peer-checked/visaNo:text-white
-                           peer-checked/visaNo:hover:bg-red-600"
-                  >No</label>
+                           peer-checked/visaNo:bg-red-600 peer-checked/visaNo:text-white">
+                    No
+                  </label>
                 </div>
               </fieldset>
             </div>
           </div>
         </div>
-
         {% if form.requires_uk_student_visa.errors %}
           <p class="text-sm text-destructive">{{ form.requires_uk_student_visa.errors.0 }}</p>
         {% endif %}
 
-        {# English exam decision #}
-          <div class="rounded-xl bg-sky-50 border border-sky-200 p-4">
-            <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-              <div class="flex items-center gap-3 min-w-0">
-                <div class="grid size-10 place-items-center rounded-lg bg-sky-100 text-sky-700 shrink-0">
-                  {% icon 'assignment_globe' class_='size-6' label='English Exam' %}
+        {# ─────────────────────────────────────────────────────────────
+           English exam: segmented control (Yes/No)
+           ───────────────────────────────────────────────────────────── #}
+        <div class="rounded-xl bg-sky-50 border border-sky-200 p-4">
+          <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div class="flex items-center gap-3 min-w-0">
+              <div class="grid size-10 place-items-center rounded-lg bg-sky-100 text-sky-700 shrink-0">
+                {% icon 'assignment_globe' class_='size-6' label='English Exam' %}
+              </div>
+              <p class="font-semibold text-foreground leading-snug">
+                Have you taken an English language exam in the past five years?
+              </p>
+            </div>
+
+            <div class="w-full sm:w-72">
+              <fieldset role="radiogroup" aria-label="English exam in past 5 years" class="w-full">
+                <div class="flex w-full overflow-hidden rounded-md border border-input shadow-sm">
+                  {# YES #}
+                  <input
+                    type="radio"
+                    name="{{ form.has_recent_english_exam.html_name }}"
+                    id="exam_yes"
+                    value="True"
+                    class="peer/examYes sr-only"
+                    {% with v=form.has_recent_english_exam.value|stringformat:'s' %}{% if v == 'True' or v == '' %}checked{% endif %}{% endwith %}
+                  />
+                  <label
+                    for="exam_yes"
+                    class="flex-1 cursor-pointer select-none px-4 py-2 text-center text-sm font-medium
+                           transition-colors rounded-l-md
+                           bg-background text-foreground hover:bg-muted/70
+                           peer-checked/examYes:bg-green-600 peer-checked/examYes:text-white">
+                    Yes
+                  </label>
+
+                  {# NO #}
+                  <input
+                    type="radio"
+                    name="{{ form.has_recent_english_exam.html_name }}"
+                    id="exam_no"
+                    value="False"
+                    class="peer/examNo sr-only"
+                    {% if form.has_recent_english_exam.value|stringformat:'s' == 'False' %}checked{% endif %}
+                  />
+                  <label
+                    for="exam_no"
+                    class="flex-1 cursor-pointer select-none px-4 py-2 text-center text-sm font-medium
+                           transition-colors -ml-px rounded-r-md
+                           bg-background text-foreground hover:bg-muted/70
+                           peer-checked/examNo:bg-red-600 peer-checked/examNo:text-white">
+                    No
+                  </label>
                 </div>
-                <p class="font-semibold text-foreground leading-snug">
-                  Have you taken an English language exam in the past five years?
-                </p>
-              </div>
-
-              {# Segmented Yes/No for English exam #}
-              <div class="w-full sm:w-72">
-                <fieldset role="radiogroup" aria-label="English exam in past 5 years" class="w-full">
-                  <div class="flex w-full overflow-hidden rounded-md border border-input shadow-sm">
-                    {# YES #}
-                    <input
-                      type="radio"
-                      name="{{ form.has_recent_english_exam.html_name }}"
-                      id="exam_yes"
-                      value="True"
-                      class="peer/examYes sr-only"
-                      {% with v=form.has_recent_english_exam.value|stringformat:'s' %}
-                        {% if v == 'True' or v == '' %}checked{% endif %}
-                      {% endwith %}
-                    />
-                    <label
-                      for="exam_yes"
-                      class="flex-1 cursor-pointer select-none px-4 py-2 text-center text-sm font-medium
-                            transition-colors rounded-l-md
-                            bg-background text-foreground hover:bg-muted/70
-                            peer-checked/examYes:bg-green-600 peer-checked/examYes:text-white
-                            peer-checked/examYes:hover:bg-green-600"
-                    >Yes</label>
-
-                    {# NO #}
-                    <input
-                      type="radio"
-                      name="{{ form.has_recent_english_exam.html_name }}"
-                      id="exam_no"
-                      value="False"
-                      class="peer/examNo sr-only"
-                      {% if form.has_recent_english_exam.value|stringformat:'s' == 'False' %}checked{% endif %}
-                    />
-                    <label
-                      for="exam_no"
-                      class="flex-1 cursor-pointer select-none px-4 py-2 text-center text-sm font-medium
-                            transition-colors -ml-px rounded-r-md
-                            bg-background text-foreground hover:bg-muted/70
-                            peer-checked/examNo:bg-red-600 peer-checked/examNo:text-white
-                            peer-checked/examNo:hover:bg-red-600"
-                    >No</label>
-                  </div>
-                </fieldset>
-              </div>
+              </fieldset>
             </div>
           </div>
-
-
+        </div>
         {% if form.has_recent_english_exam.errors %}
           <p class="text-sm text-destructive">{{ form.has_recent_english_exam.errors.0 }}</p>
         {% endif %}
 
-
-        {# Keep the panel in-flow: no "hidden" class #}
+        {# ─────────────────────────────────────────────────────────────
+           Exam details (conditional region). Keep in-flow; animate height.
+           ───────────────────────────────────────────────────────────── #}
         {% with v=form.has_recent_english_exam.value|stringformat:'s' %}
           <div
             id="exam-details"
             data-open="{% if v == 'True' %}true{% else %}false{% endif %}"
             role="region"
             aria-hidden="{% if v == 'True' %}false{% else %}true{% endif %}"
-            class="group/exam relative isolate z-20 max-h-0 opacity-0
-                  transition-[max-height,opacity] duration-500 ease-in-out">
+            class="group/exam relative isolate z-20 max-h-0 opacity-0 transition-[max-height,opacity] duration-500 ease-in-out
+                   data-[open=true]:max-h-[4000px] data-[open=true]:opacity-100">
+
             <div class="rounded-xl border border-blue-200 bg-blue-50 p-4 mt-4
                         opacity-0 translate-y-1 transition-all duration-500
                         group-data-[open=true]/exam:opacity-100 group-data-[open=true]/exam:translate-y-0">
@@ -254,9 +251,9 @@
                 Please select and provide your most recent English language exam test scores.
               </p>
 
-
-              {# --- Exam type + date (same line) --- #}
+              {# Exam type + date (same line) #}
               <div class="mt-4 grid gap-4 sm:grid-cols-2">
+                {# Exam type #}
                 <div class="space-y-2">
                   <label for="id_exam_type" class="block text-sm font-medium text-foreground">
                     Select the exam taken:
@@ -265,8 +262,7 @@
                     id="id_exam_type"
                     name="{{ form.exam_type.html_name }}"
                     value="{{ form.exam_type.value|default:'' }}"
-                    class="w-full sm:w-80"
-                  >
+                    class="w-full sm:w-80">
                     <c-select.trigger class="w-full">
                       <c-select.value placeholder="Select exam..." />
                     </c-select.trigger>
@@ -282,19 +278,12 @@
                   {% endif %}
                 </div>
 
+                {# Exam date: D/M/Y selects #}
                 <div class="space-y-2">
-                  <label class="block text-sm font-medium text-foreground">
-                    and enter the date you took it:
-                  </label>
-
+                  <label class="block text-sm font-medium text-foreground">and enter the date you took it:</label>
                   <div class="grid grid-cols-3 gap-2">
                     {# Day #}
-                    <c-select
-                      id="id_exam_day"
-                      name="{{ form.exam_day.html_name }}"
-                      value="{{ form.exam_day.value|default:'' }}"
-                      class="w-full"
-                    >
+                    <c-select id="id_exam_day" name="{{ form.exam_day.html_name }}" value="{{ form.exam_day.value|default:'' }}" class="w-full">
                       <c-select.trigger class="w-full">
                         <c-select.value placeholder="Day" />
                       </c-select.trigger>
@@ -306,12 +295,7 @@
                     </c-select>
 
                     {# Month #}
-                    <c-select
-                      id="id_exam_month"
-                      name="{{ form.exam_month.html_name }}"
-                      value="{{ form.exam_month.value|default:'' }}"
-                      class="w-full"
-                    >
+                    <c-select id="id_exam_month" name="{{ form.exam_month.html_name }}" value="{{ form.exam_month.value|default:'' }}" class="w-full">
                       <c-select.trigger class="w-full">
                         <c-select.value placeholder="Month" />
                       </c-select.trigger>
@@ -323,12 +307,7 @@
                     </c-select>
 
                     {# Year #}
-                    <c-select
-                      id="id_exam_year"
-                      name="{{ form.exam_year.html_name }}"
-                      value="{{ form.exam_year.value|default:'' }}"
-                      class="w-full"
-                    >
+                    <c-select id="id_exam_year" name="{{ form.exam_year.html_name }}" value="{{ form.exam_year.value|default:'' }}" class="w-full">
                       <c-select.trigger class="w-full">
                         <c-select.value placeholder="Year" />
                       </c-select.trigger>
@@ -340,7 +319,7 @@
                     </c-select>
                   </div>
 
-                  {# Error display for any of the three #}
+                  {# Errors for any of the three #}
                   {% if form.exam_day.errors %}
                     <p class="text-sm text-destructive">{{ form.exam_day.errors.0 }}</p>
                   {% endif %}
@@ -353,21 +332,20 @@
                 </div>
               </div>
 
-
-              {# Exam sub-scores row ------------------------------------------------------ #}
+              {# ─────────────────────────────────────────────────────
+                 Exam sub-scores grid (icons are full-height via h-10)
+                 ───────────────────────────────────────────────────── #}
               <div class="mt-8 grid gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5">
 
                 {# Reading #}
                 <div>
-                  <label for="{{ form.reading_score.id_for_label }}"
-                      class="flex items-center gap-2 ml-2 text-base font-semibold text-reading">
-                  {% icon 'book_open' class_='size-5 -mt-[1px] text-reading' %}
-                  <span>{{ form.reading_score.label }}</span>
-                </label>
-
-                  <div class="flex items-center rounded-md shadow-sm">
-                    <span class="inline-flex items-center rounded-l-md border border-input bg-muted px-2 text-muted-foreground shrink-0">
-                      {% icon 'book_open' class_='size-4 opacity-70' %}
+                  <label for="{{ form.reading_score.id_for_label }}" class="flex items-center gap-2 ml-2 text-base font-semibold text-reading">
+                    {% icon 'book_open' class_='size-5 -mt-[1px] text-reading' %}
+                    <span>{{ form.reading_score.label }}</span>
+                  </label>
+                  <div class="flex items-stretch rounded-md shadow-sm">
+                    <span class="inline-flex h-10 items-center rounded-l-md border border-input border-r-0 bg-muted px-3 text-muted-foreground shrink-0">
+                      {% icon 'book_open' class_='size-5 opacity-75' %}
                     </span>
                     {{ form.reading_score }}
                   </div>
@@ -378,14 +356,13 @@
 
                 {# Listening #}
                 <div>
-                  <label for="{{ form.listening_score.id_for_label }}"
-                        class="flex items-center gap-2 ml-2 text-base font-semibold text-listening">
+                  <label for="{{ form.listening_score.id_for_label }}" class="flex items-center gap-2 ml-2 text-base font-semibold text-listening">
                     {% icon 'headphones' class_='size-5 -mt-[1px] text-listening' %}
                     <span>{{ form.listening_score.label }}</span>
                   </label>
-                  <div class="flex items-center rounded-md shadow-sm">
-                    <span class="inline-flex items-center rounded-l-md border border-input bg-muted px-2 text-muted-foreground shrink-0">
-                      {% icon 'headphones' class_='size-4 opacity-70' %}
+                  <div class="flex items-stretch rounded-md shadow-sm">
+                    <span class="inline-flex h-10 items-center rounded-l-md border border-input border-r-0 bg-muted px-3 text-muted-foreground shrink-0">
+                      {% icon 'headphones' class_='size-5 opacity-75' %}
                     </span>
                     {{ form.listening_score }}
                   </div>
@@ -400,10 +377,9 @@
                     {% icon 'ink_pen' class_='size-5 -mt-[1px] text-writing' %}
                     <span>Writing</span>
                   </label>
-
-                  <div class="flex items-center rounded-md shadow-sm">
-                    <span class="inline-flex items-center rounded-l-md border border-input bg-muted px-2 text-muted-foreground shrink-0">
-                      {% icon 'ink_pen' class_='size-4 opacity-70' %}
+                  <div class="flex items-stretch rounded-md shadow-sm">
+                    <span class="inline-flex h-10 items-center rounded-l-md border border-input border-r-0 bg-muted px-3 text-muted-foreground shrink-0">
+                      {% icon 'ink_pen' class_='size-5 opacity-75' %}
                     </span>
                     {{ form.writing_score }}
                   </div>
@@ -414,14 +390,13 @@
 
                 {# Speaking #}
                 <div>
-                  <label for="{{ form.speaking_score.id_for_label }}"
-                        class="flex items-center gap-2 ml-2 text-base font-semibold text-speaking">
+                  <label for="{{ form.speaking_score.id_for_label }}" class="flex items-center gap-2 ml-2 text-base font-semibold text-speaking">
                     {% icon 'forum' class_='size-5 opacity-85 -mt-[1px] text-speaking' %}
                     <span>{{ form.speaking_score.label }}</span>
                   </label>
-                  <div class="flex items-center rounded-md shadow-sm">
-                    <span class="inline-flex items-center rounded-l-md border border-input bg-muted px-2 text-muted-foreground shrink-0">
-                      {% icon 'forum' class_='size-4 opacity-70' %}
+                  <div class="flex items-stretch rounded-md shadow-sm">
+                    <span class="inline-flex h-10 items-center rounded-l-md border border-input border-r-0 bg-muted px-3 text-muted-foreground shrink-0">
+                      {% icon 'forum' class_='size-5 opacity-75' %}
                     </span>
                     {{ form.speaking_score }}
                   </div>
@@ -432,15 +407,13 @@
 
                 {# Overall #}
                 <div>
-                  <label for="{{ form.overall_score.id_for_label }}"
-                        class="flex items-center gap-2 ml-2 text-base font-semibold text-overall">
+                  <label for="{{ form.overall_score.id_for_label }}" class="flex items-center gap-2 ml-2 text-base font-semibold text-overall">
                     {% icon 'bar_chart' class_='size-5 opacity-85 -mt-[1px] text-overall' %}
                     <span>{{ form.overall_score.label }}</span>
                   </label>
-
-                  <div class="flex items-center rounded-md shadow-sm">
-                    <span class="inline-flex items-center rounded-l-md border border-input bg-muted px-2 text-muted-foreground shrink-0">
-                      {% icon 'bar_chart' class_='size-4 opacity-70' %}
+                  <div class="flex items-stretch rounded-md shadow-sm">
+                    <span class="inline-flex h-10 items-center rounded-l-md border border-input border-r-0 bg-muted px-3 text-muted-foreground shrink-0">
+                      {% icon 'bar_chart' class_='size-5 opacity-75' %}
                     </span>
                     {{ form.overall_score }}
                   </div>
@@ -448,45 +421,68 @@
                     <p class="text-sm text-destructive mt-1">{{ form.overall_score.errors.0 }}</p>
                   {% endif %}
                 </div>
+              </div> {# ← END score grid #}
+
+              {# Manual override (full width, outside grid) #}
+              <div class="mt-3">
+                <div class="relative flex items-start">
+                  <div class="flex h-6 items-center">
+                    <input
+                      id="{{ form.overall_manual_override.id_for_label }}"
+                      name="{{ form.overall_manual_override.html_name }}"
+                      type="checkbox"
+                      value="true"
+                      {% if form.overall_manual_override.value %}checked{% endif %}
+                      class="peer relative h-[1.125rem] w-[1.125rem] appearance-none rounded-[0.25rem]
+                             border-[0.125rem] border-gray-400 outline-none cursor-pointer
+                             checked:border-red-600 checked:bg-red-600
+                             hover:before:opacity-[0.04] focus:before:scale-100
+                             focus:before:opacity-[0.12] before:absolute before:h-[0.875rem]
+                             before:w-[0.875rem] before:rounded-full before:bg-transparent
+                             before:opacity-0 before:content-['']
+                             checked:after:absolute checked:after:content-['']
+                             checked:after:-mt-px checked:after:ms-[0.25rem]
+                             checked:after:block checked:after:h-[0.8125rem] checked:after:w-[0.375rem]
+                             checked:after:rotate-45 checked:after:border-[0.125rem]
+                             checked:after:border-l-0 checked:after:border-t-0
+                             checked:after:border-solid checked:after:border-white" />
+                  </div>
+                  <div class="ml-3 text-sm leading-tight">
+                    <label for="{{ form.overall_manual_override.id_for_label }}" class="font-medium text-red-600 cursor-pointer">
+                      Manually enter overall score
+                    </label>
+                    <p class="text-xs text-muted-foreground">
+                      Leave unticked to automatically calculate your overall score from sub-scores.
+                    </p>
+                  </div>
+                </div>
               </div>
 
-              {# Manual override toggle for overall ------------------------------------------- #}
-              <div class="flex justify-end mt-2 lg:col-span-5">
-                <label for="{{ form.overall_manual_override.id_for_label }}"
-                      class="flex items-center gap-2 text-sm">
-                  {{ form.overall_manual_override }}
-                  <span>Overall manual override</span>
-                </label>
-              </div>
-
-
-              {# Cambridge extra notice (UX only for now) #}
+              {# Cambridge extras (full width; expands only for C1/C2) #}
               {% with et=form.exam_type.value|stringformat:"s" %}
                 <div
                   id="cambridge-extra"
                   data-open="{% if et == 'c1' or et == 'c2' %}true{% else %}false{% endif %}"
                   aria-hidden="{% if et == 'c1' or et == 'c2' %}false{% else %}true{% endif %}"
-                  class="relative mt-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3
-                        transition-[max-height,opacity] duration-300 ease-in-out
-                        max-h-0 opacity-0"
-                >
+                  class="relative mt-6 w-full overflow-hidden rounded-xl border border-amber-200 bg-amber-50 px-4 py-3
+                         transition-[max-height,opacity] duration-300 ease-in-out
+                         max-h-0 opacity-0
+                         data-[open=true]:max-h-[900px] data-[open=true]:opacity-100">
+
                   <p class="flex items-center gap-2 text-sm font-medium text-amber-800 mb-3">
                     {% icon 'other_admissions' class_='size-5 text-amber-800 -mt-[1px]' %}
                     For <span class="font-semibold">Cambridge C1/C2</span> exams, please provide additional details:
                   </p>
 
-                  {# Grade (left) + Use of English (right) — stack on mobile, 2-cols on sm+ #}
                   <div class="grid gap-4 sm:grid-cols-2">
-                    {# Cambridge Grade select #}
+                    {# Grade #}
                     <div class="space-y-2">
                       <label for="id_cambridge_grade" class="block text-sm font-medium text-foreground">Grade</label>
-
                       <c-select
                         id="id_cambridge_grade"
                         name="{{ form.cambridge_grade.html_name }}"
                         value="{{ form.cambridge_grade.value|default:'' }}"
-                        class="w-full sm:w-60"
-                      >
+                        class="w-full sm:w-60">
                         <c-select.trigger class="w-full">
                           <c-select.value placeholder="Select grade…" />
                         </c-select.trigger>
@@ -496,26 +492,23 @@
                           <c-select.item value="c">C</c-select.item>
                         </c-select.content>
                       </c-select>
-
                       {% if form.cambridge_grade.errors %}
                         <p class="text-sm text-destructive">{{ form.cambridge_grade.errors.0 }}</p>
                       {% endif %}
                       <p class="text-xs text-muted-foreground">Required for Cambridge C1/C2 exams.</p>
                     </div>
 
-                    {# Use of English score (integer) #}
+                    {# Use of English (integer) #}
                     <div class="space-y-2">
                       <label for="{{ form.cambridge_use_of_english.id_for_label }}" class="block text-sm font-medium text-foreground">
                         Use of English (score)
                       </label>
-
-                      <div class="flex items-center rounded-md shadow-sm">
-                        <span class="inline-flex items-center rounded-l-md border border-input bg-muted px-2 text-muted-foreground shrink-0">
-                          {% icon 'school' class_='size-4 opacity-70' %}
+                      <div class="flex items-stretch rounded-md shadow-sm">
+                        <span class="inline-flex h-10 items-center rounded-l-md border border-input border-r-0 bg-muted px-3 text-muted-foreground shrink-0">
+                          {% icon 'school' class_='size-5 opacity-75' %}
                         </span>
                         {{ form.cambridge_use_of_english }}
                       </div>
-
                       {% if form.cambridge_use_of_english.errors %}
                         <p class="text-sm text-destructive">{{ form.cambridge_use_of_english.errors.0 }}</p>
                       {% endif %}
@@ -524,22 +517,11 @@
                   </div>
                 </div>
               {% endwith %}
-
-
-
-
-
-
-
-
-
-
-
-
             </div>
           </div>
         {% endwith %}
 
+        {# Save button or lock message #}
         {% if not profile.is_locked %}
           <button
             type="submit"
@@ -548,8 +530,7 @@
                    bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm
                    transition-colors hover:bg-primary/90 focus-visible:outline-none
                    focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none
-                   disabled:opacity-50"
-          >
+                   disabled:opacity-50">
             {% icon 'save' class_='h-5 w-5' %}
             <span>Save Changes</span>
           </button>
