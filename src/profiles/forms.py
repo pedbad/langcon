@@ -90,6 +90,13 @@ class ProfileForm(forms.ModelForm):
         widget=_select_widget(element_id="id_has_recent_english_exam"),
     )
 
+    exam_type = forms.ChoiceField(
+        label="Select the exam taken:",
+        required=False,  # still False globally; enforced only when switch is True
+        choices=[(value, label) for (value, label) in Profile.TEST_CHOICES if value != ""],
+        widget=_select_widget(element_id="id_exam_type"),
+    )
+
     # ─────────────────────────────
     # Exam date (split D/M/Y)
     # ─────────────────────────────
@@ -245,3 +252,64 @@ class ProfileForm(forms.ModelForm):
         self.fields["exam_month"].choices = [("", "Month")] + _month_choices()
         # Use a sensible range and add placeholder
         self.fields["exam_year"].choices = [("", "Year")] + _year_choices(span=5)
+
+    def clean(self):
+        cleaned = super().clean()
+        has_exam = cleaned.get("has_recent_english_exam") is True
+
+        # Keep instance exam_type in sync no matter what
+        if self.instance:
+            self.instance.exam_type = (getattr(self.instance, "exam_type", "") or "").lower()
+
+        if has_exam:
+            # normalize exam_type from the form
+            exam_type = (cleaned.get("exam_type") or "").lower()
+            if not exam_type:
+                self.add_error("exam_type", "Please select the exam taken.")
+            else:
+                cleaned["exam_type"] = exam_type
+                if self.instance:
+                    self.instance.exam_type = exam_type
+
+            # assemble exam_date from day/month/year
+            d = cleaned.get("exam_day")
+            m = cleaned.get("exam_month")
+            y = cleaned.get("exam_year")
+
+            assembled = None
+            if d and m and y:
+                try:
+                    assembled = date(int(y), int(m), int(d))
+                except ValueError:
+                    self.add_error("exam_day", "Enter a valid exam date.")
+                else:
+                    today = date.today()
+                    min_date = date(today.year - 5, today.month, today.day)
+                    if not (min_date <= assembled <= today):
+                        msg = "Exam date must be within the last five years."
+                        # field-level error (shows under Day) + non-field error (visible anywhere)
+                        self.add_error("exam_day", msg)
+                        self.add_error(None, msg)
+                        assembled = None
+            else:
+                msg = "Please provide the exam date (day, month, and year)."
+                if not d:
+                    self.add_error("exam_day", msg)
+                if not m:
+                    self.add_error("exam_month", msg)
+                if not y:
+                    self.add_error("exam_year", msg)
+
+            if self.instance:
+                self.instance.exam_date = assembled
+            cleaned["exam_date"] = assembled
+
+        else:
+            # Switch is OFF → make sure we clear exam fields for consistency
+            cleaned["exam_type"] = ""
+            cleaned["exam_date"] = None
+            if self.instance:
+                self.instance.exam_type = ""
+                self.instance.exam_date = None
+
+        return cleaned
