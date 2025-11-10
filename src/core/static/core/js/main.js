@@ -1,7 +1,5 @@
 (function () {
-  // ────────────────────────────────────────────────────────────────
-  // Alpine bootstrapping: Theme store (dark / light / system)
-  // ────────────────────────────────────────────────────────────────
+  // Theme store (unchanged)
   document.addEventListener("alpine:init", () => {
     const A = window.Alpine;
     if (!A.store("theme")) {
@@ -23,15 +21,11 @@
     }
   });
 
-  // ────────────────────────────────────────────────────────────────
-  // App bootstrap + progressive enhancement hooks
-  // ────────────────────────────────────────────────────────────────
   document.addEventListener("DOMContentLoaded", () => {
     window.APP = { env: document.body.dataset.env || "prod" };
 
-    // ===== Panels (animated) ======================================
-    const examDetailsEl    = document.getElementById("exam-details");    // region for “English exam in past 5 years?”
-    const cambridgeExtraEl = document.getElementById("cambridge-extra"); // optional section (C1/C2 only)
+    const examDetailsEl    = document.getElementById("exam-details");
+    const cambridgeExtraEl = document.getElementById("cambridge-extra");
 
     function animatePanel(el, show) {
       if (!el) return;
@@ -50,78 +44,111 @@
       }
     }
 
-    // Helpers
+    // Helpers + field refs
     const $ = (sel) => document.querySelector(sel);
     const getCheckedValue = (name) => {
       const el = document.querySelector(`input[name="${name}"]:checked`);
       return el ? el.value : null;
     };
 
-    // Native inputs on the profile form
+    const hasExamName = "has_recent_english_exam";
+
+    // Core fields
     const examTypeSel  = $('select[name="exam_type"]');
-    const hasExamYesNo = 'has_recent_english_exam';
+    const examDay      = $('#id_exam_day');
+    const examMonth    = $('#id_exam_month');
+    const examYear     = $('#id_exam_year');
+
     const reading   = $('#id_reading_score');
     const listening = $('#id_listening_score');
     const writing   = $('#id_writing_score');
     const speaking  = $('#id_speaking_score');
     const overall   = $('#id_overall_score');
     const override  = $('#id_overall_manual_override');
-    const camGrade  = $('#id_cambridge_grade');
-    const camUse    = $('#id_cambridge_use_of_english');
-    const examDay   = $('#id_exam_day');
-    const examMonth = $('#id_exam_month');
-    const examYear  = $('#id_exam_year');
 
-    // Show/hide the big exam details region
+    // Cambridge only
+    const camGrade  = $('#id_cambridge_grade');
+    const camUse    = $('#id_cambridge_use_of_english'); // optional
+
+    // ── Required toggling so HTML5 validation works ────────────────
+    function setRequired(el, on) {
+      if (!el) return;
+      if (on) el.setAttribute("required", "required");
+      else el.removeAttribute("required");
+    }
+    function isCambridge(et) {
+      return et === "c1" || et === "c2";
+    }
+    function currentExamType() {
+      return (examTypeSel && examTypeSel.value ? examTypeSel.value : "").toLowerCase();
+    }
+
+    function applyRequiredRules() {
+      const hasExam = getCheckedValue(hasExamName) === "True";
+
+      // Base exam requirements when user said "Yes"
+      const baseRequired = hasExam;
+      setRequired(examTypeSel,  baseRequired);
+      setRequired(examDay,      baseRequired);
+      setRequired(examMonth,    baseRequired);
+      setRequired(examYear,     baseRequired);
+      setRequired(reading,      baseRequired);
+      setRequired(listening,    baseRequired);
+      setRequired(writing,      baseRequired);
+      setRequired(speaking,     baseRequired);
+
+      // Overall isn’t required when auto-calculated; only require if override is checked
+      const needOverall = baseRequired && override && override.checked === true;
+      setRequired(overall, needOverall);
+
+      // Cambridge grade required only for C1/C2
+      const et = currentExamType();
+      setRequired(camGrade, baseRequired && isCambridge(et));
+
+      // Optional: never required
+      if (camUse) camUse.removeAttribute("required");
+    }
+
+    // ── Panels and clearing ────────────────────────────────────────
     function renderExamDetails() {
-      const v = getCheckedValue(hasExamYesNo);
+      const v = getCheckedValue(hasExamName);
       const show = v === "True";
       animatePanel(examDetailsEl, show);
       if (!show) {
-        // If user says "No", clear all exam fields so nothing sneaks into POST
         clearExamEverything();
-        // Also hide Cambridge block
         animatePanel(cambridgeExtraEl, false);
       }
+      applyRequiredRules();
     }
 
-    // Cambridge C1/C2 panel visibility
-    function currentExamType() {
-      if (!examTypeSel) return "";
-      return (examTypeSel.value || "").toLowerCase();
-    }
     function renderCambridgeExtra() {
       const et = currentExamType();
-      animatePanel(cambridgeExtraEl, et === "c1" || et === "c2");
-      if (et !== "c1" && et !== "c2") {
-        // Leaving Cambridge → clear its extras
+      const show = isCambridge(et);
+      animatePanel(cambridgeExtraEl, show);
+      if (!show) {
         if (camGrade) camGrade.value = "";
         if (camUse)   camUse.value   = "";
       }
+      applyRequiredRules();
     }
 
-    // Clear *all* exam-related user inputs
     function clearExamEverything() {
       if (examTypeSel) examTypeSel.value = "";
       if (examDay)   examDay.value   = "";
       if (examMonth) examMonth.value = "";
       if (examYear)  examYear.value  = "";
-
       [reading, listening, writing, speaking, overall].forEach((el) => { if (el) el.value = ""; });
       if (override) override.checked = false;
-
       if (camGrade) camGrade.value = "";
       if (camUse)   camUse.value   = "";
     }
 
-    // When the *exam type* changes mid-flow, reset sub-scores + overall
+    // Reset subscores when switching exam type
     let lastExamType = currentExamType();
     function onExamTypeChanged() {
       const next = currentExamType();
       if (next !== lastExamType) {
-        // Reset scores so the student can enter fresh values for the new scheme
         [reading, listening, writing, speaking, overall].forEach((el) => { if (el) el.value = ""; });
-        // If switching away from Cambridge, extra fields are cleared in renderCambridgeExtra()
         lastExamType = next;
       }
       renderCambridgeExtra();
@@ -131,28 +158,52 @@
     document.addEventListener("change", (evt) => {
       const t = evt.target;
       if (!t) return;
-      if (t.name === hasExamYesNo) renderExamDetails();
-      if (t === examTypeSel)       onExamTypeChanged();
+      if (t.name === hasExamName) renderExamDetails();
+      if (t === examTypeSel)      onExamTypeChanged();
+      if (t === override)         applyRequiredRules();
     });
 
     // Initial paint
     renderExamDetails();
     renderCambridgeExtra();
+    applyRequiredRules();
 
+    // ── Client-side block + scroll-to-first-invalid ────────────────
+    const profileForm =
+      document.querySelector("form#profile-form") ||
+      document.querySelector("form[action*='profiles']") ||
+      document.querySelector("form");
+
+    if (profileForm) {
+      profileForm.addEventListener(
+        "submit",
+        (e) => {
+          // Make sure required flags are correct at submit time
+          applyRequiredRules();
+
+          // If the browser thinks it's invalid, stop and scroll
+          if (!profileForm.reportValidity()) {
+            e.preventDefault();
+            const firstInvalid = profileForm.querySelector(":invalid");
+            if (firstInvalid) {
+              try { firstInvalid.focus({ preventScroll: true }); } catch {}
+              firstInvalid.scrollIntoView({ behavior: "smooth", block: "center" });
+            }
+          }
+        },
+        { capture: true }
+      );
+    }
   });
 
-  // ────────────────────────────────────────────────────────────────
-  // UX: bring first invalid field into view and highlight
-  // ────────────────────────────────────────────────────────────────
+  // ── highlight invalids on the fly (unchanged) ───────────────────
   document.addEventListener(
     "invalid",
     (evt) => {
       const el = evt.target;
-      // clear previous highlights
       document.querySelectorAll(".ring-2.ring-red-500").forEach((n) => {
         if (n !== el) n.classList.remove("ring-2", "ring-red-500");
       });
-      // highlight current
       el.classList.add("ring-2", "ring-red-500");
       try { el.focus({ preventScroll: true }); } catch {}
       el.scrollIntoView({ behavior: "smooth", block: "center" });
