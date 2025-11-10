@@ -135,11 +135,11 @@
                 <div class="flex w-full overflow-hidden rounded-md border border-input shadow-sm">
                   <input type="radio" name="{{ form.requires_uk_student_visa.html_name }}" id="visa_yes" value="True" class="peer/visaYes sr-only"
                     {% with v=form.requires_uk_student_visa.value|stringformat:'s' %}{% if v == 'True' or v == '' %}checked{% endif %}{% endwith %}/>
-                  <label for="visa_yes" class="flex-1 cursor-pointer select-none px-4 py-2 text-center text-sm font-medium transition-colors rounded-l-md bg-background text-foreground hover:bg-muted/70 peer-checked/visaYes:bg-green-600 peer-checked/visaYes:text-white">Yes</label>
+                  <label for="visa_yes" class="flex-1 cursor-pointer select-none px-4 py-2 text-center text-sm font-medium transition-colors rounded-l-md bg-background text-foreground hover:bg-green-600 hover:text-white peer-checked/visaYes:bg-green-600 peer-checked/visaYes:text-white">Yes</label>
 
                   <input type="radio" name="{{ form.requires_uk_student_visa.html_name }}" id="visa_no" value="False" class="peer/visaNo sr-only"
                     {% if form.requires_uk_student_visa.value|stringformat:'s' == 'False' %}checked{% endif %}/>
-                  <label for="visa_no" class="flex-1 cursor-pointer select-none px-4 py-2 text-center text-sm font-medium transition-colors -ml-px rounded-r-md bg-background text-foreground hover:bg-muted/70 peer-checked/visaNo:bg-red-600 peer-checked/visaNo:text-white">No</label>
+                  <label for="visa_no" class="flex-1 cursor-pointer select-none px-4 py-2 text-center text-sm font-medium transition-colors -ml-px rounded-r-md bg-background text-foreground hover:bg-red-600 hover:text-white peer-checked/visaNo:bg-red-600 peer-checked/visaNo:text-white">No</label>
                 </div>
               </fieldset>
             </div>
@@ -168,11 +168,11 @@
                 <div class="flex w-full overflow-hidden rounded-md border border-input shadow-sm">
                   <input type="radio" name="{{ form.has_recent_english_exam.html_name }}" id="exam_yes" value="True" class="peer/examYes sr-only"
                     {% with v=form.has_recent_english_exam.value|stringformat:'s' %}{% if v == 'True' or v == '' %}checked{% endif %}{% endwith %}/>
-                  <label for="exam_yes" class="flex-1 cursor-pointer select-none px-4 py-2 text-center text-sm font-medium transition-colors rounded-l-md bg-background text-foreground hover:bg-muted/70 peer-checked/examYes:bg-green-600 peer-checked/examYes:text-white">Yes</label>
+                  <label for="exam_yes" class="flex-1 cursor-pointer select-none px-4 py-2 text-center text-sm font-medium transition-colors rounded-l-md bg-background text-foreground hover:bg-green-600 hover:text-white peer-checked/examYes:bg-green-600 peer-checked/examYes:text-white">Yes</label>
 
                   <input type="radio" name="{{ form.has_recent_english_exam.html_name }}" id="exam_no" value="False" class="peer/examNo sr-only"
                     {% if form.has_recent_english_exam.value|stringformat:'s' == 'False' %}checked{% endif %}/>
-                  <label for="exam_no" class="flex-1 cursor-pointer select-none px-4 py-2 text-center text-sm font-medium transition-colors -ml-px rounded-r-md bg-background text-foreground hover:bg-muted/70 peer-checked/examNo:bg-red-600 peer-checked/examNo:text-white">No</label>
+                  <label for="exam_no" class="flex-1 cursor-pointer select-none px-4 py-2 text-center text-sm font-medium transition-colors -ml-px rounded-r-md bg-background text-foreground hover:bg-red-600 hover:text-white peer-checked/examNo:bg-red-600 peer-checked/examNo:text-white">No</label>
                 </div>
               </fieldset>
             </div>
@@ -199,28 +199,42 @@
                 Please select and provide your most recent English language exam test scores.
               </p>
 
-              {# Exam type — native select #}
-              <div class="space-y-2">
-                <label for="{{ form.exam_type.id_for_label }}" class="block text-sm font-medium text-foreground">
-                  Select the exam taken:
-                </label>
-                {{ form.exam_type }}
-                {% if form.exam_type.errors %}
-                  <p class="text-sm text-destructive">{{ form.exam_type.errors.0 }}</p>
-                {% endif %}
-              </div>
+              {# Exam type + date: side-by-side on ≥ md, stacked on small #}
+              <div class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
 
-              {# Exam date: Day / Month / Year #}
-              <div class="space-y-2 mt-4">
-                <label class="block text-sm font-medium text-foreground">and enter the date you took it:</label>
-                <div class="grid grid-cols-3 gap-2">
-                  {{ form.exam_day }}
-                  {{ form.exam_month }}
-                  {{ form.exam_year }}
+                {# Exam type — native select #}
+                <div class="space-y-2">
+                  <label for="{{ form.exam_type.id_for_label }}" class="block text-sm font-medium text-foreground">
+                    Select the exam taken:
+                  </label>
+                  {{ form.exam_type }}
+                  {% if form.exam_type.errors %}
+                    <p class="text-sm text-destructive">{{ form.exam_type.errors.0 }}</p>
+                  {% endif %}
                 </div>
-                {% if form.exam_day.errors %}<p class="text-sm text-destructive">{{ form.exam_day.errors.0 }}</p>{% endif %}
-                {% if form.exam_month.errors %}<p class="text-sm text-destructive">{{ form.exam_month.errors.0 }}</p>{% endif %}
-                {% if form.exam_year.errors %}<p class="text-sm text-destructive">{{ form.exam_year.errors.0 }}</p>{% endif %}
+
+                {# Exam date: native Day / Month / Year selects #}
+                <div class="space-y-2">
+                  <label class="block text-sm font-medium text-foreground">
+                    and enter the date you took it:
+                  </label>
+                  <div class="grid grid-cols-3 gap-2">
+                    {{ form.exam_day }}
+                    {{ form.exam_month }}
+                    {{ form.exam_year }}
+                  </div>
+                  {# show per-field errors if present #}
+                  {% if form.exam_day.errors %}
+                    <p class="text-sm text-destructive">{{ form.exam_day.errors.0 }}</p>
+                  {% endif %}
+                  {% if form.exam_month.errors %}
+                    <p class="text-sm text-destructive">{{ form.exam_month.errors.0 }}</p>
+                  {% endif %}
+                  {% if form.exam_year.errors %}
+                    <p class="text-sm text-destructive">{{ form.exam_year.errors.0 }}</p>
+                  {% endif %}
+                </div>
+
               </div>
 
               {# Sub-scores #}
@@ -301,7 +315,15 @@
                       type="checkbox"
                       value="true"
                       {% if form.overall_manual_override.value %}checked{% endif %}
-                      class="peer relative h-[1.125rem] w-[1.125rem] appearance-none rounded-[0.25rem] border-[0.125rem] border-gray-400 outline-none cursor-pointer checked:border-red-600 checked:bg-red-600" />
+                      class="relative h-[1.125rem] w-[1.125rem] appearance-none rounded-[0.25rem]
+                            border border-gray-400 outline-none cursor-pointer
+                            checked:border-blue-600 checked:bg-blue-600
+                            before:absolute before:content-[''] before:block before:inset-0 before:rounded-[0.25rem] before:bg-transparent
+                            checked:after:absolute checked:after:content-[''] checked:after:left-[0.25rem] checked:after:top-[0.05rem]
+                            checked:after:w-[0.375rem] checked:after:h-[0.75rem] checked:after:border-[0.125rem]
+                            checked:after:border-white checked:after:border-t-0 checked:after:border-l-0
+                            checked:after:rotate-45 transition-colors duration-150"
+                    />
                   </div>
                   <div class="ml-3 text-sm leading-tight">
                     <label for="{{ form.overall_manual_override.id_for_label }}" class="font-medium cursor-pointer text-red-700 dark:text-red-300">
@@ -366,9 +388,15 @@
                 value="true"
                 {% if form.academic_integrity_confirmed.value %}checked{% endif %}
                 aria-required="true"
-                class="peer relative h-[1.125rem] w-[1.125rem] appearance-none rounded-[0.25rem]
-                       border-[0.125rem] border-gray-400 outline-none cursor-pointer
-                       checked:border-red-600 checked:bg-red-600" />
+                class="relative h-[1.125rem] w-[1.125rem] appearance-none rounded-[0.25rem]
+                      border border-gray-400 outline-none cursor-pointer
+                      checked:border-blue-600 checked:bg-blue-600
+                      before:absolute before:content-[''] before:block before:inset-0 before:rounded-[0.25rem] before:bg-transparent
+                      checked:after:absolute checked:after:content-[''] checked:after:left-[0.25rem] checked:after:top-[0.05rem]
+                      checked:after:w-[0.375rem] checked:after:h-[0.75rem] checked:after:border-[0.125rem]
+                      checked:after:border-white checked:after:border-t-0 checked:after:border-l-0
+                      checked:after:rotate-45 transition-colors duration-150"
+              />
             </div>
             <div class="ml-3 text-sm leading-snug">
               <label for="id_academic_integrity_confirmed" class="font-semibold cursor-pointer text-red-800 dark:text-red-200">
