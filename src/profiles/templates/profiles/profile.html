@@ -1,3 +1,5 @@
+{# profiles/tempolates/profiles/profile.html #}
+
 {% extends "core/base.html" %}
 {% load cotton navigation icons static %}
 {% block title %}Profile{% endblock %}
@@ -214,9 +216,7 @@
                     <p class="text-sm text-destructive">{{ form.exam_type.errors.0 }}</p>
                   {% endif %}
                   {% if form.exam_type.help_text %}
-                    <p id="{{ form.exam_type.auto_id }}_helptext" class="text-xs text-muted-foreground">
-                      {{ form.exam_type.help_text }}
-                    </p>
+                    <p id="{{ form.exam_type.auto_id }}_helptext" class="text-xs text-muted-foreground">{{ form.exam_type.help_text }}</p>
                   {% endif %}
                 </div>
 
@@ -378,9 +378,7 @@
                       {% if form.cambridge_grade.errors %}
                         <p class="text-sm text-destructive mt-1">{{ form.cambridge_grade.errors.0 }}</p>
                       {% endif %}
-                      <p id="{{ form.cambridge_grade.auto_id }}_helptext" class="text-xs text-muted-foreground mt-1">
-                        {{ form.cambridge_grade.help_text }}
-                      </p>
+                      <p id="{{ form.cambridge_grade.auto_id }}_helptext" class="text-xs text-muted-foreground mt-1">{{ form.cambridge_grade.help_text }}</p>
                     </div>
 
                     {# Use of English (score  #}
@@ -403,9 +401,7 @@
                       {% if form.cambridge_use_of_english.errors %}
                         <p class="text-sm text-destructive mt-1">{{ form.cambridge_use_of_english.errors.0 }}</p>
                       {% endif %}
-                      <p id="{{ form.cambridge_use_of_english.auto_id }}_helptext" class="text-xs text-muted-foreground mt-1">
-                        {{ form.cambridge_use_of_english.help_text }}
-                      </p>
+                      <p id="{{ form.cambridge_use_of_english.auto_id }}_helptext" class="text-xs text-muted-foreground mt-1">{{ form.cambridge_use_of_english.help_text }}</p>
                     </div>
 
 
@@ -481,15 +477,17 @@
           <button
             type="submit"
             id="save-profile"
-            class="inline-flex z-0 w-full cursor-pointer items-center justify-center gap-2 rounded-md border border-input
-                  bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm
-                  transition-colors hover:bg-primary/90 focus-visible:outline-none
-                  focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none
-                  disabled:opacity-50"
+            class="inline-flex w-full cursor-pointer items-center justify-center gap-2
+                  rounded-md border border-input bg-primary px-4 py-2 text-sm font-medium
+                  text-primary-foreground shadow-sm transition-all duration-150 ease-out
+                  hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-1
+                  focus-visible:ring-ring active:scale-[0.99]
+                  disabled:pointer-events-none disabled:opacity-50"
           >
             {% icon 'save' class_='h-5 w-5' %}
             <span>Save Changes</span>
           </button>
+
         {% endif %}
       </form>
     {% endc %}
