@@ -349,26 +349,67 @@
                     For <span class="font-semibold">Cambridge C1/C2</span> exams, please provide additional details:
                   </p>
 
-                  <div class="grid gap-4 sm:grid-cols-2">
-                    <div class="space-y-2">
-                      <label for="{{ form.cambridge_grade.id_for_label }}" class="block text-sm font-medium text-foreground">Grade</label>
+
+                  <div class="grid gap-4 sm:grid-cols-2 ">
+                    {# Grade — icon label with *tight* spacing #}
+                    <div>
+                      <label
+                        for="{{ form.cambridge_grade.id_for_label }}"
+                        class="flex items-center gap-1.5 text-base font-semibold leading-tight text-amber-800 dark:text-amber-200 mb-0.5"
+                      >
+                        {% icon 'abc' class_='size-8 -mt-[2px] text-amber-800 dark:text-amber-200' %}
+                        <span>Grade</span>
+                      </label>
+
                       {{ form.cambridge_grade }}
-                      {% if form.cambridge_grade.errors %}<p class="text-sm text-destructive">{{ form.cambridge_grade.errors.0 }}</p>{% endif %}
-                      <p class="text-xs text-muted-foreground">Required for Cambridge C1/C2 exams.</p>
+
+                      {% if form.cambridge_grade.errors %}
+                        <p class="text-sm text-destructive mt-1">{{ form.cambridge_grade.errors.0 }}</p>
+                      {% else %}
+                        <p class="text-xs text-muted-foreground mt-1">Required for Cambridge C1/C2 exams.</p>
+                      {% endif %}
                     </div>
 
-                    <div class="space-y-2">
-                      <label for="{{ form.cambridge_use_of_english.id_for_label }}" class="block text-sm font-medium text-foreground">Use of English (score)</label>
+                    {# Use of English (score  #}
+                    <div class=mt-2>
+                      <label
+                        for="{{ form.cambridge_use_of_english.id_for_label }}"
+                        class="flex items-center gap-1.5 text-base font-semibold leading-tight text-amber-800 dark:text-amber-200 mb-0.5"
+                      >
+                        {% icon 'school' class_='size-5 -mt-[1px] text-amber-800 dark:text-amber-200' %}
+                        <span>Use of English (score)</span>
+                      </label>
+
                       <div class="flex items-stretch rounded-md shadow-sm">
                         <span class="inline-flex h-10 items-center rounded-l-md border border-input border-r-0 bg-muted px-3 text-muted-foreground shrink-0">
                           {% icon 'school' class_='size-5 opacity-75' %}
                         </span>
                         {{ form.cambridge_use_of_english }}
                       </div>
-                      {% if form.cambridge_use_of_english.errors %}<p class="text-sm text-destructive">{{ form.cambridge_use_of_english.errors.0 }}</p>{% endif %}
-                      <p class="text-xs text-muted-foreground">Whole number; shown only for Cambridge C1/C2.</p>
+
+                      {% if form.cambridge_use_of_english.errors %}
+                        <p class="text-sm text-destructive mt-1">{{ form.cambridge_use_of_english.errors.0 }}</p>
+                      {% else %}
+                        <p class="text-xs text-muted-foreground mt-1">
+                          Whole number; shown only for Cambridge C1/C2.
+                        </p>
+                      {% endif %}
                     </div>
+
+
+
+
                   </div>
+
+
+
+
+
+
+
+
+
+
                 </div>
               {% endwith %}
             </div>
@@ -423,17 +464,15 @@
           <button
             type="submit"
             id="save-profile"
-            class="inline-flex z-0 w-full items-center justify-center gap-2 rounded-md border border-input
+            class="inline-flex z-0 w-full cursor-pointer items-center justify-center gap-2 rounded-md border border-input
                   bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm
-                  transition-colors duration-150 ease-out
-                  hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring
-                  disabled:pointer-events-none disabled:opacity-50"
+                  transition-colors hover:bg-primary/90 focus-visible:outline-none
+                  focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none
+                  disabled:opacity-50"
           >
             {% icon 'save' class_='h-5 w-5' %}
             <span>Save Changes</span>
           </button>
-
-
         {% endif %}
       </form>
     {% endc %}
