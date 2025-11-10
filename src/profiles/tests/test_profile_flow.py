@@ -1,6 +1,27 @@
+# src/profiles/tests/test_profile_flow.py
+"""
+Test suite: Profile exam submission and validation flow
+
+Covers the full end-to-end behaviour of the student profile exam form, ensuring:
+
+1. Exam type–specific rules:
+   • IELTS / TOEFL clear any Cambridge-only fields (grade, use_of_english).
+   • Cambridge C1/C2 correctly save all sub-scores and additional fields.
+   • Overall score auto-computes according to exam type (sum, avg, or half-step).
+
+2. Honour code enforcement:
+   • No data is persisted unless academic_integrity_confirmed is ticked.
+
+3. Exam toggling logic:
+   • Switching "Has recent English exam" to False wipes all related exam fields.
+
+All tests use Django’s built-in TestCase and a temporary in-memory database.
+They assert both correct persistence and field-clearing behaviour to guarantee
+consistency between frontend form logic and backend validation.
+"""
+
 from datetime import date
 
-import pytest
 from django.contrib.auth import get_user_model
 from django.test import Client, TestCase
 from django.urls import reverse
@@ -89,8 +110,8 @@ class ProfileExamFlowTests(TestCase):
             "listening_score": "23",
             "writing_score": "24",
             "speaking_score": "22",
-            "cambridge_grade": "b",            # should be ignored/cleared
-            "cambridge_use_of_english": "200", # should be ignored/cleared
+            "cambridge_grade": "b",  # should be ignored/cleared
+            "cambridge_use_of_english": "200",  # should be ignored/cleared
         }
         resp, prof = self.post(data)
         self.assertEqual(resp.status_code, 200)

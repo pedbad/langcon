@@ -95,6 +95,16 @@
               {% icon 'assignment_ind' class_='h-5 w-5 align-middle shrink-0' %}
               <span>Profile</span>
             </a>
+
+              <a
+                href="{% url 'assessments:home' %}"
+                class="nav-link focus-ring rounded-md px-2 py-1.5 {% active_url 'assessments:home' startswith='/users/assessments' %}"
+                {% aria_current 'assessments:home' startswith='/users/assessments' %}
+              >
+                {% icon 'assignment_ind' class_='h-5 w-5 align-middle shrink-0' %}
+                <span>Assessment</span>
+              </a>
+
           {% elif request.user|is_teacher %}
             <a href="#" class="nav-link">
               <span>Availability</span>
@@ -262,6 +272,18 @@
           {% icon 'assignment_ind' class_='h-5 w-5 align-middle shrink-0' %}
           <span>Profile</span>
         </a>
+
+          <a
+            href="{% url 'assessments:home' %}"
+            class="nav-link focus-ring flex w-full rounded-md px-3 py-2 hover:bg-accent hover:text-accent-foreground {% active_url 'assessments:home' startswith='/users/assessments' %}"
+            {% aria_current 'assessments:home' startswith='/users/assessments' %}
+            @click="open = false"
+            role="menuitem"
+          >
+            {% icon 'assignment_ind' class_='h-5 w-5 align-middle shrink-0' %}
+            <span>Assessment</span>
+          </a>
+
       {% elif request.user|is_teacher %}
         <a
           href="#"
