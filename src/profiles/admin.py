@@ -19,7 +19,7 @@ class ProfileAdmin(admin.ModelAdmin):
         "academic_integrity_confirmed",
         "created_at",
         "updated_at",
-        "row_delete"
+        "row_delete",
     )
 
     list_filter = (
@@ -28,14 +28,14 @@ class ProfileAdmin(admin.ModelAdmin):
         "requires_uk_student_visa",
         "has_recent_english_exam",
         "exam_type",
-        "academic_integrity_confirmed", 
+        "academic_integrity_confirmed",
         "created_at",
     )
 
     readonly_fields = (
         "created_at",
         "updated_at",
-        "academic_integrity_confirmed_at", 
+        "academic_integrity_confirmed_at",
     )
 
     fieldsets = (
@@ -71,18 +71,15 @@ class ProfileAdmin(admin.ModelAdmin):
         ),
         ("Timestamps", {"fields": ("created_at", "updated_at")}),
     )
-    
 
     # Always show a bottom "Delete" button on the change page
     def change_view(self, request, object_id, form_url="", extra_context=None):
         extra_context = extra_context or {}
         extra_context["show_delete"] = True
         return super().change_view(request, object_id, form_url, extra_context=extra_context)
-    
-    
+
     def row_delete(self, obj):
         url = reverse("admin:profiles_profile_delete", args=[obj.pk])
         return format_html('<a class="button button-danger" href="{}">Delete</a>', url)
+
     row_delete.short_description = "Delete"
-
-
