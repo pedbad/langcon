@@ -235,57 +235,13 @@ class ProfileForm(forms.ModelForm):
             self.initial.setdefault("exam_month", f"{ed.month}")
             self.initial.setdefault("exam_year", f"{ed.year}")
 
-        # Placeholder (no dash) at top of Cambridge grade choices
-        self.fields["cambridge_grade"].choices = [("", "Select grade…")] + list(
+        # Cambridge grade choices with a placeholder
+        self.fields["cambridge_grade"].choices = [("", "Select a grade…")] + list(
             Profile.CAMBRIDGE_GRADES
         )
 
-    # ────────────────────────────────────────────────────────────────
-    # Simple normalisations
-    # ────────────────────────────────────────────────────────────────
-    def clean_phone(self):
-        return (self.cleaned_data.get("phone") or "").strip()
-
-    # Assemble exam_date and mirror to instance so model.clean() can validate
-    def clean(self):
-        cleaned = super().clean()
-        has_exam = cleaned.get("has_recent_english_exam") is True
-
-        if has_exam:
-            exam_type = cleaned.get("exam_type")
-            d, m, y = cleaned.get("exam_day"), cleaned.get("exam_month"), cleaned.get("exam_year")
-
-            if not exam_type:
-                self.add_error("exam_type", "Please select the exam taken.")
-
-            assembled = None
-            if d and m and y:
-                try:
-                    assembled = date(int(y), int(m), int(d))
-                except ValueError:
-                    self.add_error("exam_day", "Enter a valid exam date.")
-                else:
-                    today = date.today()
-                    min_date = date(today.year - 5, today.month, today.day)
-                    if not (min_date <= assembled <= today):
-                        self.add_error("exam_day", "Exam date must be within the last five years.")
-                        assembled = None
-            else:
-                msg = "Please provide the exam date (day, month, and year)."
-                if not d:
-                    self.add_error("exam_day", msg)
-                if not m:
-                    self.add_error("exam_month", msg)
-                if not y:
-                    self.add_error("exam_year", msg)
-
-            if self.instance:
-                self.instance.exam_type = exam_type or ""
-                self.instance.exam_date = assembled
-            cleaned["exam_date"] = assembled
-        else:
-            if self.instance:
-                self.instance.exam_type = ""
-                self.instance.exam_date = None
-
-        return cleaned
+        # 🔹 Add placeholders for Day / Month / Year selects
+        self.fields["exam_day"].choices = [("", "Day")] + _day_choices()
+        self.fields["exam_month"].choices = [("", "Month")] + _month_choices()
+        # Use a sensible range and add placeholder
+        self.fields["exam_year"].choices = [("", "Year")] + _year_choices(span=5)

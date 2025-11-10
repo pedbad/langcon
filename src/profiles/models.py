@@ -118,7 +118,7 @@ class Profile(models.Model):
     subject_area = models.CharField(
         max_length=50,
         choices=SUBJECT_AREA_CHOICES,
-        default="other",
+        default="",
         help_text="Student's main subject area (required).",
     )
 

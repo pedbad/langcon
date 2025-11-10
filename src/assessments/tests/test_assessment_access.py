@@ -1,6 +1,7 @@
 # src/assessments/tests/test_assessment_access.py
-import pytest
 from django.urls import reverse
+import pytest
+
 from profiles.models import Profile
 
 
