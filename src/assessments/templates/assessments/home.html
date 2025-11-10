@@ -1,56 +1,25 @@
 {% extends "core/base.html" %}
-{% load icons %}
+{% load cotton icons %}
 
-{% block title %}Assessments{% endblock %}
+{% block title %}Assessment{% endblock %}
 
 {% block content %}
-<div class="mx-auto max-w-5xl py-6 space-y-6">
-
-  {% if not profile_complete %}
-    <!-- Incomplete profile: show warning card + button to profile -->
-    <div class="rounded-xl border border-amber-300 bg-amber-50 p-6">
-      <h1 class="text-xl font-semibold flex items-center gap-2 text-amber-900">
-        {% icon 'warning' class_='h-5 w-5' %}
-        Profile incomplete
-      </h1>
-      <p class="mt-2 text-amber-900/80">
-        You need to complete your profile before you can begin your assessment.
-      </p>
-
-      <div class="mt-4">
-        <a href="{% url 'profiles:profile' %}"
-           class="inline-flex items-center gap-2 rounded-md border border-input
-                  bg-amber-700 px-4 py-2 text-sm font-medium text-white shadow-sm
-                  transition-colors hover:bg-amber-800 focus-visible:outline-none
-                  focus-visible:ring-1 focus-visible:ring-ring">
-          {% icon 'assignment_ind' class_='h-5 w-5' %}
-          <span>Go to your profile</span>
-        </a>
+<div class="mx-auto max-w-4xl space-y-6">
+  {% c card class="card-strong" %}
+    {% c card/header %}
+      <div class="flex items-center gap-2 text-2xl">
+        {% icon 'assignment_ind' class_='h-6 w-6 text-foreground/80' %}
+        {% c card/title %}Assessment{% endc %}
       </div>
-    </div>
-  {% else %}
-    <!-- Complete profile: ready CTA / placeholder -->
-    <div class="rounded-xl border border-input bg-card p-6">
-      <h1 class="text-2xl font-semibold flex items-center gap-2">
-        {% icon 'school' class_='h-6 w-6 text-primary' %}
-        Your Assessment
-      </h1>
-      <p class="mt-2 text-muted-foreground">
-        Your profile is complete. You can begin your assessment.
+      {% c card/description %}
+        Your profile is complete. This is a placeholder Assessment home. Build the app here later.
+      {% endc %}
+    {% endc %}
+    {% c card/content %}
+      <p class="text-sm text-muted-foreground">
+        Replace this content with the real assessment workflow.
       </p>
-
-      <div class="mt-4">
-        <a href="#"
-           class="inline-flex items-center gap-2 rounded-md border border-input
-                  bg-emerald-600 px-4 py-2 text-sm font-medium text-white shadow-sm
-                  transition-colors hover:bg-emerald-700 focus-visible:outline-none
-                  focus-visible:ring-1 focus-visible:ring-ring">
-          {% icon 'play_arrow' class_='h-5 w-5' %}
-          <span>Begin assessment</span>
-        </a>
-      </div>
-    </div>
-  {% endif %}
-
+    {% endc %}
+  {% endc %}
 </div>
 {% endblock %}

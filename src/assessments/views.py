@@ -1,18 +1,13 @@
-from django.contrib import messages
+# src/assessments/views.py
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render
 
+from profiles.utils import require_complete_profile
+
+
 @login_required
+@require_complete_profile
 def home(request):
-    """
-    Assessments landing page.
-    If the student's profile is incomplete, show a warning card with a CTA to complete profile.
-    """
-    prof = getattr(request.user, "profile", None)
-    profile_complete = bool(prof and prof.is_complete())
-
-    if not profile_complete:
-        # If your base template renders Django messages, this shows a warning toast.
-        messages.warning(request, "Please complete your profile before starting your assessment.")
-
-    return render(request, "assessments/home.html", {"profile_complete": profile_complete})
+    # Placeholder page (gated).
+    # You can flesh this out later with your real assessment flow.
+    return render(request, "assessments/home.html")

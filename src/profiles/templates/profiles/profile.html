@@ -576,22 +576,42 @@
           </div>
         </div>
 
-        {# Save button or lock message #}
-        {% if not profile.is_locked %}
+
+        {# Save button or lock / or CTA when complete #}
+        {% if profile.is_locked %}
+          <p class="text-sm text-muted-foreground">Your profile is locked and cannot be edited.</p>
+
+        {% elif profile_complete %}
+          {# ✅ Profile complete → show Begin Assessment CTA #}
+          <a
+            href="{% url 'assessments:home' %}"
+            class="inline-flex z-0 w-full items-center justify-center gap-2 rounded-md border border-input
+                  bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm
+                  transition-colors hover:bg-primary/90 focus-visible:outline-none
+                  focus-visible:ring-1 focus-visible:ring-ring"
+          >
+            {% icon 'assignment_ind' class_='h-5 w-5' %}
+            <span>Begin your assessment</span>
+          </a>
+
+        {% else %}
+          {# 📝 Not complete → show Save button #}
           <button
             type="submit"
             id="save-profile"
             class="inline-flex z-0 w-full items-center justify-center gap-2 rounded-md border border-input
-                   bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm
-                   transition-colors hover:bg-primary/90 focus-visible:outline-none
-                   focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none
-                   disabled:opacity-50">
+                  bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm
+                  transition-colors hover:bg-primary/90 focus-visible:outline-none
+                  focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none
+                  disabled:opacity-50"
+          >
             {% icon 'save' class_='h-5 w-5' %}
             <span>Save Changes</span>
           </button>
-        {% else %}
-          <p class="text-sm text-muted-foreground">Your profile is locked and cannot be edited.</p>
         {% endif %}
+
+
+
       </form>
     {% endc %}
 
