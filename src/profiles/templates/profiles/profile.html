@@ -57,6 +57,14 @@
       <form method="post" class="mt-6 space-y-5">
         {% csrf_token %}
 
+        {% if form.non_field_errors %}
+          <div class="rounded-md border border-destructive/60 bg-destructive/10 p-3 text-sm text-destructive">
+            {% for e in form.non_field_errors %}
+              <p>{{ e }}</p>
+            {% endfor %}
+          </div>
+        {% endif %}
+
         {# ─────────────────────────────────────────────────────────────
            Two-column: Phone (left) + Subject area (right)
            ───────────────────────────────────────────────────────────── #}
