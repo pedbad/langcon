@@ -61,7 +61,7 @@
         <div class="grid gap-4 sm:grid-cols-2">
           {# Phone #}
           <div>
-            <label for="id_phone" class="mb-1 block text-sm font-medium text-foreground">Phone</label>
+            <label for="{{ form.phone.id_for_label }}" class="mb-1 block text-sm font-medium text-foreground">Phone</label>
             <div class="flex rounded-md shadow-sm">
               <span class="inline-flex h-10 items-center rounded-l-md border border-input border-r-0 bg-muted px-3 text-muted-foreground shrink-0">
                 {% icon 'phone' class_='size-6 opacity-80 -mt-[1px]' label='Phone' %}
@@ -71,7 +71,7 @@
             {% if form.phone.errors %}
               <p class="mt-1 text-sm text-destructive">{{ form.phone.errors.0 }}</p>
             {% endif %}
-            <p class="mt-1 text-xs text-muted-foreground">Include country code if possible (e.g. +44 …).</p>
+            <p id="{{ form.phone.auto_id }}_helptext" class="mt-1 text-xs text-muted-foreground">Include country code if possible (e.g. +44 …).</p>
           </div>
 
           {# Subject area (native <select> with explicit placeholder control) #}
@@ -110,9 +110,8 @@
 
             {% if form.subject_area.errors %}
               <p class="mt-1 text-sm text-destructive">{{ form.subject_area.errors.0 }}</p>
-            {% else %}
-              <p class="mt-1 text-xs text-muted-foreground">Choose the closest match.</p>
             {% endif %}
+            <p id="{{ form.subject_area.auto_id }}_helptext" class="mt-1 text-xs text-muted-foreground">Choose the closest match.</p>
           </div>
         </div> {# ← CLOSES the 2-column grid! #}
 
@@ -125,19 +124,20 @@
               <div class="grid size-10 place-items-center rounded-lg bg-sky-100 text-sky-700 shrink-0 dark:bg-sky-800 dark:text-sky-200">
                 {% icon 'passport' class_='size-6' label='Globe' %}
               </div>
-              <p class="font-semibold leading-snug text-sky-900 dark:text-sky-100">
+              <p id="visa-question-label" class="font-semibold leading-snug text-sky-900 dark:text-sky-100">
                 Do you require a student visa to study in the UK?
               </p>
             </div>
 
             <div class="w-full sm:w-72">
-              <fieldset role="radiogroup" aria-label="UK Student Visa" class="w-full">
+              <fieldset role="radiogroup" aria-labelledby="visa-question-label" class="w-full">
+                <legend class="sr-only">UK student visa requirement</legend>
                 <div class="flex w-full overflow-hidden rounded-md border border-input shadow-sm">
-                  <input type="radio" name="{{ form.requires_uk_student_visa.html_name }}" id="visa_yes" value="True" class="peer/visaYes sr-only"
+                  <input type="radio" name="{{ form.requires_uk_student_visa.html_name }}" id="visa_yes" value="True" class="peer/visaYes sr-only" aria-label="Yes, I require a UK student visa"
                     {% with v=form.requires_uk_student_visa.value|stringformat:'s' %}{% if v == 'True' or v == '' %}checked{% endif %}{% endwith %}/>
                   <label for="visa_yes" class="flex-1 cursor-pointer select-none px-4 py-2 text-center text-sm font-medium transition-colors rounded-l-md bg-background text-foreground hover:bg-green-600 hover:text-white peer-checked/visaYes:bg-green-600 peer-checked/visaYes:text-white">Yes</label>
 
-                  <input type="radio" name="{{ form.requires_uk_student_visa.html_name }}" id="visa_no" value="False" class="peer/visaNo sr-only"
+                  <input type="radio" name="{{ form.requires_uk_student_visa.html_name }}" id="visa_no" value="False" class="peer/visaNo sr-only" aria-label="No, I do not require a UK student visa"
                     {% if form.requires_uk_student_visa.value|stringformat:'s' == 'False' %}checked{% endif %}/>
                   <label for="visa_no" class="flex-1 cursor-pointer select-none px-4 py-2 text-center text-sm font-medium transition-colors -ml-px rounded-r-md bg-background text-foreground hover:bg-red-600 hover:text-white peer-checked/visaNo:bg-red-600 peer-checked/visaNo:text-white">No</label>
                 </div>
@@ -158,19 +158,20 @@
               <div class="grid size-10 place-items-center rounded-lg bg-sky-100 text-sky-700 shrink-0 dark:bg-sky-800 dark:text-sky-200">
                 {% icon 'assignment_globe' class_='size-6' label='English Exam' %}
               </div>
-              <p class="font-semibold leading-snug text-sky-900 dark:text-sky-100">
+              <p id="exam-question-label" class="font-semibold leading-snug text-sky-900 dark:text-sky-100">
                 Have you taken an English language exam in the past five years?
               </p>
             </div>
 
             <div class="w-full sm:w-72">
-              <fieldset role="radiogroup" aria-label="English exam in past 5 years" class="w-full">
+              <fieldset role="radiogroup" aria-labelledby="exam-question-label" class="w-full">
+                <legend class="sr-only">Recent English exam confirmation</legend>
                 <div class="flex w-full overflow-hidden rounded-md border border-input shadow-sm">
-                  <input type="radio" name="{{ form.has_recent_english_exam.html_name }}" id="exam_yes" value="True" class="peer/examYes sr-only"
+                  <input type="radio" name="{{ form.has_recent_english_exam.html_name }}" id="exam_yes" value="True" class="peer/examYes sr-only" aria-label="Yes, I have taken an exam"
                     {% with v=form.has_recent_english_exam.value|stringformat:'s' %}{% if v == 'True' or v == '' %}checked{% endif %}{% endwith %}/>
                   <label for="exam_yes" class="flex-1 cursor-pointer select-none px-4 py-2 text-center text-sm font-medium transition-colors rounded-l-md bg-background text-foreground hover:bg-green-600 hover:text-white peer-checked/examYes:bg-green-600 peer-checked/examYes:text-white">Yes</label>
 
-                  <input type="radio" name="{{ form.has_recent_english_exam.html_name }}" id="exam_no" value="False" class="peer/examNo sr-only"
+                  <input type="radio" name="{{ form.has_recent_english_exam.html_name }}" id="exam_no" value="False" class="peer/examNo sr-only" aria-label="No, I have not taken an exam"
                     {% if form.has_recent_english_exam.value|stringformat:'s' == 'False' %}checked{% endif %}/>
                   <label for="exam_no" class="flex-1 cursor-pointer select-none px-4 py-2 text-center text-sm font-medium transition-colors -ml-px rounded-r-md bg-background text-foreground hover:bg-red-600 hover:text-white peer-checked/examNo:bg-red-600 peer-checked/examNo:text-white">No</label>
                 </div>
@@ -191,13 +192,14 @@
             data-open="{% if v == 'True' %}true{% else %}false{% endif %}"
             role="region"
             aria-hidden="{% if v == 'True' %}false{% else %}true{% endif %}"
+            aria-labelledby="exam-details-heading"
             class="group/exam relative isolate z-20 max-h-0 opacity-0 transition-[max-height,opacity] duration-500 ease-in-out data-[open=true]:max-h-[4000px] data-[open=true]:opacity-100">
 
             <div class="rounded-xl border p-4 mt-4 bg-blue-50 border-blue-200 dark:bg-slate-900/40 dark:border-slate-700">
 
-              <p class="text-sm font-medium mb-1 text-blue-800 dark:text-blue-200">
+              <h3 id="exam-details-heading" class="text-sm font-medium mb-1 text-blue-800 dark:text-blue-200">
                 Please select and provide your most recent English language exam test scores.
-              </p>
+              </h3>
 
               {# Exam type + date: side-by-side on ≥ md, stacked on small #}
               <div class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
@@ -210,6 +212,11 @@
                   {{ form.exam_type }}
                   {% if form.exam_type.errors %}
                     <p class="text-sm text-destructive">{{ form.exam_type.errors.0 }}</p>
+                  {% endif %}
+                  {% if form.exam_type.help_text %}
+                    <p id="{{ form.exam_type.auto_id }}_helptext" class="text-xs text-muted-foreground">
+                      {{ form.exam_type.help_text }}
+                    </p>
                   {% endif %}
                 </div>
 
@@ -250,6 +257,9 @@
                     {{ form.reading_score }}
                   </div>
                   {% if form.reading_score.errors %}<p class="text-sm text-destructive mt-1">{{ form.reading_score.errors.0 }}</p>{% endif %}
+                  {% if form.reading_score.help_text %}
+                    <p id="{{ form.reading_score.auto_id }}_helptext" class="text-xs text-muted-foreground mt-1">{{ form.reading_score.help_text }}</p>
+                  {% endif %}
                 </div>
 
                 <div>
@@ -266,8 +276,8 @@
                 </div>
 
                 <div>
-                  <label class="flex items-center gap-2 ml-2 text-base font-semibold text-writing">
-                    {% icon 'ink_pen' class_='size-5 -mt-[1px] text-writing' %}<span>Writing</span>
+                  <label for="{{ form.writing_score.id_for_label }}" class="flex items-center gap-2 ml-2 text-base font-semibold text-writing">
+                    {% icon 'ink_pen' class_='size-5 -mt-[1px] text-writing' %}<span>{{ form.writing_score.label }}</span>
                   </label>
                   <div class="flex items-stretch rounded-md shadow-sm">
                     <span class="inline-flex h-10 items-center rounded-l-md border border-input border-r-0 bg-muted px-3 text-muted-foreground shrink-0">
@@ -342,12 +352,14 @@
                   id="cambridge-extra"
                   data-open="{% if et == 'c1' or et == 'c2' %}true{% else %}false{% endif %}"
                   aria-hidden="{% if et == 'c1' or et == 'c2' %}false{% else %}true{% endif %}"
+                  aria-labelledby="cambridge-extra-heading"
+                  role="region"
                   class="relative mt-6 w-full overflow-hidden rounded-xl border px-4 py-3 transition-[max-height,opacity] duration-300 ease-in-out max-h-0 opacity-0 border-amber-200 bg-amber-50 dark:border-amber-700 dark:bg-amber-900/30 data-[open=true]:max-h-[900px] data-[open=true]:opacity-100">
 
-                  <p class="flex items-center gap-2 text-sm font-medium mb-3 text-amber-900 dark:text-amber-100">
+                  <h3 id="cambridge-extra-heading" class="flex items-center gap-2 text-sm font-medium mb-3 text-amber-900 dark:text-amber-100">
                     {% icon 'other_admissions' class_='size-5 text-amber-800 dark:text-amber-200 -mt-[1px]' %}
                     For <span class="font-semibold">Cambridge C1/C2</span> exams, please provide additional details:
-                  </p>
+                  </h3>
 
 
                   <div class="grid gap-4 sm:grid-cols-2 ">
@@ -365,13 +377,14 @@
 
                       {% if form.cambridge_grade.errors %}
                         <p class="text-sm text-destructive mt-1">{{ form.cambridge_grade.errors.0 }}</p>
-                      {% else %}
-                        <p class="text-xs text-muted-foreground mt-1">Required for Cambridge C1/C2 exams.</p>
                       {% endif %}
+                      <p id="{{ form.cambridge_grade.auto_id }}_helptext" class="text-xs text-muted-foreground mt-1">
+                        {{ form.cambridge_grade.help_text }}
+                      </p>
                     </div>
 
                     {# Use of English (score  #}
-                    <div class=mt-2>
+                    <div class="mt-2">
                       <label
                         for="{{ form.cambridge_use_of_english.id_for_label }}"
                         class="flex items-center gap-1.5 text-base font-semibold leading-tight text-amber-800 dark:text-amber-200 mb-0.5"
@@ -389,11 +402,10 @@
 
                       {% if form.cambridge_use_of_english.errors %}
                         <p class="text-sm text-destructive mt-1">{{ form.cambridge_use_of_english.errors.0 }}</p>
-                      {% else %}
-                        <p class="text-xs text-muted-foreground mt-1">
-                          Whole number; shown only for Cambridge C1/C2.
-                        </p>
                       {% endif %}
+                      <p id="{{ form.cambridge_use_of_english.auto_id }}_helptext" class="text-xs text-muted-foreground mt-1">
+                        {{ form.cambridge_use_of_english.help_text }}
+                      </p>
                     </div>
 
 
@@ -443,7 +455,7 @@
               <label for="id_academic_integrity_confirmed" class="font-semibold cursor-pointer text-red-800 dark:text-red-200">
                 {{ form.academic_integrity_confirmed.label }}
               </label>
-              <p class="text-sm mt-1 text-red-800/80 dark:text-red-200/90">
+              <p id="{{ form.academic_integrity_confirmed.auto_id }}_helptext" class="text-sm mt-1 text-red-800/80 dark:text-red-200/90">
                 {{ form.academic_integrity_confirmed.help_text }}
               </p>
               {% if form.academic_integrity_confirmed.errors %}
@@ -457,9 +469,14 @@
         {% if profile.is_locked %}
           <p class="text-sm text-muted-foreground">Your profile is locked and cannot be edited.</p>
         {% elif profile_complete %}
-          <a href="{% url 'assessments:home' %}" class="inline-flex z-0 w-full items-center justify-center gap-2 rounded-md border border-input bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring">
-            {% icon 'assignment_ind' class_='h-5 w-5' %}<span>Begin your assessment</span>
-          </a>
+          {% url 'assessments:home' as assessment_url %}
+          {% if assessment_url %}
+            <a href="{{ assessment_url }}" aria-label="Begin your assessment" class="inline-flex z-0 w-full items-center justify-center gap-2 rounded-md border border-input bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring">
+              {% icon 'assignment_ind' class_='h-5 w-5' %}<span>Begin your assessment</span>
+            </a>
+          {% else %}
+            <p class="text-sm text-muted-foreground" role="status">Assessment link is currently unavailable. Please contact support.</p>
+          {% endif %}
         {% else %}
           <button
             type="submit"
@@ -479,10 +496,18 @@
 
     {% c card/footer class="justify-start gap-2" %}
       {% c button as_child=True variant="outline" size="lg" class="w-full font-medium transition-all" %}
-        <a href="{% url 'users:student_home' %}" class="group flex items-center justify-center gap-2">
-          {% icon 'arrow_left' class_='h-5 w-5 relative transition-transform duration-150 ease-out group-hover:-translate-x-1' %}
-          <span>Back to Student Dashboard</span>
-        </a>
+        {% url 'users:student_home' as student_home_url %}
+        {% if student_home_url %}
+          <a href="{{ student_home_url }}" aria-label="Back to student dashboard" class="group flex items-center justify-center gap-2">
+            {% icon 'arrow_left' class_='h-5 w-5 relative transition-transform duration-150 ease-out group-hover:-translate-x-1' %}
+            <span>Back to Student Dashboard</span>
+          </a>
+        {% else %}
+          <span class="group flex items-center justify-center gap-2 text-muted-foreground" role="status">
+            {% icon 'error' class_='h-5 w-5' %}
+            <span>Student dashboard link unavailable</span>
+          </span>
+        {% endif %}
       {% endc %}
     {% endc %}
   {% endc %}
