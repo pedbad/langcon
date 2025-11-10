@@ -27,33 +27,21 @@
   // App bootstrap + progressive enhancement hooks
   // ────────────────────────────────────────────────────────────────
   document.addEventListener("DOMContentLoaded", () => {
-    console.log("[DOMContentLoaded] fired");
     window.APP = { env: document.body.dataset.env || "prod" };
-    console.log("[APP] ready, env =", window.APP.env);
 
     // ===== Panels (animated) ======================================
     const examDetailsEl     = document.getElementById("exam-details");
     const cambridgeExtraEl  = document.getElementById("cambridge-extra");
 
-    function isExamYesSelected() {
-      const yesRadio = document.querySelector('input[name="has_recent_english_exam"][value="True"]');
-      return !!yesRadio && yesRadio.checked;
-    }
-
     function animatePanel(el, show) {
       if (!el) return;
       el.dataset.open = show ? "true" : "false";
-      el.setAttribute("aria-hidden", show ? "false" : "true"); // <-- add this
-
+      el.setAttribute("aria-hidden", show ? "false" : "true");
       if (show) {
         el.style.overflow  = "hidden";
         el.style.maxHeight = el.scrollHeight + "px";
         el.style.opacity   = "1";
-        const done = () => {
-          el.style.maxHeight = "none";
-          el.style.overflow  = "visible";
-          el.removeEventListener("transitionend", done);
-        };
+        const done = () => { el.style.maxHeight = "none"; el.style.overflow = "visible"; el.removeEventListener("transitionend", done); };
         el.addEventListener("transitionend", done);
       } else {
         el.style.overflow  = "hidden";
@@ -62,22 +50,38 @@
       }
     }
 
-
-    function renderExamDetails() {
-      animatePanel(examDetailsEl, isExamYesSelected());
+    function isExamYesSelected() {
+      const yesRadio = document.querySelector('input[name="has_recent_english_exam"][value="True"]');
+      return !!yesRadio && yesRadio.checked;
     }
+    function renderExamDetails() { animatePanel(examDetailsEl, isExamYesSelected()); }
 
-    function renderCambridgeExtra() {
-      // Show extra panel for Cambridge C1/C2
-      const et = getExamType();
-      const show = et === "c1" || et === "c2";
-      animatePanel(cambridgeExtraEl, show);
-    }
-
-    // ===== Exam Scores: dynamic ranges + overall auto-calc =========
+    // ===== DOM helpers ============================================
     const $ = (sel) => document.querySelector(sel);
 
-    // Inputs
+    // Robust value readers for custom widgets
+    function readCustomValue(host) {
+      if (!host) return '';
+      const attr = host.getAttribute('value');
+      if (attr != null && attr !== '') return String(attr);
+      if ('value' in host && host.value) { try { return String(host.value); } catch(_) {} }
+      const opted =
+        host.querySelector('[data-state="checked"]') ||
+        host.querySelector('[aria-selected="true"]') ||
+        host.querySelector('[role="option"][aria-selected="true"]');
+      if (opted) {
+        return String(opted.getAttribute('value') || opted.getAttribute('data-value') || (opted.textContent || '')).trim();
+      }
+      return '';
+    }
+    function setCustomValue(host, value) {
+      if (!host) return;
+      try { host.value = value; } catch (_) {}
+      host.setAttribute('value', value);
+      host.dispatchEvent(new Event('change', { bubbles: true }));
+    }
+
+    // ===== Inputs ==================================================
     const reading   = $('#id_reading_score');
     const listening = $('#id_listening_score');
     const writing   = $('#id_writing_score');
@@ -85,9 +89,26 @@
     const overall   = $('#id_overall_score');
     const override  = $('#id_overall_manual_override');
 
-    // Exam type (ShadCN <c-select> and/or hidden mirror)
-    const examTypeEl = $('#id_exam_type');
-    const hiddenExam = document.querySelector('input[type="hidden"][name="exam_type"]');
+    // Date parts (custom <c-select> hosts)
+    const examDayHost   = document.getElementById('id_exam_day');
+    const examMonthHost = document.getElementById('id_exam_month');
+    const examYearHost  = document.getElementById('id_exam_year');
+
+    // Date mirrors (if present)
+    const examDayMirror   = document.querySelector('input[name="exam_day"]');
+    const examMonthMirror = document.querySelector('input[name="exam_month"]');
+    const examYearMirror  = document.querySelector('input[name="exam_year"]');
+
+    // Cambridge extras
+    const cambridgeGradeHost  = document.getElementById('id_cambridge_grade');
+    const cambridgeGradeMirror = document.querySelector('#mirror_cambridge_grade') || document.querySelector('input[name="cambridge_grade"]');
+    const cambridgeUoE        = document.getElementById('id_cambridge_use_of_english');
+
+    // Exam type sources
+    const examTypeEl      = document.getElementById('id_exam_type');
+    const examTypeWidget  = document.getElementById('id_exam_type_widget');
+    const hiddenExam      = document.querySelector('input[type="hidden"][name="exam_type"]');
+    const nativeSelect    = document.querySelector('select[name="exam_type"]');
 
     const EXAM_RULES = {
       ielts: { subMin: 0,   subMax: 9,   subStep: 0.5, overallMin: 0,   overallMax: 9,   overallKind: 'avg_half' },
@@ -97,23 +118,13 @@
     };
 
     function getExamType() {
-      // 1) native select (if present)
-      const native = document.querySelector('select[name="exam_type"]');
-      if (native && native.value) return native.value.toLowerCase();
-
-      // 2) ShadCN <c-select id="id_exam_type" value="...">
-      if (examTypeEl) {
-        const v = examTypeEl.getAttribute('value') || examTypeEl.value || '';
-        if (v) return String(v).toLowerCase();
-      }
-
-      // 3) hidden mirror input
       if (hiddenExam && hiddenExam.value) return hiddenExam.value.toLowerCase();
-
-      return '';
+      if (nativeSelect && nativeSelect.value) return nativeSelect.value.toLowerCase();
+      const hostVal = readCustomValue(examTypeEl) || readCustomValue(examTypeWidget);
+      return (hostVal || '').toLowerCase();
     }
 
-    // Helpers
+    // ===== math helpers ===========================================
     function num(el) {
       if (!el) return null;
       const v = String(el.value ?? '').trim();
@@ -123,8 +134,6 @@
     }
     const roundHalf = (x) => Math.round(x * 2) / 2;
     const clamp     = (x, lo, hi) => Math.max(lo, Math.min(hi, x));
-
-    // Snap to step and clamp to range
     function snapToStep(value, step, min, max) {
       if (value == null) return null;
       const snapped = Math.round((value - min) / step) * step + min;
@@ -132,32 +141,29 @@
       return clamp(fixed, min, max);
     }
 
+    // ===== rules / compute ========================================
     function applyExamRules() {
       const et = getExamType();
       const rules = EXAM_RULES[et];
       if (!rules) return;
-
       const setAttrs = (el, min, max, step) => {
         if (!el) return;
         el.setAttribute('min',  String(min));
         el.setAttribute('max',  String(max));
         el.setAttribute('step', String(step));
-        el.setAttribute('placeholder', `${min}–${max}`); // en dash
+        el.setAttribute('placeholder', `${min}–${max}`);
       };
-
       setAttrs(reading,   rules.subMin, rules.subMax, rules.subStep);
       setAttrs(listening, rules.subMin, rules.subMax, rules.subStep);
       setAttrs(writing,   rules.subMin, rules.subMax, rules.subStep);
       setAttrs(speaking,  rules.subMin, rules.subMax, rules.subStep);
-
       if (overall) {
         overall.setAttribute('aria-description', `Overall range ${rules.overallMin}–${rules.overallMax}`);
       }
     }
 
     function cleanSubscore(el) {
-      const et = getExamType();
-      const rules = EXAM_RULES[et];
+      const rules = EXAM_RULES[getExamType()];
       if (!rules || !el) return;
       const v = num(el);
       if (v == null) return;
@@ -166,8 +172,7 @@
     }
 
     function cleanOverallIfManual() {
-      const et = getExamType();
-      const rules = EXAM_RULES[et];
+      const rules = EXAM_RULES[getExamType()];
       if (!rules || !overall || !override || !override.checked) return;
       const v = num(overall);
       if (v == null) return;
@@ -178,24 +183,15 @@
 
     function computeOverallIfNeeded() {
       if (!overall || !reading || !listening || !writing || !speaking) return;
-
-      const et = getExamType();
-      const rules = EXAM_RULES[et];
+      const rules = EXAM_RULES[getExamType()];
       if (!rules) return;
-
-      const r = num(reading);
-      const l = num(listening);
-      const w = num(writing);
-      const s = num(speaking);
-
-      if (r == null || l == null || w == null || s == null) return; // need all 4
-      if (override && override.checked) return;                      // respect manual
-
+      const r = num(reading), l = num(listening), w = num(writing), s = num(speaking);
+      if (r == null || l == null || w == null || s == null) return;
+      if (override && override.checked) return;
       let val;
-      if (rules.overallKind === 'sum')       val = r + l + w + s;
+      if (rules.overallKind === 'sum')           val = r + l + w + s;
       else if (rules.overallKind === 'avg_half') val = roundHalf((r + l + w + s) / 4);
-      else                                    val = Math.round((r + l + w + s) / 4);
-
+      else                                       val = Math.round((r + l + w + s) / 4);
       overall.value = String(clamp(val, rules.overallMin, rules.overallMax));
     }
 
@@ -211,67 +207,145 @@
       }
     }
 
-    // Track exam-type changes robustly
-    let lastExamType = null;
-    function maybeApplyExamRules() {
-      const et = getExamType();
-      if (et && et !== lastExamType) {
-        lastExamType = et;
-        applyExamRules();
-        computeOverallIfNeeded();
-        renderCambridgeExtra();
-        // Re-run after layout settles to get correct scrollHeight for animations
-        setTimeout(renderCambridgeExtra, 0);
-      }
+    // Hard-reset a ShadCN/cotton <c-select> by cloning it with an empty value.
+    // This resets its internal selected state and trigger text.
+    function resetCottonSelectById(id) {
+      const el = document.getElementById(id);
+      if (!el) return;
+      const clone = el.cloneNode(true);
+      clone.setAttribute("value", "");   // no selection
+      el.replaceWith(clone);
     }
 
-    // ── Single, unified listeners (no duplicates) ──────────────────
-    document.addEventListener("input", (evt) => {
-      const t = evt.target;
-      if (!t) return;
+    // Soft-set a cotton select's value (won't always change the UI)
+    function setCottonValueById(id, value) {
+      const el = document.getElementById(id);
+      if (!el) return;
+      try { el.value = value; } catch (_) {}
+      el.setAttribute("value", value);
+      el.dispatchEvent(new Event("change", { bubbles: true }));
+    }
 
-      if (t === reading || t === listening || t === writing || t === speaking) {
-        cleanSubscore(t);
-        computeOverallIfNeeded();
-        return;
+
+    // ===== NEW: clear EVERYTHING exam-related on type change =======
+    function clearAllExamInputs() {
+      // scores
+      const scoreIds = [
+        "id_reading_score",
+        "id_listening_score",
+        "id_writing_score",
+        "id_speaking_score",
+        "id_overall_score",
+      ];
+      scoreIds.forEach((id) => {
+        const el = document.getElementById(id);
+        if (el) el.value = "";
+      });
+
+      // manual override OFF (fires change so your readonly logic runs)
+      const override = document.getElementById("id_overall_manual_override");
+      if (override) {
+        const was = override.checked;
+        override.checked = false;
+        if (was) override.dispatchEvent(new Event("change", { bubbles: true }));
       }
 
+      // date parts — reset both the visible <c-select> and any hidden mirrors
+      // (hosts)
+      ["id_exam_day", "id_exam_month", "id_exam_year"].forEach((id) => {
+        // hard reset UI to placeholder
+        resetCottonSelectById(id);
+      });
+      // (mirrors)
+      ["exam_day", "exam_month", "exam_year"].forEach((name) => {
+        const m = document.querySelector(`input[name="${name}"]`);
+        if (m) {
+          const prev = m.value;
+          m.value = "";
+          if (prev !== "") m.dispatchEvent(new Event("change", { bubbles: true }));
+        }
+      });
+
+      // Cambridge extras — **hard reset** the ShadCN select + clear mirrors
+      resetCottonSelectById("id_cambridge_grade");          // UI reset
+      const gradeMirror =
+        document.querySelector("#mirror_cambridge_grade") ||
+        document.querySelector('input[name="cambridge_grade"]');
+      if (gradeMirror) {
+        const prev = gradeMirror.value;
+        gradeMirror.value = "";
+        if (prev !== "") gradeMirror.dispatchEvent(new Event("change", { bubbles: true }));
+      }
+      const uoe = document.getElementById("id_cambridge_use_of_english");
+      if (uoe) uoe.value = "";
+    }
+
+
+    function renderCambridgeExtra() {
+      const et = getExamType();
+      const show = et === "c1" || et === "c2";
+      animatePanel(cambridgeExtraEl, show);
+    }
+
+    // Track exam-type changes robustly; clear on ANY change to a different type
+    let lastExamType = getExamType() || null;
+
+    function onExamTypeChangedHard() {
+      const et = getExamType();
+      if (!et) return;
+      if (lastExamType && et !== lastExamType) {
+        // Clear ALL exam inputs whenever we switch to a different exam
+        clearAllExamInputs();
+      }
+      lastExamType = et;
+      applyExamRules();
+      computeOverallIfNeeded();
+      renderCambridgeExtra();
+      setTimeout(renderCambridgeExtra, 0);
+    }
+
+    // ── Listeners (no duplicates) ─────────────────────────────────
+    document.addEventListener("input", (evt) => {
+      const t = evt.target;
+      if (t === reading || t === listening || t === writing || t === speaking) {
+        cleanSubscore(t); computeOverallIfNeeded(); return;
+      }
       if (t === overall)  { cleanOverallIfManual(); return; }
       if (t === override) { syncOverrideState();    return; }
     });
 
     document.addEventListener("change", (evt) => {
       const t = evt.target;
-      if (!t) return;
-
-      if (t.name === "has_recent_english_exam") { renderExamDetails();  return; }
-      if (t.name === "exam_type")               { maybeApplyExamRules(); return; }
-      if (t === override)                       { syncOverrideState();   return; }
+      if (t && t.name === "has_recent_english_exam") renderExamDetails();
+      if (t === override) syncOverrideState();
+      if (t && (t.name === "exam_type" || t.id === "id_exam_type" || t.id === "id_exam_type_widget")) {
+        onExamTypeChangedHard();
+      }
     });
 
-    // Observe ShadCN <c-select> and hidden mirror input
-    const onExamTypeChanged = () => { maybeApplyExamRules(); };
-
-    if (examTypeEl) {
-      const obsSel = new MutationObserver(onExamTypeChanged);
-      obsSel.observe(examTypeEl, { attributes: true, attributeFilter: ["value"] });
-    }
-    if (hiddenExam) {
-      hiddenExam.addEventListener("input",  onExamTypeChanged);
-      hiddenExam.addEventListener("change", onExamTypeChanged);
-      const obsHidden = new MutationObserver(onExamTypeChanged);
-      obsHidden.observe(hiddenExam, { attributes: true, childList: true, characterData: true });
+    // Observe possible sources of exam type changes (custom + mirrors)
+    const observeAttr = (el) => { if (!el) return;
+      new MutationObserver(onExamTypeChangedHard).observe(el, { attributes: true, attributeFilter: ["value"] });
+      el.addEventListener('input', onExamTypeChangedHard);
+      el.addEventListener('change', onExamTypeChangedHard);
+    };
+    observeAttr(examTypeEl);
+    observeAttr(examTypeWidget);
+    observeAttr(hiddenExam);
+    if (nativeSelect) {
+      nativeSelect.addEventListener('change', onExamTypeChangedHard);
+      nativeSelect.addEventListener('input',  onExamTypeChangedHard);
     }
 
     // Short-lived polling to cover first paint race conditions
     let poll = 0;
     const id = setInterval(() => {
-      maybeApplyExamRules();
-      if (++poll > 10) clearInterval(id); // ~5s
+      onExamTypeChangedHard();
+      if (++poll > 10) clearInterval(id);
     }, 500);
 
     // Initial bootstrap
-    maybeApplyExamRules();
+    onExamTypeChangedHard();
     syncOverrideState();
     computeOverallIfNeeded();
     renderCambridgeExtra();
