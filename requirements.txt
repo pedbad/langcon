@@ -5,3 +5,4 @@ django-unfold==0.67.0
 django-import-export==4.3.10
 python-dotenv==1.1.1
 mysqlclient==2.2.4
+openai==2.7.2

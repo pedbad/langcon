@@ -27,21 +27,44 @@
     {% endc %}
 
     {% c card/content %}
-      <p class="leading-relaxed text-foreground/80">
-        Use this repository as a golden starter. Download the ZIP, rename the folder, tweak branding,
-        and you’re ready to ship. See the quick-start and checklist below.
-      </p>
+      {% if profile_complete %}
+        <div class="flex items-start gap-3 rounded-md border border-green-200 bg-green-50/80 px-4 py-3 text-sm text-green-900 dark:border-green-700/70 dark:bg-green-900/30 dark:text-green-100">
+          {% icon 'success' class_='h-5 w-5 shrink-0 text-green-600 dark:text-green-300' %}
+          <div class="space-y-1">
+            <p class="font-semibold">Nice! Your profile was saved successfully.</p>
+            <p>Your assessment is now unlocked. Continue whenever you’re ready.</p>
+          </div>
+        </div>
+      {% else %}
+        <div class="flex items-start gap-3 rounded-md border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-900 dark:border-amber-800 dark:bg-amber-900/30 dark:text-amber-100">
+          {% icon 'warning' class_='h-5 w-5 shrink-0 text-amber-600 dark:text-amber-300' %}
+          <div class="space-y-1">
+            <p class="font-semibold">Before starting your assessment, you must complete your profile and confirm the honour code.</p>
+          </div>
+        </div>
+      {% endif %}
     {% endc %}
 
     {% c card/footer class="justify-start gap-2" %}
-      <a
-        href="{% url 'profiles:profile' %}"
-        class="group inline-flex w-full items-center justify-center gap-2 rounded-md border border-input bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-      >
-        {% icon 'assignment_ind' class_='h-5 w-5' %}
-        <span>Complete your profile</span>
-        {% icon 'arrow_right' class_='h-5 w-5 transition-transform duration-200 group-hover:translate-x-1' %}
-      </a>
+      {% if profile_complete %}
+        <a
+          href="{% url 'assessments:home' %}"
+          class="group inline-flex w-full items-center justify-center gap-2 rounded-md border border-input bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+        >
+          {% icon 'rubric' class_='h-5 w-5' %}
+          <span>Go to assessment</span>
+          {% icon 'arrow_right' class_='h-5 w-5 transition-transform duration-200 group-hover:translate-x-1' %}
+        </a>
+      {% else %}
+        <a
+          href="{% url 'profiles:profile' %}"
+          class="group inline-flex w-full items-center justify-center gap-2 rounded-md border border-input bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+        >
+          {% icon 'assignment_ind' class_='h-5 w-5' %}
+          <span>Complete your profile</span>
+          {% icon 'arrow_right' class_='h-5 w-5 transition-transform duration-200 group-hover:translate-x-1' %}
+        </a>
+      {% endif %}
     {% endc %}
   {% endc %}
 
