@@ -17,6 +17,8 @@ class ProfileAdmin(admin.ModelAdmin):
         "has_recent_english_exam",
         "exam_type",
         "academic_integrity_confirmed",
+        "cambridge_grade",
+        "cambridge_use_of_english",
         "created_at",
         "updated_at",
         "row_delete",

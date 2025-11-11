@@ -312,6 +312,12 @@
         syncOverrideState();
         return;
       }
+
+      if (t === reading || t === listening || t === writing || t === speaking) {
+        cleanSubscore(t);
+        computeOverallIfNeeded();
+        return;
+      }
     });
 
     // Live input: snap sub-scores to valid steps and recompute overall
@@ -320,7 +326,6 @@
       if (!t) return;
 
       if (t === reading || t === listening || t === writing || t === speaking) {
-        cleanSubscore(t);
         computeOverallIfNeeded();
         return;
       }

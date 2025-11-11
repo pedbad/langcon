@@ -289,14 +289,8 @@ class Profile(models.Model):
             if not self.cambridge_grade:
                 errors["cambridge_grade"] = _("Please select your Cambridge grade (A, B, or C).")
             uoe = _to_dec(self.cambridge_use_of_english)
-            if uoe is not None:
-                rules_c = EXAM_RULES[et]
-                if not (rules_c["sub_min"] <= uoe <= rules_c["sub_max"]):
-                    errors["cambridge_use_of_english"] = _(
-                        "Use of English must be between %(lo)s and %(hi)s."
-                    ) % {"lo": rules_c["sub_min"], "hi": rules_c["sub_max"]}
-                if not _is_step(uoe, rules_c["sub_step"]):  # integers for C1/C2
-                    errors["cambridge_use_of_english"] = _("Please enter a whole number.")
+            if uoe is not None and not _is_step(uoe, EXAM_RULES[et]["sub_step"]):
+                errors["cambridge_use_of_english"] = _("Please enter a whole number.")
 
         # 3) Sub-scores (only if exam type and date are ok)
         rules = None

@@ -1,13 +1,15 @@
 {% extends "core/base.html" %}
 {% load cotton navigation icons static %}
+{% block title %}Assessments{% endblock %}
+
 {% block content %}
 <div class="mx-auto max-w-5xl pt-2 space-y-8">
   {% c card class="card-strong" %}
     {% c card/header %}
       <div class="flex items-start justify-between gap-4">
         <div class="flex items-center gap-3 text-4xl">
-          {% icon 'person_alert' class_='h-7 w-7 text-foreground/80' %}
-          {% c card/title %} Student Dashboard{% endc %}
+          {% icon 'warning' class_='h-7 w-7 text-foreground/80' %}
+          {% c card/title %} You’re almost there!{% endc %}
         </div>
         {% if profile_complete %}
           <span class="inline-flex items-center rounded-full transition-colors duration-300 border border-green-500 bg-green-50 px-2.5 py-1 text-xs font-medium text-green-700 dark:border-green-800 dark:bg-green-900/30 dark:text-green-200">
@@ -21,15 +23,15 @@
       </div>
       {% c card/description %}
         <p class="leading-relaxed text-foreground/80 pb-1 border-b-2 border-b-blue-400">
-          Welsome to ... first complete your profile before assessment becomes available.
+          Complete your language profile so we can unlock the assessments tailored to you.
         </p>
       {% endc %}
     {% endc %}
 
     {% c card/content %}
       <p class="leading-relaxed text-foreground/80">
-        Use this repository as a golden starter. Download the ZIP, rename the folder, tweak branding,
-        and you’re ready to ship. See the quick-start and checklist below.
+        We need a few more details before you can start the assessment. Your profile helps the Language
+        Centre understand your background and match you with the right evaluation flow.
       </p>
     {% endc %}
 
@@ -44,5 +46,5 @@
       </a>
     {% endc %}
   {% endc %}
-
+</div>
 {% endblock %}

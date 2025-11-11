@@ -18,6 +18,8 @@ from django.shortcuts import redirect, render
 from django.urls import reverse, reverse_lazy
 from django.views.generic import CreateView
 
+from profiles.models import Profile
+
 # Local imports
 from .constants import PWD_RESET_TPLS  # ← centralised template names
 from .decorators import role_required
@@ -146,7 +148,12 @@ class PasswordResetCompleteView(PasswordResetCompleteView):
 
 @role_required(["student"])
 def student_home(request):
-    return render(request, "users/student_home.html")
+    profile, _ = Profile.objects.get_or_create(user=request.user, defaults={"phone": ""})
+    context = {
+        "profile": profile,
+        "profile_complete": profile.is_complete(),
+    }
+    return render(request, "users/student_home.html", context)
 
 
 @role_required(["teacher"])

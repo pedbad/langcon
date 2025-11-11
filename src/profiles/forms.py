@@ -93,7 +93,8 @@ class ProfileForm(forms.ModelForm):
     exam_type = forms.ChoiceField(
         label="Select the exam taken:",
         required=False,  # still False globally; enforced only when switch is True
-        choices=[(value, label) for (value, label) in Profile.TEST_CHOICES if value != ""],
+        choices=[("", "Select exam…")]
+        + [(value, label) for (value, label) in Profile.TEST_CHOICES if value != ""],
         widget=_select_widget(element_id="id_exam_type"),
     )
 
@@ -257,9 +258,28 @@ class ProfileForm(forms.ModelForm):
         cleaned = super().clean()
         has_exam = cleaned.get("has_recent_english_exam") is True
 
-        # Keep instance exam_type in sync no matter what
-        if self.instance:
-            self.instance.exam_type = (getattr(self.instance, "exam_type", "") or "").lower()
+        exam_fields = [
+            "exam_type",
+            "exam_day",
+            "exam_month",
+            "exam_year",
+            "reading_score",
+            "listening_score",
+            "writing_score",
+            "speaking_score",
+            "overall_score",
+            "cambridge_grade",
+            "cambridge_use_of_english",
+        ]
+        exam_data_entered = any(
+            cleaned.get(field) not in (None, "", False) for field in exam_fields
+        )
+
+        if not has_exam and exam_data_entered:
+            has_exam = True
+            cleaned["has_recent_english_exam"] = True
+            if self.instance:
+                self.instance.has_recent_english_exam = True
 
         if has_exam:
             # normalize exam_type from the form
@@ -313,3 +333,19 @@ class ProfileForm(forms.ModelForm):
                 self.instance.exam_date = None
 
         return cleaned
+
+    def save(self, commit=True):
+        """
+        Run model-level validation so derived fields (e.g. overall_score)
+        are recalculated before persisting.
+        """
+        instance = super().save(commit=False)
+
+        if "exam_date" in self.cleaned_data:
+            instance.exam_date = self.cleaned_data.get("exam_date")
+
+        instance.full_clean()
+
+        if commit:
+            instance.save()
+        return instance

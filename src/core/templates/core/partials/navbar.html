@@ -15,7 +15,9 @@
 >
   <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
 
-    {# LEFT: logo + desktop nav #}
+    {# ─────────────────────────────────────────────────────────────
+       LEFT: logo + desktop nav
+       ───────────────────────────────────────────────────────────── #}
     <div class="flex items-center gap-4">
       {% include "core/partials/logo.html" %}
 
@@ -85,8 +87,14 @@
             </a>
           {% endif %}
 
-          {# Role placeholders (optional) #}
+          {# ───────────────────────────────────────────────────────
+             STUDENT DESKTOP LINKS
+             NOTE: No boolean expressions in {% with %}. We fetch the
+             profile, then use a regular {% if %} to compute classes.
+             ─────────────────────────────────────────────────────── #}
           {% if request.user|is_student %}
+
+            {# Profile link #}
             <a
               href="{% url 'profiles:profile' %}"
               class="nav-link focus-ring rounded-md px-2 py-1.5 {% active_url 'profiles:profile' startswith='/users/profile' %}"
@@ -96,17 +104,38 @@
               <span>Profile</span>
             </a>
 
-              <a
-                href="{% url 'assessments:home' %}"
-                class="nav-link focus-ring rounded-md px-2 py-1.5 {% active_url 'assessments:home' startswith='/users/assessments' %}"
-                {% aria_current 'assessments:home' startswith='/users/assessments' %}
-              >
-                {% icon 'rubric' class_='h-5 w-5 align-middle shrink-0' %}
-                <span>Assessment</span>
-              </a>
+            {# Assessment link (always visible → gate; dim if incomplete) #}
+            {% with profile_obj=request.user.profile %}
+              {% if profile_obj and profile_obj.is_complete %}
+                {% with assess_dim_class="" assess_title="" %}
+                  <a
+                    href="{% url 'assessments:gate' %}"
+                    class="nav-link focus-ring rounded-md px-2 py-1.5 {% active_url 'assessments:gate' startswith='/users/assessments' %} {{ assess_dim_class }}"
+                    {% aria_current 'assessments:gate' startswith='/users/assessments' %}
+                    {% if assess_title %}aria-disabled="true" title="{{ assess_title }}"{% endif %}
+                  >
+                    {% icon 'rubric' class_='h-5 w-5 align-middle shrink-0' %}
+                    <span>Assessment</span>
+                  </a>
+                {% endwith %}
+              {% else %}
+                {% with assess_dim_class="opacity-60 hover:opacity-80" assess_title="Complete your profile to unlock assessments" %}
+                  <a
+                    href="{% url 'assessments:gate' %}"
+                    class="nav-link focus-ring rounded-md px-2 py-1.5 {% active_url 'assessments:gate' startswith='/users/assessments' %} {{ assess_dim_class }}"
+                    {% aria_current 'assessments:gate' startswith='/users/assessments' %}
+                    aria-disabled="true" title="{{ assess_title }}"
+                  >
+                    {% icon 'rubric' class_='h-5 w-5 align-middle shrink-0' %}
+                    <span>Assessment</span>
+                  </a>
+                {% endwith %}
+              {% endif %}
+            {% endwith %}
 
           {% elif request.user|is_teacher %}
-            <a href="#" class="nav-link">
+            {# TEACHER DESKTOP LINKS #}
+            <a href="#" class="nav-link focus-ring rounded-md px-2 py-1.5">
               <span>Availability</span>
             </a>
           {% endif %}
@@ -115,7 +144,9 @@
       </div>
     </div>
 
-    {# RIGHT: desktop actions (≥ sm) #}
+    {# ─────────────────────────────────────────────────────────────
+       RIGHT: desktop actions (≥ sm)
+       ───────────────────────────────────────────────────────────── #}
     <div class="hidden sm:flex items-center gap-2 ml-auto">
       {% if request.user.is_authenticated %}
         {% if request.user|is_teacher %}
@@ -157,7 +188,9 @@
       {% include "core/partials/theme_toggle.html" with variant="desktop" %}
     </div>
 
-    {# MOBILE: toggle button #}
+    {# ─────────────────────────────────────────────────────────────
+       MOBILE: toggle button
+       ───────────────────────────────────────────────────────────── #}
     <button
       type="button"
       class="focus-ring sm:hidden inline-flex items-center rounded-md border border-border bg-background p-2 text-sm shadow-sm hover:bg-accent hover:text-accent-foreground"
@@ -171,7 +204,9 @@
 
   </div>
 
-  {# MOBILE PANEL (< sm) — uses active_url/aria_current instead of resolver_match #}
+  {# ─────────────────────────────────────────────────────────────
+     MOBILE PANEL (< sm)
+     ───────────────────────────────────────────────────────────── #}
   <div
     id="mobile-menu"
     class="sm:hidden border-t border-border bg-background transition-standard"
@@ -260,7 +295,9 @@
         </a>
       {% endif %}
 
-      {# Optional role placeholders #}
+      {# ───────────────────────────────────────────────────────
+         STUDENT MOBILE LINKS (gate + dim if incomplete)
+         ─────────────────────────────────────────────────────── #}
       {% if request.user|is_student %}
         <a
           href="{% url 'profiles:profile' %}"
@@ -273,16 +310,36 @@
           <span>Profile</span>
         </a>
 
-          <a
-            href="{% url 'assessments:home' %}"
-            class="nav-link focus-ring flex w-full rounded-md px-3 py-2 hover:bg-accent hover:text-accent-foreground {% active_url 'assessments:home' startswith='/users/assessments' %}"
-            {% aria_current 'assessments:home' startswith='/users/assessments' %}
-            @click="open = false"
-            role="menuitem"
-          >
-            {% icon 'rubric' class_='h-5 w-5 align-middle shrink-0' %}
-            <span>Assessment</span>
-          </a>
+        {% with profile_obj=request.user.profile %}
+          {% if profile_obj and profile_obj.is_complete %}
+            {% with assess_dim_class="" assess_title="" %}
+              <a
+                href="{% url 'assessments:gate' %}"
+                class="nav-link focus-ring flex w-full rounded-md px-3 py-2 hover:bg-accent hover:text-accent-foreground {% active_url 'assessments:gate' startswith='/users/assessments' %} {{ assess_dim_class }}"
+                {% aria_current 'assessments:gate' startswith='/users/assessments' %}
+                @click="open = false"
+                role="menuitem"
+              >
+                {% icon 'rubric' class_='h-5 w-5 align-middle shrink-0' %}
+                <span>Assessment</span>
+              </a>
+            {% endwith %}
+          {% else %}
+            {% with assess_dim_class="opacity-60 hover:opacity-80" assess_title="Complete your profile to unlock assessments" %}
+              <a
+                href="{% url 'assessments:gate' %}"
+                class="nav-link focus-ring flex w-full rounded-md px-3 py-2 hover:bg-accent hover:text-accent-foreground {% active_url 'assessments:gate' startswith='/users/assessments' %} {{ assess_dim_class }}"
+                {% aria_current 'assessments:gate' startswith='/users/assessments' %}
+                @click="open = false"
+                role="menuitem"
+                aria-disabled="true" title="{{ assess_title }}"
+              >
+                {% icon 'rubric' class_='h-5 w-5 align-middle shrink-0' %}
+                <span>Assessment</span>
+              </a>
+            {% endwith %}
+          {% endif %}
+        {% endwith %}
 
       {% elif request.user|is_teacher %}
         <a
