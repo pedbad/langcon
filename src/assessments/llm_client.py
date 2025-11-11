@@ -1,6 +1,8 @@
 # src/assessments/llm_client.py
 import os
+
 from openai import OpenAI
+
 
 def get_openai_client():
     """

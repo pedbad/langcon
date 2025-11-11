@@ -1,8 +1,15 @@
+# src/assessments/views.py
+
+# Django imports
 from django.contrib.auth.decorators import login_required
+from django.http import JsonResponse
 from django.shortcuts import redirect, render
 
+# Local app imports
 from profiles.models import Profile
 from profiles.utils import require_complete_profile
+
+from .llm_client import get_openai_client
 
 
 @login_required
@@ -27,3 +34,24 @@ def gate(request):
 def home(request):
     # Your real assessments landing (placeholder)
     return render(request, "assessments/home.html", {})
+
+
+@login_required
+def llm_test(request):
+    """
+    Temporary dev/test view for checking OpenAI connectivity.
+    Accessible only to logged-in users.
+    """
+    client = get_openai_client()
+    model = "gpt-4o-mini"
+
+    try:
+        resp = client.chat.completions.create(
+            model=model,
+            messages=[{"role": "user", "content": "Say 'Hello from LangCon'"}],
+            max_tokens=6,
+        )
+        content = resp.choices[0].message.content
+        return JsonResponse({"ok": True, "model": model, "reply": content})
+    except Exception as e:
+        return JsonResponse({"ok": False, "error": str(e)})
