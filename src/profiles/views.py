@@ -22,8 +22,10 @@ def student_profile_entry(request):
         defaults={"phone": ""},
     )
 
+    profile_readonly = profile.is_locked or profile.is_complete()
+
     if request.method == "POST":
-        if profile.is_locked:
+        if profile_readonly:
             return HttpResponseForbidden("Profile is locked.")
 
         post_snapshot = {k: request.POST.getlist(k) for k in request.POST}
@@ -57,5 +59,6 @@ def student_profile_entry(request):
         "profile": profile,
         "profile_complete": profile.is_complete(),
         "form": form,
+        "form_readonly": profile_readonly,
     }
     return render(request, "profiles/profile.html", context)

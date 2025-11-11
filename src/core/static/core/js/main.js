@@ -81,6 +81,15 @@
     const camGrade = $('#id_cambridge_grade');
     const camUse   = $('#id_cambridge_use_of_english'); // optional
 
+    const profileForm =
+      document.querySelector("form#profile-form") ||
+      document.querySelector("form[action*='profiles']") ||
+      document.querySelector("form");
+    const formReadOnly = profileForm?.dataset?.readonly === "true";
+    if (formReadOnly) {
+      return; // Form is locked; skip interactive behavior.
+    }
+
     // ────────────────────────────────────────────────────────────────
     // 2.a) HTML5 required flags (so reportValidity() behaves correctly)
     // ────────────────────────────────────────────────────────────────
@@ -363,11 +372,6 @@
     //      We let browser show native hints, but we intercept the submit,
     //      run reportValidity(), and scroll to the first invalid if any.
     // ────────────────────────────────────────────────────────────────
-    const profileForm =
-      document.querySelector("form#profile-form") ||
-      document.querySelector("form[action*='profiles']") ||
-      document.querySelector("form");
-
     if (profileForm) {
       profileForm.addEventListener(
         "submit",

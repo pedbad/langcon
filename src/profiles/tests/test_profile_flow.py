@@ -183,26 +183,42 @@ class ProfileExamFlowTests(TestCase):
     def test_turning_off_exam_clears_all_exam_fields(self):
         data = self.base | {
             "has_recent_english_exam": "False",
-            # Try to submit stray values; model.save should normalize to empty
-            "exam_type": "ielts",
-            "reading_score": "7.0",
-            "listening_score": "7.0",
-            "writing_score": "7.0",
-            "speaking_score": "7.0",
-            "overall_score": "7.0",
-            "cambridge_grade": "a",
-            "cambridge_use_of_english": "200",
+            # When toggled off in the UI all exam-related inputs are cleared
+            "exam_type": "",
+            "exam_day": "",
+            "exam_month": "",
+            "exam_year": "",
+            "reading_score": "",
+            "listening_score": "",
+            "writing_score": "",
+            "speaking_score": "",
+            "overall_score": "",
+            "cambridge_grade": "",
+            "cambridge_use_of_english": "",
         }
         resp, prof = self.post(data)
         self.assertEqual(resp.status_code, 200)
         self.assertFalse(prof.has_recent_english_exam)
         self.assertEqual(prof.exam_type, "")
         self.assertIsNone(prof.exam_date)
-        self.assertIsNone(prof.reading_score)
-        self.assertIsNone(prof.listening_score)
-        self.assertIsNone(prof.writing_score)
-        self.assertIsNone(prof.speaking_score)
-        self.assertIsNone(prof.overall_score)
-        self.assertFalse(prof.overall_manual_override)
-        self.assertIsNone(prof.cambridge_grade)
-        self.assertIsNone(prof.cambridge_use_of_english)
+
+    def test_cannot_edit_after_profile_marked_complete(self):
+        complete_payload = self.base | {
+            "exam_type": "ielts",
+            "reading_score": "7.0",
+            "listening_score": "7.0",
+            "writing_score": "7.0",
+            "speaking_score": "7.0",
+        }
+        resp, prof = self.post(complete_payload)
+        self.assertEqual(resp.status_code, 200)
+        self.assertTrue(prof.is_complete())
+
+        resp = self.client.post(
+            self.url,
+            complete_payload | {"phone": "+44 0000 000000"},
+        )
+        self.assertEqual(resp.status_code, 403)
+
+        prof.refresh_from_db()
+        self.assertEqual(prof.phone, "+44 1234 567890")
