@@ -29,15 +29,15 @@
   document.addEventListener("DOMContentLoaded", () => {
     window.APP = { env: document.body.dataset.env || "prod" };
 
-
     // ────────────────────────────────────────────────────────────────
-    // Assessments: live word count + client toast + submit toggle
+    /* Assessments: live word count + client toast + submit toggle    */
     // ────────────────────────────────────────────────────────────────
-    const writingTa   = document.getElementById("id_writing_answer");
-    const wordChip    = document.getElementById("word-count");
-    const submitBtn   = document.getElementById("submit-writing"); // specific to writing step
-    const warnToast   = document.getElementById("client-word-warning");
-    const warnToastText = warnToast ? warnToast.querySelector("[data-role='word-warning-text']") : null;
+    const writingTa    = document.getElementById("id_writing_answer");
+    const wordChip     = document.getElementById("word-count");
+    const submitBtn    = document.getElementById("submit-writing");   // specific to writing step
+    const warnToast    = document.getElementById("client-word-warning");
+    const warnToastText= warnToast ? warnToast.querySelector("[data-role='word-warning-text']") : null;
+    const actionField  = document.getElementById("assessment-action"); // hidden input we set on submit
 
     if (writingTa && wordChip) {
       const MAX = 300;
@@ -48,11 +48,21 @@
         return s ? s.split(/\s+/).filter(Boolean).length : 0;
       };
 
+      // Ensure the intended action is sent when clicking Submit
+      if (actionField && submitBtn) {
+        submitBtn.addEventListener("click", () => {
+          actionField.value = "submit";
+          // small UX: prevent accidental double-clicks
+          submitBtn.disabled = true;
+          submitBtn.setAttribute("aria-disabled", "true");
+          submitBtn.classList.add("opacity-60", "cursor-not-allowed");
+        });
+      }
+
       const setSubmitEnabled = (enabled) => {
         if (!submitBtn) return;
         submitBtn.disabled = !enabled;
         submitBtn.setAttribute("aria-disabled", String(!enabled));
-        // Slight visual cue when disabled
         submitBtn.classList.toggle("opacity-60", !enabled);
         submitBtn.classList.toggle("cursor-not-allowed", !enabled);
       };
@@ -83,7 +93,10 @@
 
         // live toast + submit enable/disable
         if (n > MAX) {
-          showClientWarning(true, "Your answer exceeds 300 words. You can still save a draft, but you must reduce it to 300 words to submit.");
+          showClientWarning(
+            true,
+            "Your answer exceeds 300 words. You can still save a draft, but you must reduce it to 300 words to submit."
+          );
           setSubmitEnabled(false);
         } else {
           showClientWarning(false);

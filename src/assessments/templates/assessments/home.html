@@ -60,19 +60,30 @@
           <p class="flex-1">
             You can save a draft at any time. Once you submit, your answer is locked.
           </p>
-          <div class="flex flex-wrap gap-3">
-            {# Save Draft button (always enabled) #}
-            {% c button type="submit" name="action" value="save" variant="secondary" class="group transition duration-200 hover:bg-writing/15 hover:text-writing hover:shadow-md active:shadow-inner" %}
-              {% icon 'save' class_='h-4 w-4 text-writing' %}
-              <span>Save Draft</span>
-            {% endc %}
 
-            {# Submit button — given a specific id so JS can enable/disable it #}
-            {% c button id="submit-writing" type="submit" name="action" value="submit" variant="default" class="group bg-writing text-white hover:bg-writing/90 hover:shadow-lg active:shadow-inner transition duration-200" %}
+
+          <div class="flex flex-wrap gap-3">
+            {# Submit first #}
+            {% c button id="submit-writing" type="submit" name="action" value="submit"
+              variant="default"
+              class="group bg-writing text-white hover:bg-writing/90 hover:shadow-lg active:shadow-inner transition duration-200" %}
               {% icon 'rubric' class_='h-4 w-4 text-white' %}
               <span>Submit</span>
             {% endc %}
+
+            {# Save second #}
+            {% c button type="submit" name="action" value="save"
+              variant="secondary"
+              class="group transition duration-200 hover:bg-writing/15 hover:text-writing hover:shadow-md active:shadow-inner" %}
+              {% icon 'save' class_='h-4 w-4 text-writing' %}
+              <span>Save Draft</span>
+            {% endc %}
           </div>
+
+
+
+
+
         </div>
       </form>
     {% endc %}

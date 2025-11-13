@@ -8,7 +8,7 @@ Service wrapper to generate two follow-up questions from the student's initial s
 """
 
 import json
-from typing import Dict, Any
+from typing import Any
 
 # Parent-relative imports:
 # - llm_client is in the assessments package root (..)
@@ -19,7 +19,7 @@ from ..vendor.lcon import generate_questions as _gen_qs
 DEFAULT_MODEL = "gpt-4o-mini"
 
 
-def generate_followups_from_statement(statement: str, model: str = DEFAULT_MODEL) -> Dict[str, Any]:
+def generate_followups_from_statement(statement: str, model: str = DEFAULT_MODEL) -> dict[str, Any]:
     """
     Calls the colleague’s prompt to get two follow-up questions.
     Returns a dict like: {"question1": "...", "question2": "..."}
@@ -38,7 +38,7 @@ def generate_followups_from_statement(statement: str, model: str = DEFAULT_MODEL
         retry_statement = (
             statement
             + '\n\nIMPORTANT: Return ONLY valid JSON like {"question1":"...","question2":"..."} '
-              'using double quotes and no extra text.'
+            "using double quotes and no extra text."
         )
         data = _gen_qs(client, model, retry_statement)
 
