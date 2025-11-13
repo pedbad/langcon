@@ -29,6 +29,75 @@
   document.addEventListener("DOMContentLoaded", () => {
     window.APP = { env: document.body.dataset.env || "prod" };
 
+
+    // ────────────────────────────────────────────────────────────────
+    // Assessments: live word count + client toast + submit toggle
+    // ────────────────────────────────────────────────────────────────
+    const writingTa   = document.getElementById("id_writing_answer");
+    const wordChip    = document.getElementById("word-count");
+    const submitBtn   = document.getElementById("submit-writing"); // specific to writing step
+    const warnToast   = document.getElementById("client-word-warning");
+    const warnToastText = warnToast ? warnToast.querySelector("[data-role='word-warning-text']") : null;
+
+    if (writingTa && wordChip) {
+      const MAX = 300;
+      const WARNING = 295; // tint threshold
+
+      const countWords = (s) => {
+        s = (s || "").trim();
+        return s ? s.split(/\s+/).filter(Boolean).length : 0;
+      };
+
+      const setSubmitEnabled = (enabled) => {
+        if (!submitBtn) return;
+        submitBtn.disabled = !enabled;
+        submitBtn.setAttribute("aria-disabled", String(!enabled));
+        // Slight visual cue when disabled
+        submitBtn.classList.toggle("opacity-60", !enabled);
+        submitBtn.classList.toggle("cursor-not-allowed", !enabled);
+      };
+
+      const showClientWarning = (show, text) => {
+        if (!warnToast) return;
+        if (show) {
+          if (text && warnToastText) warnToastText.textContent = text;
+          warnToast.classList.remove("hidden");
+        } else {
+          warnToast.classList.add("hidden");
+        }
+      };
+
+      const renderCount = () => {
+        const n = countWords(writingTa.value);
+        wordChip.textContent = `${n} / ${MAX} words`;
+
+        // neutral
+        wordChip.classList.remove("text-red-600", "border-red-600", "bg-red-50");
+        wordChip.classList.add("text-slate-700", "border-slate-400", "bg-slate-50");
+
+        // warning tint
+        if (n >= WARNING) {
+          wordChip.classList.remove("text-slate-700", "border-slate-400", "bg-slate-50");
+          wordChip.classList.add("text-red-600", "border-red-600", "bg-red-50");
+        }
+
+        // live toast + submit enable/disable
+        if (n > MAX) {
+          showClientWarning(true, "Your answer exceeds 300 words. You can still save a draft, but you must reduce it to 300 words to submit.");
+          setSubmitEnabled(false);
+        } else {
+          showClientWarning(false);
+          setSubmitEnabled(true);
+        }
+      };
+
+      renderCount();
+      writingTa.addEventListener("input", renderCount);
+      writingTa.addEventListener("change", renderCount);
+    }
+
+
+
     // Panels that expand/collapse with smooth height/opacity
     const examDetailsEl    = document.getElementById("exam-details");    // “Have you taken an exam?” region
     const cambridgeExtraEl = document.getElementById("cambridge-extra"); // C1/C2 only add-ons
@@ -422,4 +491,6 @@
       evt.target.classList.remove("ring-2", "ring-red-500");
     }
   });
+
+
 })();

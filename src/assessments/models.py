@@ -33,5 +33,9 @@ class Assessment(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+    # LLM follow-up questions (populated right after the student submits)
+    llm_question_1 = models.TextField(blank=True)
+    llm_question_2 = models.TextField(blank=True)
+
     def __str__(self):
         return f"Assessment for {self.user.email}"

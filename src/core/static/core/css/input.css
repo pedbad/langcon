@@ -61,6 +61,7 @@
   --color-chart-3: oklch(0.398 0.07 227.392);
   --color-chart-4: oklch(0.828 0.189 84.429);
   --color-chart-5: oklch(0.769 0.188 70.08);
+  --color-cambridge: var(--color-chart-2);
 
   --radius: 0.625rem;
 
@@ -170,6 +171,30 @@
            transition-colors focus-visible:outline-none
            focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2
            h-9 px-4 py-2 border border-border bg-background hover:bg-accent hover:text-accent-foreground;
+  }
+
+  .writing-answer-input {
+    @apply w-full rounded-xl border bg-background text-foreground
+           shadow-sm transition duration-200 ease-out
+           placeholder:text-foreground/50;
+    border-color: color-mix(in oklch, var(--color-cambridge) 50%, white);
+  }
+
+  .writing-answer-input:focus {
+    @apply outline-none ring-2;
+    border-color: color-mix(in oklch, var(--color-cambridge) 65%, white);
+    box-shadow: 0 6px 18px -6px color-mix(in oklch, var(--color-cambridge) 25%, transparent);
+    --tw-ring-color: color-mix(in oklch, var(--color-cambridge) 40%, white);
+  }
+
+  .dark .writing-answer-input {
+    border-color: color-mix(in oklch, var(--color-cambridge) 30%, var(--color-border));
+    box-shadow: none;
+  }
+
+  .dark .writing-answer-input:focus {
+    border-color: color-mix(in oklch, var(--color-cambridge) 50%, var(--color-border));
+    --tw-ring-color: color-mix(in oklch, var(--color-cambridge) 45%, black);
   }
 }
 
@@ -342,3 +367,4 @@
     animation-duration: 0s !important;
   }
 }
+  --color-cambridge: color-mix(in oklch, var(--color-chart-2) 70%, oklch(0.2 0 0));

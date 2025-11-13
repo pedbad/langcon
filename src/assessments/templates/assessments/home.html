@@ -1,25 +1,87 @@
+{# assessments/templates/assessments/home.html #}
 {% extends "core/base.html" %}
 {% load cotton icons %}
 
 {% block title %}Assessment{% endblock %}
 
 {% block content %}
-<div class="mx-auto max-w-4xl space-y-6">
+<div class="mx-auto max-w-5xl pt-2 space-y-8">
+
+  {# ── Writing Card ────────────────────────────────────────────────────── #}
   {% c card class="card-strong" %}
     {% c card/header %}
-      <div class="flex items-center gap-2 text-2xl">
-        {% icon 'assignment_ind' class_='h-6 w-6 text-foreground/80' %}
-        {% c card/title %}Assessment{% endc %}
+      <div class="flex items-center gap-4 text-5xl text-writing border-b-8 border-writing pb-3">
+        {% icon 'ink_pen' class_='h-12 w-12 text-writing' %}
+        {% c card/title %} Writing {% endc %}
       </div>
       {% c card/description %}
-        Your profile is complete. This is a placeholder Assessment home. Build the app here later.
+        Please answer the following question:
       {% endc %}
     {% endc %}
+
+    {# Single content block: prompt + guidance + answer form #}
     {% c card/content %}
-      <p class="text-sm text-muted-foreground">
-        Replace this content with the real assessment workflow.
+      {# Prompt shown exactly as stored in the DB for audit consistency #}
+      <p id="writing-prompt" class="leading-relaxed text-foreground/80">
+        {{ assessment.writing_q1_prompt }}
       </p>
+
+      {# 🔔 Client-side warning toast (shown by JS if >300 words; no reload) #}
+      <div id="client-word-warning"
+           class="hidden mt-4 mb-3 flex items-start gap-2 rounded-lg border border-amber-400 bg-amber-50 px-3 py-2 text-sm text-amber-900"
+           role="alert"
+           aria-live="polite">
+        {% icon 'warning' class_='h-4 w-4 text-amber-600 mt-0.5' %}
+        <span data-role="word-warning-text">Your answer exceeds 300 words. You can still save a draft, but you must reduce it to 300 words to submit.</span>
+      </div>
+
+      {# Answer form (draft-save now; submit/lock handled in the view) #}
+      <form method="post" class="mt-6 space-y-4" aria-labelledby="writing-prompt">
+        {% csrf_token %}
+
+        {# Instruction + live word count placeholder #}
+        <div class="flex flex-wrap items-center justify-between gap-3">
+          <label for="id_writing_answer" class="font-medium text-sm text-red-600 dark:text-red-400 leading-snug">
+            <span>Please write a minimum of 250 and a maximum of 300 words.</span><br>
+            <span>Please note that responses longer than 300 words will not be recorded by the system.</span>
+          </label>
+          <span
+            class="inline-flex items-center rounded-full border border-slate-400 bg-slate-50 px-3 py-1 text-xs font-semibold text-slate-700"
+            id="word-count"
+            aria-live="polite">
+            0 / 300 words
+          </span>
+        </div>
+
+        {# The textarea is rendered by the form; it already has maxlength="3000" #}
+        {{ form.writing_answer }}
+
+        <div class="flex flex-wrap items-center justify-between gap-4 pt-2 text-sm text-muted-foreground">
+          <p class="flex-1">
+            You can save a draft at any time. Once you submit, your answer is locked.
+          </p>
+          <div class="flex flex-wrap gap-3">
+            {# Save Draft button (always enabled) #}
+            {% c button type="submit" name="action" value="save" variant="secondary" class="group transition duration-200 hover:bg-writing/15 hover:text-writing hover:shadow-md active:shadow-inner" %}
+              {% icon 'save' class_='h-4 w-4 text-writing' %}
+              <span>Save Draft</span>
+            {% endc %}
+
+            {# Submit button — given a specific id so JS can enable/disable it #}
+            {% c button id="submit-writing" type="submit" name="action" value="submit" variant="default" class="group bg-writing text-white hover:bg-writing/90 hover:shadow-lg active:shadow-inner transition duration-200" %}
+              {% icon 'rubric' class_='h-4 w-4 text-white' %}
+              <span>Submit</span>
+            {% endc %}
+          </div>
+        </div>
+      </form>
+    {% endc %}
+
+    {# Footer reserved for future navigation/help; safe to keep minimal now #}
+    {% c card/footer class="justify-start gap-2" %}
+      <p class="text-sm text-muted-foreground">Need help? Contact the Language Centre.</p>
     {% endc %}
   {% endc %}
+
 </div>
 {% endblock %}
