@@ -89,3 +89,4 @@ data/*.csv
 !src/core/static/core/js/lib/**
 !src/core/static/core/js/lib/**/*.min.js
 *.keep.py
+.npm-cache
