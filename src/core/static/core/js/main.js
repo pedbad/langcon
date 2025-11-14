@@ -1,6 +1,6 @@
 (function () {
   // ────────────────────────────────────────────────────────────────
-  // 1) Alpine: lightweight theme store (dark / light / system)
+  // 1) Alpine: lightweight theme store (dark / light / system).
   // ────────────────────────────────────────────────────────────────
   document.addEventListener("alpine:init", () => {
     const A = window.Alpine;
