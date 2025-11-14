@@ -3,7 +3,7 @@
 # Django imports
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from django.http import JsonResponse
+from django.http import HttpResponse, JsonResponse
 from django.shortcuts import redirect, render
 from django.utils import timezone
 
@@ -54,6 +54,8 @@ def home(request):
     """
 
     assessment, _ = Assessment.objects.get_or_create(user=request.user)
+    # Detect HTMX (AJAX-style) requests
+    is_hx = "HX-Request" in request.headers
 
     if request.method == "POST":
         action = request.POST.get("action")
@@ -87,6 +89,9 @@ def home(request):
                 assessment.writing_answer_draft = answer
                 assessment.save(update_fields=["writing_answer_draft", "updated_at"])
                 messages.success(request, "Draft saved.")
+            if is_hx:
+                # For HTMX save (if we ever use it), just say "ok" with no full reload.
+                return HttpResponse(status=204)
             return redirect("assessments:home")  # PRG
 
         # Submit path: enforce policy and lock
@@ -94,6 +99,11 @@ def home(request):
             # Idempotency: if already submitted, do nothing further
             if assessment.writing_answer_final:
                 messages.info(request, "Your writing answer is already submitted.")
+                if is_hx:
+                    # HTMX submit: no redirect, just a 204 so the browser stays on this page.
+                    # (In later steps, we'll return a fragment with the follow-up questions.)
+                    return HttpResponse(status=204)
+
                 return redirect("assessments:home")
 
             # Authoritative server-side word count

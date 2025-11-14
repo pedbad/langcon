@@ -35,9 +35,23 @@
         <span data-role="word-warning-text">Your answer exceeds 300 words. You can still save a draft, but you must reduce it to 300 words to submit.</span>
       </div>
 
+      {# ✅ Client-side submit status for HTMX submit (no page reload) #}
+      <div id="submit-status"
+          class="hidden mb-3 rounded-lg border border-emerald-500 bg-emerald-50 px-3 py-2 text-sm text-emerald-900"
+          role="status"
+          aria-live="polite">
+        Your answer has been submitted. We’re preparing your follow-up questions…
+      </div>
+
       {# Answer form (draft-save now; submit/lock handled in the view) #}
       <form method="post" class="mt-6 space-y-4" aria-labelledby="writing-prompt">
         {% csrf_token %}
+
+        {# Hidden action field:
+          - Default = "save" so plain submit → save draft
+          - JS will flip this to "submit" when the Submit button is clicked
+        #}
+        <input type="hidden" name="action" id="assessment-action" value="save">
 
         {# Instruction + live word count placeholder #}
         <div class="flex flex-wrap items-center justify-between gap-3">
@@ -60,32 +74,42 @@
           <p class="flex-1">
             You can save a draft at any time. Once you submit, your answer is locked.
           </p>
-
-
           <div class="flex flex-wrap gap-3">
-            {# Submit first #}
-            {% c button id="submit-writing" type="submit" name="action" value="submit"
-              variant="default"
-              class="group bg-writing text-white hover:bg-writing/90 hover:shadow-lg active:shadow-inner transition duration-200" %}
-              {% icon 'rubric' class_='h-4 w-4 text-white' %}
-              <span>Submit</span>
-            {% endc %}
-
-            {# Save second #}
-            {% c button type="submit" name="action" value="save"
-              variant="secondary"
-              class="group transition duration-200 hover:bg-writing/15 hover:text-writing hover:shadow-md active:shadow-inner" %}
+            {# ✅ Save Draft: normal HTML submit (classic POST + redirect) #}
+            {% c button
+                type="submit"
+                name="action"
+                value="save"
+                variant="secondary"
+                class="group transition duration-200 hover:bg-writing/15 hover:text-writing hover:shadow-md active:shadow-inner" %}
               {% icon 'save' class_='h-4 w-4 text-writing' %}
               <span>Save Draft</span>
             {% endc %}
+
+            {# ✅ Submit: HTMX POST (no full-page redirect)
+              - type="button" avoids the normal browser submit
+              - hx-post="." sends POST to the same URL
+              - hx-include="closest form" sends all fields, including our hidden "action"
+              - hx-swap="none" tells HTMX to ignore the response body for now
+            #}
+            {% c button
+                id="submit-writing"
+                type="button"
+                name="action"
+                value="submit"
+                variant="default"
+                hx-post="."
+                hx-include="closest form"
+                hx-swap="none"
+                hx-trigger="click"
+                class="group bg-writing text-white hover:bg-writing/90 hover:shadow-lg active:shadow-inner transition duration-200" %}
+              {% icon 'rubric' class_='h-4 w-4 text-white' %}
+              <span>Submit</span>
+            {% endc %}
           </div>
-
-
-
-
-
         </div>
       </form>
+
     {% endc %}
 
     {# Footer reserved for future navigation/help; safe to keep minimal now #}

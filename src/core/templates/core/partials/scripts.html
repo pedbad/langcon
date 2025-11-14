@@ -1,3 +1,4 @@
+{# core/partials/scripts.html #}
 {% load static %}
 
 <!-- Alpine.js -->
@@ -5,12 +6,15 @@
 
 <!-- Ensure Alpine starts properly -->
 <script>
-  // ✅ Ensure Alpine always starts, even if other scripts load late
+  // Ensure Alpine always starts, even if other scripts load late
   window.deferLoadingAlpine = function (callback) {
     callback();
     window.Alpine.start();
   };
 </script>
+
+<!-- HTMX (local copy) -->
+<script src="{% static 'core/js/lib/htmx.min.js' %}?v={{ STATIC_VERSION }}" defer></script>
 
 <!-- Main app script (not deferred, so Alpine:init hooks register in time) -->
 <script src="{% static 'core/js/main.js' %}?v={{ STATIC_VERSION }}"></script>

@@ -1,6 +1,6 @@
 (function () {
   // ────────────────────────────────────────────────────────────────
-  // 1) Alpine: lightweight theme store (dark / light / system).
+  // 1) Alpine: lightweight theme store (dark / light / system)
   // ────────────────────────────────────────────────────────────────
   document.addEventListener("alpine:init", () => {
     const A = window.Alpine;
@@ -44,6 +44,9 @@
       : null;
     const actionField = document.getElementById("assessment-action"); // hidden input we set on submit
 
+    // 🔹 NEW: local submit status banner (for HTMX submit)
+    const submitStatus = document.getElementById("submit-status");
+
     if (!writingTa || !wordChip) return;
 
     const MAX = 300;
@@ -58,6 +61,12 @@
     if (actionField && submitBtn) {
       submitBtn.addEventListener("click", () => {
         actionField.value = "submit";
+
+        // 🔹 NEW: immediately show local “submitted…” status
+        if (submitStatus) {
+          submitStatus.classList.remove("hidden");
+        }
+
         // small UX: prevent accidental double-clicks
         submitBtn.disabled = true;
         submitBtn.setAttribute("aria-disabled", "true");
@@ -130,6 +139,7 @@
     writingTa.addEventListener("input", renderCount);
     writingTa.addEventListener("change", renderCount);
   }
+
 
   // ────────────────────────────────────────────────────────────────
   // 3) Module: Profile Exam Form (panels, exam rules, auto overall)
