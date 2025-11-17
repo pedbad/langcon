@@ -37,49 +37,23 @@
   function initAssessmentsWriting() {
     const writingTa = document.getElementById("id_writing_answer");
     const wordChip = document.getElementById("word-count");
-    const submitBtn = document.getElementById("submit-writing"); // specific to writing step
+    const submitBtn = document.getElementById("submit-writing");
     const warnToast = document.getElementById("client-word-warning");
     const warnToastText = warnToast
       ? warnToast.querySelector("[data-role='word-warning-text']")
       : null;
-    const actionField = document.getElementById("assessment-action"); // hidden input we set on submit
-
-    // 🔹 NEW: local submit status banner (for HTMX submit)
+    const actionField = document.getElementById("assessment-action");
     const submitStatus = document.getElementById("submit-status");
 
     if (!writingTa || !wordChip) return;
 
+    const MIN = 250;
     const MAX = 300;
-    const WARNING = 295; // tint threshold
+    const WARNING = 295;
 
     const countWords = (s) => {
       s = (s || "").trim();
       return s ? s.split(/\s+/).filter(Boolean).length : 0;
-    };
-
-    // Ensure the intended action is sent when clicking Submit
-    if (actionField && submitBtn) {
-      submitBtn.addEventListener("click", () => {
-        actionField.value = "submit";
-
-        // 🔹 NEW: immediately show local “submitted…” status
-        if (submitStatus) {
-          submitStatus.classList.remove("hidden");
-        }
-
-        // small UX: prevent accidental double-clicks
-        submitBtn.disabled = true;
-        submitBtn.setAttribute("aria-disabled", "true");
-        submitBtn.classList.add("opacity-60", "cursor-not-allowed");
-      });
-    }
-
-    const setSubmitEnabled = (enabled) => {
-      if (!submitBtn) return;
-      submitBtn.disabled = !enabled;
-      submitBtn.setAttribute("aria-disabled", String(!enabled));
-      submitBtn.classList.toggle("opacity-60", !enabled);
-      submitBtn.classList.toggle("cursor-not-allowed", !enabled);
     };
 
     const showClientWarning = (show, text) => {
@@ -92,20 +66,67 @@
       }
     };
 
+    const setSubmitEnabled = (enabled) => {
+      if (!submitBtn) return;
+      submitBtn.disabled = !enabled;
+      submitBtn.setAttribute("aria-disabled", String(!enabled));
+      submitBtn.classList.toggle("opacity-60", !enabled);
+      submitBtn.classList.toggle("cursor-not-allowed", !enabled);
+    };
+
+    // ────────────────────────────────────────────────────────────────
+    // 🚨 NEW: block HTMX submit if answer outside 250–300 words
+    // ────────────────────────────────────────────────────────────────
+    if (actionField && submitBtn) {
+      submitBtn.addEventListener("click", (evt) => {
+        const n = countWords(writingTa.value);
+
+        if (n < MIN || n > MAX) {
+          // BLOCK HTMX
+          evt.preventDefault();
+          evt.stopPropagation();
+
+          // Clear any fake “submitting” banner
+          if (submitStatus) submitStatus.classList.add("hidden");
+
+          // Show strong client warning
+          showClientWarning(
+            true,
+            `Your answer is ${n} words. It must be between ${MIN} and ${MAX} words to submit.`
+          );
+
+          // Re-enable Submit button
+          submitBtn.disabled = false;
+          submitBtn.setAttribute("aria-disabled", "false");
+          submitBtn.classList.remove("opacity-60", "cursor-not-allowed");
+
+          return; // stop here — NO POST
+        }
+
+        // If valid → allow HTMX, set action to "submit"
+        actionField.value = "submit";
+
+        if (submitStatus) {
+          submitStatus.classList.remove("hidden");
+        }
+
+        // Lock button
+        submitBtn.disabled = true;
+        submitBtn.setAttribute("aria-disabled", "true");
+        submitBtn.classList.add("opacity-60", "cursor-not-allowed");
+      });
+    }
+
     const renderCount = () => {
       const n = countWords(writingTa.value);
       wordChip.textContent = `${n} / ${MAX} words`;
 
       // neutral
-      wordChip.classList.remove(
-        "text-red-600",
-        "border-red-600",
-        "bg-red-50",
-      );
+      wordChip.classList.remove("text-red-600", "border-red-600", "bg-red-50");
       wordChip.classList.add(
         "text-slate-700",
         "border-slate-400",
-        "bg-slate-50",
+        "bg-slate-50"
       );
 
       // warning tint
@@ -113,20 +134,16 @@
         wordChip.classList.remove(
           "text-slate-700",
           "border-slate-400",
-          "bg-slate-50",
+          "bg-slate-50"
         );
-        wordChip.classList.add(
-          "text-red-600",
-          "border-red-600",
-          "bg-red-50",
-        );
+        wordChip.classList.add("text-red-600", "border-red-600", "bg-red-50");
       }
 
-      // live toast + submit enable/disable
+      // live client warning while typing
       if (n > MAX) {
         showClientWarning(
           true,
-          "Your answer exceeds 300 words. You can still save a draft, but you must reduce it to 300 words to submit.",
+          "Your answer exceeds 300 words. You can still save a draft, but you must reduce it to 300 words to submit."
         );
         setSubmitEnabled(false);
       } else {
@@ -139,7 +156,6 @@
     writingTa.addEventListener("input", renderCount);
     writingTa.addEventListener("change", renderCount);
   }
-
 
   // ────────────────────────────────────────────────────────────────
   // 3) Module: Profile Exam Form (panels, exam rules, auto overall)
@@ -373,7 +389,7 @@
       if (overall) {
         overall.setAttribute(
           "aria-description",
-          `Overall range ${rules.overallMin}–${rules.overallMax}`,
+          `Overall range ${rules.overallMin}–${rules.overallMax}`
         );
       }
     }
@@ -392,7 +408,8 @@
       const step = rules.subStep;
       const snapped =
         Math.round((v - rules.subMin) / step) * step + rules.subMin;
-      const fixed = step === 1 ? Math.round(snapped) : Math.round(snapped * 2) / 2;
+      const fixed =
+        step === 1 ? Math.round(snapped) : Math.round(snapped * 2) / 2;
       const clamped = clamp(fixed, rules.subMin, rules.subMax);
 
       if (clamped !== v) el.value = String(clamped);
@@ -426,9 +443,7 @@
         val = Math.round((r + l + w + s) / 4); // C1/C2 → nearest integer
       }
 
-      overall.value = String(
-        clamp(val, rules.overallMin, rules.overallMax),
-      );
+      overall.value = String(clamp(val, rules.overallMin, rules.overallMax));
     }
 
     // Keep the “overall” input readonly unless manual override is ticked
@@ -493,14 +508,8 @@
               Math.round((v - rules.overallMin) / step) * step +
               rules.overallMin;
             const fixed =
-              step === 1
-                ? Math.round(snapped)
-                : Math.round(snapped * 2) / 2;
-            const clamped = clamp(
-              fixed,
-              rules.overallMin,
-              rules.overallMax,
-            );
+              step === 1 ? Math.round(snapped) : Math.round(snapped * 2) / 2;
+            const clamped = clamp(fixed, rules.overallMin, rules.overallMax);
             if (clamped !== v) overall.value = String(clamped);
           }
         }
@@ -540,7 +549,7 @@
             }
           }
         },
-        { capture: true },
+        { capture: true }
       );
     }
   }
@@ -565,7 +574,7 @@
         } catch {}
         el.scrollIntoView({ behavior: "smooth", block: "center" });
       },
-      true, // capture so we run before the browser aborts submit
+      true // capture so we run before the browser aborts submit
     );
 
     // As soon as a field becomes valid again, clear the highlight

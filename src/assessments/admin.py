@@ -1,3 +1,4 @@
+# src/assessments/admin.py
 from django.contrib import admin
 
 from .models import Assessment
@@ -40,7 +41,7 @@ class AssessmentAdmin(admin.ModelAdmin):
     fieldsets = (
         (None, {"fields": ("user",)}),
         (
-            "Writing Section",
+            "Writing Q1 (Initial Statement)",
             {
                 "fields": (
                     "writing_q1_prompt",
@@ -51,14 +52,14 @@ class AssessmentAdmin(admin.ModelAdmin):
             },
         ),
         (
-            "LLM Follow-Up Questions",
+            "Follow-up Questions (LLM-generated)",
             {
                 "fields": (
                     "llm_question_1",
                     "llm_question_2",
                 ),
                 "description": (
-                    "These are auto-generated after submission using the student's final answer."
+                    "These are generated automatically from the student's initial statement."
                 ),
             },
         ),
@@ -70,29 +71,33 @@ class AssessmentAdmin(admin.ModelAdmin):
         text = obj.writing_q1_prompt or ""
         return (text[:80] + "…") if len(text) > 80 else text
 
-    writing_q1_preview.short_description = "Writing Q1 prompt"
+    writing_q1_preview.short_description = "Writing Q1 – Prompt"
     writing_q1_preview.admin_order_field = "writing_q1_prompt"
 
     def answer_draft_preview(self, obj):
         text = obj.writing_answer_draft or ""
         return (text[:80] + "…") if len(text) > 80 else text
 
-    answer_draft_preview.short_description = "Draft answer"
+    # 🔹 clearer label for Writing Q1 draft
+    answer_draft_preview.short_description = "Writing Q1 – Draft answer"
 
     def answer_final_preview(self, obj):
         text = obj.writing_answer_final or ""
         return (text[:80] + "…") if len(text) > 80 else text
 
-    answer_final_preview.short_description = "Final answer"
+    # 🔹 clearer label for Writing Q1 final
+    answer_final_preview.short_description = "Writing Q1 – Final answer"
 
     def llm_q1_preview(self, obj):
         text = obj.llm_question_1 or ""
         return (text[:80] + "…") if len(text) > 80 else text
 
-    llm_q1_preview.short_description = "LLM Q1"
+    # 🔹 label for LLM Q1 question text
+    llm_q1_preview.short_description = "LLM Q1 – Question"
 
     def llm_q2_preview(self, obj):
         text = obj.llm_question_2 or ""
         return (text[:80] + "…") if len(text) > 80 else text
 
-    llm_q2_preview.short_description = "LLM Q2"
+    # 🔹 label for LLM Q2 question text
+    llm_q2_preview.short_description = "LLM Q2 – Question"
