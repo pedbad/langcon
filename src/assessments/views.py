@@ -11,7 +11,7 @@ from django.utils import timezone
 from profiles.models import Profile
 from profiles.utils import require_complete_profile
 
-from .forms import WritingAnswerForm
+from .forms import LLMQuestion1AnswerForm, WritingAnswerForm
 from .llm_client import get_openai_client
 from .models import Assessment
 
@@ -71,17 +71,123 @@ def home(request):
     - Allows students to save drafts (even empty) while unlocked.
     - Enforces submit rules (250–300 words), locks final answer on submit.
     - Once the writing answer is locked, ignores further save/submit attempts.
-    - For HTMX submits, avoids full-page redirects.
+    - Handles follow-up question 1 (draft + submit/lock).
+    - For HTMX submits on writing, avoids full-page redirects.
     """
 
     assessment, _ = Assessment.objects.get_or_create(user=request.user)
     writing_locked = bool(assessment.writing_answer_final)
     is_hx = "HX-Request" in request.headers
 
-    if request.method == "POST":
-        action = request.POST.get("action")
+    # Pre-build Q1 form (unbound) for GET / non-Q1 POST paths
+    llm_q1_form = None
+    if assessment.llm_question_1:
+        llm_q1_form = LLMQuestion1AnswerForm(
+            initial={"llm_question_1_answer": assessment.llm_question_1_answer_draft}
+        )
 
-        # 🔒 Short-circuit: once writing is locked, ignore further save/submit attempts
+    if request.method == "POST":
+        action = (request.POST.get("action") or "").strip()
+
+        # ── Follow-up Question 1: save / submit ─────────────────────────────
+        if action in {"q1_save", "q1_submit"}:
+            # Must have an LLM question before allowing answers
+            if not assessment.llm_question_1:
+                messages.error(
+                    request,
+                    "Follow-up question 1 is not available yet.",
+                )
+                return redirect("assessments:home")
+
+            # Once final is set, ignore further edits
+            if assessment.llm_question_1_answer_final:
+                messages.info(
+                    request,
+                    "Your answer to follow-up question 1 has already been submitted.",
+                )
+                return redirect("assessments:home")
+
+            llm_q1_form = LLMQuestion1AnswerForm(request.POST)
+            if not llm_q1_form.is_valid():
+                messages.error(request, "Please check your answer and try again.")
+                # Writing form: use current draft (locked or not)
+                form = WritingAnswerForm(
+                    initial={"writing_answer": assessment.writing_answer_draft}
+                )
+                return render(
+                    request,
+                    "assessments/home.html",
+                    {
+                        "assessment": assessment,
+                        "form": form,
+                        "writing_locked": writing_locked,
+                        "llm_q1_form": llm_q1_form,
+                    },
+                )
+
+            q1_answer = llm_q1_form.cleaned_data.get("llm_question_1_answer") or ""
+            MAX_CHARS = 3000  # keep in sync with client-side
+
+            if action == "q1_save":
+                # Draft only, no word limit enforcement
+                assessment.llm_question_1_answer_draft = q1_answer[:MAX_CHARS]
+                assessment.save(update_fields=["llm_question_1_answer_draft", "updated_at"])
+                messages.success(request, "Follow-up question 1 draft saved.")
+                return redirect("assessments:home")
+
+            # action == "q1_submit": enforce word range and lock
+            MIN_W, MAX_W = 250, 300
+            n_words = _count_words(q1_answer)
+
+            if n_words < MIN_W or n_words > MAX_W:
+                assessment.llm_question_1_answer_draft = q1_answer[:MAX_CHARS]
+                assessment.save(update_fields=["llm_question_1_answer_draft", "updated_at"])
+                messages.error(
+                    request,
+                    (
+                        f"Your answer to follow-up question 1 is {n_words} words. "
+                        f"It must be between {MIN_W} and {MAX_W} words to submit."
+                    ),
+                )
+                # Rebuild forms with latest draft values
+                llm_q1_form = LLMQuestion1AnswerForm(
+                    initial={"llm_question_1_answer": assessment.llm_question_1_answer_draft}
+                )
+                form = WritingAnswerForm(
+                    initial={"writing_answer": assessment.writing_answer_draft}
+                )
+                return render(
+                    request,
+                    "assessments/home.html",
+                    {
+                        "assessment": assessment,
+                        "form": form,
+                        "writing_locked": writing_locked,
+                        "llm_q1_form": llm_q1_form,
+                    },
+                )
+
+            # ✅ Lock Q1 answer
+            assessment.llm_question_1_answer_draft = q1_answer[:MAX_CHARS]
+            assessment.llm_question_1_answer_final = assessment.llm_question_1_answer_draft
+            assessment.llm_question_1_answer_submitted_at = timezone.now()
+            assessment.save(
+                update_fields=[
+                    "llm_question_1_answer_draft",
+                    "llm_question_1_answer_final",
+                    "llm_question_1_answer_submitted_at",
+                    "updated_at",
+                ]
+            )
+
+            messages.success(
+                request,
+                "Your answer to follow-up question 1 has been submitted.",
+            )
+            return redirect("assessments:home")
+
+        # ── Writing: save / submit ──────────────────────────────────────────
+        # Short-circuit: once writing is locked, ignore further save/submit attempts
         if writing_locked and action in {"save", "submit"}:
             messages.info(
                 request,
@@ -92,7 +198,7 @@ def home(request):
                 return HttpResponse(status=204)
             return redirect("assessments:home")
 
-        # Common form binding for both actions (only if not locked)
+        # Common form binding for both writing actions (only if not locked)
         form = WritingAnswerForm(request.POST)
         if not form.is_valid():
             messages.error(request, "Please check your input and try again.")
@@ -103,6 +209,7 @@ def home(request):
                     "assessment": assessment,
                     "form": form,
                     "writing_locked": writing_locked,
+                    "llm_q1_form": llm_q1_form,
                 },
             )
 
@@ -164,6 +271,7 @@ def home(request):
                             initial={"writing_answer": assessment.writing_answer_draft}
                         ),
                         "writing_locked": False,  # still unlocked if validation failed
+                        "llm_q1_form": llm_q1_form,
                     },
                 )
 
@@ -190,7 +298,13 @@ def home(request):
 
                 assessment.llm_question_1 = q1
                 assessment.llm_question_2 = q2
-                assessment.save(update_fields=["llm_question_1", "llm_question_2", "updated_at"])
+                assessment.save(
+                    update_fields=[
+                        "llm_question_1",
+                        "llm_question_2",
+                        "updated_at",
+                    ]
+                )
 
                 messages.success(
                     request,
@@ -211,6 +325,7 @@ def home(request):
 
         # Unknown action
         messages.error(request, "Unknown action.")
+        form = WritingAnswerForm(initial={"writing_answer": assessment.writing_answer_draft})
         return render(
             request,
             "assessments/home.html",
@@ -218,6 +333,7 @@ def home(request):
                 "assessment": assessment,
                 "form": form,
                 "writing_locked": writing_locked,
+                "llm_q1_form": llm_q1_form,
             },
         )
 
@@ -230,5 +346,6 @@ def home(request):
             "assessment": assessment,
             "form": form,
             "writing_locked": writing_locked,
+            "llm_q1_form": llm_q1_form,
         },
     )

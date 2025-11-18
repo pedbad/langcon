@@ -37,5 +37,25 @@ class Assessment(models.Model):
     llm_question_1 = models.TextField(blank=True)
     llm_question_2 = models.TextField(blank=True)
 
+    llm_question_1_answer_draft = models.TextField(blank=True)
+    llm_question_1_answer_final = models.TextField(blank=True)
+    llm_question_1_answer_submitted_at = models.DateTimeField(null=True, blank=True)
+
+    @property
+    def has_writing(self) -> bool:
+        return bool(self.writing_answer_final)
+
+    @property
+    def has_llm_q1(self) -> bool:
+        return bool(self.llm_question_1)
+
+    @property
+    def has_llm_q1_answer(self) -> bool:
+        return bool(self.llm_question_1_answer_final)
+
+    def is_complete(self) -> bool:
+        # For now: “complete” = writing + first follow-up answer submitted.
+        return self.has_writing and self.has_llm_q1_answer
+
     def __str__(self):
         return f"Assessment for {self.user.email}"

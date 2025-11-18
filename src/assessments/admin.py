@@ -12,15 +12,22 @@ class AssessmentAdmin(admin.ModelAdmin):
     - Provides compact previews in list view for readability.
     """
 
-    # Columns in the list view
+    # Columns in the list view (ordered to match your desired grouping)
     list_display = (
         "user",
+        # Writing block
         "writing_q1_preview",
         "answer_draft_preview",
         "answer_final_preview",
+        "writing_submitted_at",  # Writing submitted at
+        # LLM Q1 block
         "llm_q1_preview",
+        "llm_q1_answer_draft_preview",
+        "llm_q1_answer_final_preview",
+        "llm_q1_submitted_at",  # LLM submitted at
+        # LLM Q2 question (no answers yet)
         "llm_q2_preview",
-        "writing_submitted_at",
+        # Metadata
         "created_at",
     )
     list_display_links = ("user", "writing_q1_preview")
@@ -31,13 +38,14 @@ class AssessmentAdmin(admin.ModelAdmin):
     readonly_fields = (
         "writing_q1_prompt",
         "writing_submitted_at",
+        "llm_question_1_answer_submitted_at",
         "created_at",
         "updated_at",
         "llm_question_1",
         "llm_question_2",
     )
 
-    # Fieldsets organize the edit form
+    # Fieldsets organize the edit form (your structure here is already good)
     fieldsets = (
         (None, {"fields": ("user",)}),
         (
@@ -63,10 +71,22 @@ class AssessmentAdmin(admin.ModelAdmin):
                 ),
             },
         ),
+        (
+            "LLM Q1 – Student answer",
+            {
+                "fields": (
+                    "llm_question_1_answer_draft",
+                    "llm_question_1_answer_final",
+                    "llm_question_1_answer_submitted_at",
+                ),
+                "description": ("Draft and final answer for the first LLM follow-up question."),
+            },
+        ),
         ("Timestamps", {"fields": ("created_at", "updated_at")}),
     )
 
     # --- Preview helpers for shorter admin list cells ---
+
     def writing_q1_preview(self, obj):
         text = obj.writing_q1_prompt or ""
         return (text[:80] + "…") if len(text) > 80 else text
@@ -78,26 +98,46 @@ class AssessmentAdmin(admin.ModelAdmin):
         text = obj.writing_answer_draft or ""
         return (text[:80] + "…") if len(text) > 80 else text
 
-    # 🔹 clearer label for Writing Q1 draft
     answer_draft_preview.short_description = "Writing Q1 – Draft answer"
+    answer_draft_preview.admin_order_field = "writing_answer_draft"
 
     def answer_final_preview(self, obj):
         text = obj.writing_answer_final or ""
         return (text[:80] + "…") if len(text) > 80 else text
 
-    # 🔹 clearer label for Writing Q1 final
     answer_final_preview.short_description = "Writing Q1 – Final answer"
+    answer_final_preview.admin_order_field = "writing_answer_final"
 
     def llm_q1_preview(self, obj):
         text = obj.llm_question_1 or ""
         return (text[:80] + "…") if len(text) > 80 else text
 
-    # 🔹 label for LLM Q1 question text
     llm_q1_preview.short_description = "LLM Q1 – Question"
+    llm_q1_preview.admin_order_field = "llm_question_1"
+
+    def llm_q1_answer_draft_preview(self, obj):
+        text = obj.llm_question_1_answer_draft or ""
+        return (text[:80] + "…") if len(text) > 80 else text
+
+    llm_q1_answer_draft_preview.short_description = "LLM Q1 – Draft answer"
+    llm_q1_answer_draft_preview.admin_order_field = "llm_question_1_answer_draft"
+
+    def llm_q1_answer_final_preview(self, obj):
+        text = obj.llm_question_1_answer_final or ""
+        return (text[:80] + "…") if len(text) > 80 else text
+
+    llm_q1_answer_final_preview.short_description = "LLM Q1 – Final answer"
+    llm_q1_answer_final_preview.admin_order_field = "llm_question_1_answer_final"
+
+    def llm_q1_submitted_at(self, obj):
+        return obj.llm_question_1_answer_submitted_at
+
+    llm_q1_submitted_at.short_description = "LLM Q1 – Submitted at"
+    llm_q1_submitted_at.admin_order_field = "llm_question_1_answer_submitted_at"
 
     def llm_q2_preview(self, obj):
         text = obj.llm_question_2 or ""
         return (text[:80] + "…") if len(text) > 80 else text
 
-    # 🔹 label for LLM Q2 question text
     llm_q2_preview.short_description = "LLM Q2 – Question"
+    llm_q2_preview.admin_order_field = "llm_question_2"
