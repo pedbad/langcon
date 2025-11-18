@@ -1,0 +1,149 @@
+{# assessments/partials/followup_q1_card.html #}
+{% load icons cotton %}
+
+{% if assessment.writing_answer_final and assessment.llm_question_1 %}
+  {% c card class="card-strong" %}
+    {% c card/header %}
+      <div class="flex items-center gap-4 text-5xl text-writing border-b-8 border-writing pb-3">
+        {% icon 'ink_pen' class_='h-12 w-12 text-writing' %}
+        {% c card/title %}Follow-up Question 1{% endc %}
+      </div>
+      {% c card/description %}
+        Please answer the following question based on your writing response:
+      {% endc %}
+    {% endc %}
+
+    {% c card/content %}
+      {# LLM Question 1 shown exactly as stored in the DB for audit consistency #}
+      <p
+        id="llm-q1-prompt"
+        class="text-lg leading-relaxed text-foreground/90
+               bg-sky-50 dark:bg-sky-900/30
+               border-l-4 border-writing
+               px-4 py-3 rounded-r-lg shadow-sm">
+        {{ assessment.llm_question_1 }}
+      </p>
+
+      {# If we already have a final answer, show it read-only #}
+      {% if assessment.llm_question_1_answer_final %}
+        <div class="mt-6 space-y-3">
+          <p class="text-sm font-medium text-emerald-700">
+            Your answer to follow-up question 1 has been submitted and cannot be edited.
+          </p>
+          <div
+            class="rounded-md border border-muted bg-muted/60 px-3 py-3 text-sm leading-relaxed whitespace-pre-wrap">
+            {{ assessment.llm_question_1_answer_final }}
+          </div>
+          {% if assessment.llm_question_1_answer_submitted_at %}
+            <p class="text-xs text-muted-foreground">
+              Submitted on {{ assessment.llm_question_1_answer_submitted_at|date:"Y-m-d H:i" }}.
+            </p>
+          {% endif %}
+        </div>
+      {% else %}
+
+        {# 🔔 Client-side warning toast (shown by JS if >300 words or invalid submit) #}
+        <div
+          id="q1-client-word-warning"
+          class="hidden mt-4 mb-3 flex items-start gap-2 rounded-lg border border-amber-400 bg-amber-50 px-3 py-2 text-sm text-amber-900"
+          role="alert"
+          aria-live="polite"
+        >
+          {% icon 'warning' class_='h-4 w-4 text-amber-600 mt-0.5' %}
+          <span data-role="q1-word-warning-text">
+            Your answer exceeds 300 words. You can still save a draft, but you must
+            reduce it to 300 words to submit.
+          </span>
+        </div>
+
+        {# Client-side submit status for Q1 submit: show while POST is in-flight #}
+        <div
+          id="q1-submit-status"
+          class="hidden mb-3 mt-1 rounded-lg border border-emerald-500 bg-emerald-50 px-3 py-2 text-sm text-emerald-900"
+          role="status"
+          aria-live="polite"
+        >
+          <div class="flex items-center gap-2">
+            <span>
+              Submitting your answer to follow-up question 1…
+            </span>
+            <span
+              class="inline-block h-4 w-4 rounded-full border-2 border-emerald-600 border-t-transparent animate-spin"
+              aria-hidden="true"
+            ></span>
+          </div>
+        </div>
+
+        {# Draft form for follow-up question 1 #}
+        <form method="post" class="mt-6 space-y-4">
+          {% csrf_token %}
+
+          {# Hidden action field:
+             - Default = "q1_save" so plain submit → save draft
+             - JS will flip this to "q1_submit" when the Submit button is clicked
+          #}
+          <input type="hidden" name="action" id="q1-action" value="q1_save" />
+
+          {# Instruction + live word count placeholder #}
+          <div class="flex flex-wrap items-center justify-between gap-3">
+            <label
+              for="id_llm_question_1_answer"
+              class="font-medium text-sm text-red-600 dark:text-red-400 leading-snug"
+            >
+              <span>Please write a minimum of 250 and a maximum of 300 words.</span><br />
+              <span>
+                Please note that responses longer than 300 words will not be recorded
+                by the system.
+              </span>
+            </label>
+            <span
+              class="inline-flex items-center rounded-full border border-slate-400 bg-slate-50 px-3 py-1 text-xs font-semibold text-slate-700"
+              id="llm-q1-word-count"
+              aria-live="polite"
+            >
+              0 / 300 words
+            </span>
+          </div>
+
+          {{ llm_q1_form.llm_question_1_answer }}
+
+          <div class="flex flex-wrap items-center justify-end gap-3">
+            {# ✅ Save Draft: normal HTML submit (classic POST + redirect) #}
+            {% c button
+              type="submit"
+              name="action"
+              value="q1_save"
+              variant="secondary"
+              class="group transition duration-200 hover:bg-writing/15 hover:text-writing hover:shadow-md active:shadow-inner"
+            %}
+              {% icon 'save' class_='h-4 w-4 text-writing' %}
+              <span>Save Draft</span>
+            {% endc %}
+
+            {# ✅ Submit: HTMX POST (reload after success to show locked state) #}
+            {% c button
+              id="submit-llm-q1"
+              type="button"
+              variant="default"
+              hx-post="."
+              hx-include="closest form"
+              hx-swap="none"
+              hx-trigger="click"
+              hx-on="htmx:afterRequest: window.location.reload()"
+              class="group bg-writing text-white hover:bg-writing/90 hover:shadow-lg active:shadow-inner transition duration-200"
+            %}
+              {% icon 'rubric' class_='h-4 w-4 text-white' %}
+              <span>Submit</span>
+            {% endc %}
+          </div>
+        </form>
+      {% endif %}
+    {% endc %}
+
+    {% c card/footer class="justify-start gap-2" %}
+      <p class="text-sm text-muted-foreground">
+        Need help? Contact the Language Centre.
+      </p>
+    {% endc %}
+  {% endc %}
+{% endif %}
