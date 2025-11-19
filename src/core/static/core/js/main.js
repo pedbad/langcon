@@ -74,8 +74,10 @@
       submitBtn.classList.toggle("cursor-not-allowed", !enabled);
     };
 
+    let manualWarning = false;
+
     // ────────────────────────────────────────────────────────────────
-    //  HTMX submit if answer outside 250–300 words
+    //  HTMX submit guard for 250–300 words
     // ────────────────────────────────────────────────────────────────
     if (actionField && submitBtn) {
       submitBtn.addEventListener("click", (evt) => {
@@ -88,6 +90,9 @@
 
           // Clear any fake “submitting” banner
           if (submitStatus) submitStatus.classList.add("hidden");
+
+          // Mark that we are showing a manual warning
+          manualWarning = true;
 
           // Show strong client warning
           showClientWarning(
@@ -117,11 +122,16 @@
       });
     }
 
-    const renderCount = () => {
+    const renderCount = (evt) => {
       const n = countWords(writingTa.value);
       wordChip.textContent = `${n} / ${MAX} words`;
 
-      // neutral
+      // If the user is typing, clear any manual warning
+      if (evt && evt.type === "input") {
+        manualWarning = false;
+      }
+
+      // neutral styling
       wordChip.classList.remove("text-red-600", "border-red-600", "bg-red-50");
       wordChip.classList.add(
         "text-slate-700",
@@ -129,7 +139,7 @@
         "bg-slate-50"
       );
 
-      // warning tint
+      // warning tint near upper limit
       if (n >= WARNING) {
         wordChip.classList.remove(
           "text-slate-700",
@@ -139,7 +149,7 @@
         wordChip.classList.add("text-red-600", "border-red-600", "bg-red-50");
       }
 
-      // live client warning while typing
+      // live client warning: only > MAX; short answers are allowed to *attempt* submit
       if (n > MAX) {
         showClientWarning(
           true,
@@ -147,11 +157,15 @@
         );
         setSubmitEnabled(false);
       } else {
-        showClientWarning(false);
+        // Only auto-hide the toast if we DON'T have a manual warning active
+        if (!manualWarning) {
+          showClientWarning(false);
+        }
         setSubmitEnabled(true);
       }
     };
 
+    // Initial paint + listeners
     renderCount();
     writingTa.addEventListener("input", renderCount);
     writingTa.addEventListener("change", renderCount);
@@ -719,5 +733,24 @@
     initProfileExamForm();
     initGlobalInvalidHighlight();
     initAssessmentLlmQuestion1();
+
+    // ── Respect hash for assessment flow (e.g. #followup-q1-card) ──
+    const hash = window.location.hash;
+    if (hash) {
+      const target = document.querySelector(hash);
+      if (target) {
+        target.scrollIntoView({
+          behavior: "smooth",
+          block: "start",
+        });
+      }
+    }
   });
+
+
+
+
+
+
+
 })();
