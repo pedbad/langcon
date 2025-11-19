@@ -74,59 +74,64 @@
       submitBtn.classList.toggle("cursor-not-allowed", !enabled);
     };
 
+    // When we manually block an invalid submit, we don't want auto-hide
     let manualWarning = false;
 
     // ────────────────────────────────────────────────────────────────
     //  HTMX submit guard for 250–300 words
     // ────────────────────────────────────────────────────────────────
     if (actionField && submitBtn) {
-      submitBtn.addEventListener("click", (evt) => {
-        const n = countWords(writingTa.value);
+      submitBtn.addEventListener(
+        "click",
+        (evt) => {
+          const n = countWords(writingTa.value);
 
-        if (n < MIN || n > MAX) {
-          // BLOCK HTMX
-          evt.preventDefault();
-          evt.stopPropagation();
+          if (n < MIN || n > MAX) {
+            // BLOCK HTMX
+            evt.preventDefault();
+            evt.stopPropagation();
 
-          // Clear any fake “submitting” banner
-          if (submitStatus) submitStatus.classList.add("hidden");
+            // Clear any fake “submitting” banner
+            if (submitStatus) submitStatus.classList.add("hidden");
 
-          // Mark that we are showing a manual warning
-          manualWarning = true;
+            // Mark that we are showing a manual warning
+            manualWarning = true;
 
-          // Show strong client warning
-          showClientWarning(
-            true,
-            `Your answer is ${n} words. It must be between ${MIN} and ${MAX} words to submit.`
-          );
+            // Show strong client warning
+            showClientWarning(
+              true,
+              `Your answer is ${n} words. It must be between ${MIN} and ${MAX} words to submit.`
+            );
 
-          // Re-enable Submit button
-          submitBtn.disabled = false;
-          submitBtn.setAttribute("aria-disabled", "false");
-          submitBtn.classList.remove("opacity-60", "cursor-not-allowed");
+            // Re-enable Submit button
+            submitBtn.disabled = false;
+            submitBtn.setAttribute("aria-disabled", "false");
+            submitBtn.classList.remove("opacity-60", "cursor-not-allowed");
 
-          return; // stop here — NO POST
-        }
+            return; // stop here — NO POST
+          }
 
-        // If valid → allow HTMX, set action to "submit"
-        actionField.value = "submit";
+          // If valid → allow HTMX, set action to "submit"
+          actionField.value = "submit";
 
-        if (submitStatus) {
-          submitStatus.classList.remove("hidden");
-        }
+          if (submitStatus) {
+            submitStatus.classList.remove("hidden");
+          }
 
-        // Lock button
-        submitBtn.disabled = true;
-        submitBtn.setAttribute("aria-disabled", "true");
-        submitBtn.classList.add("opacity-60", "cursor-not-allowed");
-      });
+          // Lock button
+          submitBtn.disabled = true;
+          submitBtn.setAttribute("aria-disabled", "true");
+          submitBtn.classList.add("opacity-60", "cursor-not-allowed");
+        },
+        { capture: true } // ensure we run before HTMX’s bubbling handler
+      );
     }
 
     const renderCount = (evt) => {
       const n = countWords(writingTa.value);
       wordChip.textContent = `${n} / ${MAX} words`;
 
-      // If the user is typing, clear any manual warning
+      // If the user is typing, clear any manual warning flag
       if (evt && evt.type === "input") {
         manualWarning = false;
       }
@@ -171,12 +176,11 @@
     writingTa.addEventListener("change", renderCount);
   }
 
-
   // ────────────────────────────────────────────────────────────────
-  // 2b) Module: Assessment LLM Question 1 (word count, spinner,  warning, HTMX submit)
+  // 2b) Module: Assessment LLM Question 1 (word count, spinner, warning, HTMX submit)
   // ────────────────────────────────────────────────────────────────
   function initAssessmentLlmQuestion1() {
-    // Mirror writing Q1 behaviour, but for llm_question_1_answer
+    // Mirror writing behaviour, but for llm_question_1_answer
     const q1Ta = document.getElementById("id_llm_question_1_answer");
     const q1Chip = document.getElementById("llm-q1-word-count");
     const q1SubmitBtn = document.getElementById("submit-llm-q1");
@@ -257,42 +261,170 @@
     q1Ta.addEventListener("input", renderCount);
     q1Ta.addEventListener("change", renderCount);
 
-    // HTMX submit + hard client-side enforcement (mirror writing style)
+    // HTMX submit + hard client-side enforcement
     if (q1SubmitBtn && q1ActionField) {
-      q1SubmitBtn.addEventListener("click", (evt) => {
-        const n = countWords(q1Ta.value);
+      q1SubmitBtn.addEventListener(
+        "click",
+        (evt) => {
+          const n = countWords(q1Ta.value);
 
-        if (n < MIN || n > MAX) {
-          // BLOCK HTMX
-          evt.preventDefault();
-          evt.stopPropagation();
+          if (n < MIN || n > MAX) {
+            // BLOCK HTMX
+            evt.preventDefault();
+            evt.stopPropagation();
 
-          // Just in case, ensure spinner is hidden
-          if (q1Spinner) q1Spinner.classList.add("hidden");
+            // Just in case, ensure spinner is hidden
+            if (q1Spinner) q1Spinner.classList.add("hidden");
 
-          // Strong warning with exact word count
-          showClientWarning(
-            true,
-            `Your answer is ${n} words. It must be between ${MIN} and ${MAX} words to submit.`
-          );
+            // Strong warning with exact word count
+            showClientWarning(
+              true,
+              `Your answer is ${n} words. It must be between ${MIN} and ${MAX} words to submit.`
+            );
 
-          setSubmitEnabled(false);
-          return; // ❌ no POST
-        }
+            setSubmitEnabled(false);
+            return; // ❌ no POST
+          }
 
-        // ✅ Valid → set action to "q1_submit" and let HTMX POST
-        q1ActionField.value = "q1_submit";
+          // ✅ Valid → set action to "q1_submit" and let HTMX POST
+          q1ActionField.value = "q1_submit";
 
-        if (q1Spinner) {
-          q1Spinner.classList.remove("hidden");
-        }
+          if (q1Spinner) {
+            q1Spinner.classList.remove("hidden");
+          }
 
-        // Lock button until HTMX reloads the page
-        setSubmitEnabled(true); // keep aria states consistent; HTMX will reload anyway
-      });
+          // HTMX will reload the page; we just keep the state consistent
+          setSubmitEnabled(true);
+        },
+        { capture: true } // run before HTMX to be able to block it
+      );
     }
   }
 
+  // ────────────────────────────────────────────────────────────────
+  // 2c) Module: Assessment LLM Question 2 (word count, spinner, warning, HTMX submit)
+  // ────────────────────────────────────────────────────────────────
+  function initAssessmentLlmQuestion2() {
+    // Mirror Q1 behaviour, but for llm_question_2_answer
+    const q2Ta = document.getElementById("id_llm_question_2_answer");
+    const q2Chip = document.getElementById("llm-q2-word-count");
+    const q2SubmitBtn = document.getElementById("submit-llm-q2");
+    const q2ActionField = document.getElementById("q2-action");
+    const q2Spinner = document.getElementById("q2-submit-status");
+    const warnToast = document.getElementById("q2-client-word-warning");
+    const warnToastText = warnToast
+      ? warnToast.querySelector("[data-role='q2-word-warning-text']")
+      : null;
+
+    // If we're not on the Q2 card, bail out quietly
+    if (!q2Ta || !q2Chip) return;
+
+    const MIN = 250;
+    const MAX = 300;
+    const WARNING = 295;
+
+    const countWords = (s) => {
+      s = (s || "").trim();
+      return s ? s.split(/\s+/).filter(Boolean).length : 0;
+    };
+
+    const showClientWarning = (show, text) => {
+      if (!warnToast) return;
+      if (show) {
+        if (text && warnToastText) warnToastText.textContent = text;
+        warnToast.classList.remove("hidden");
+      } else {
+        warnToast.classList.add("hidden");
+      }
+    };
+
+    const setSubmitEnabled = (enabled) => {
+      if (!q2SubmitBtn) return;
+      q2SubmitBtn.disabled = !enabled;
+      q2SubmitBtn.setAttribute("aria-disabled", String(!enabled));
+      q2SubmitBtn.classList.toggle("opacity-60", !enabled);
+      q2SubmitBtn.classList.toggle("cursor-not-allowed", !enabled);
+    };
+
+    const renderCount = () => {
+      const n = countWords(q2Ta.value);
+      q2Chip.textContent = `${n} / ${MAX} words`;
+
+      // neutral
+      q2Chip.classList.remove("text-red-600", "border-red-600", "bg-red-50");
+      q2Chip.classList.add(
+        "text-slate-700",
+        "border-slate-400",
+        "bg-slate-50"
+      );
+
+      // warning tint near the upper limit
+      if (n >= WARNING) {
+        q2Chip.classList.remove(
+          "text-slate-700",
+          "border-slate-400",
+          "bg-slate-50"
+        );
+        q2Chip.classList.add("text-red-600", "border-red-600", "bg-red-50");
+      }
+
+      // live warning + disable submit if outside [MIN, MAX]
+      if (n < MIN || n > MAX) {
+        showClientWarning(
+          true,
+          "Your answer must be between 250 and 300 words to submit. You can still save a draft."
+        );
+        setSubmitEnabled(false);
+      } else {
+        showClientWarning(false);
+        setSubmitEnabled(true);
+      }
+    };
+
+    // Initial render + live updates
+    renderCount();
+    q2Ta.addEventListener("input", renderCount);
+    q2Ta.addEventListener("change", renderCount);
+
+    // HTMX submit + hard client-side enforcement
+    if (q2SubmitBtn && q2ActionField) {
+      q2SubmitBtn.addEventListener(
+        "click",
+        (evt) => {
+          const n = countWords(q2Ta.value);
+
+          if (n < MIN || n > MAX) {
+            // BLOCK HTMX
+            evt.preventDefault();
+            evt.stopPropagation();
+
+            // Ensure spinner is hidden
+            if (q2Spinner) q2Spinner.classList.add("hidden");
+
+            // Strong warning with exact word count
+            showClientWarning(
+              true,
+              `Your answer is ${n} words. It must be between ${MIN} and ${MAX} words to submit.`
+            );
+
+            setSubmitEnabled(false);
+            return; // ❌ no POST
+          }
+
+          // ✅ Valid → set action to "q2_submit" and let HTMX POST
+          q2ActionField.value = "q2_submit";
+
+          if (q2Spinner) {
+            q2Spinner.classList.remove("hidden");
+          }
+
+          // HTMX will reload the page
+          setSubmitEnabled(true);
+        },
+        { capture: true } // run before HTMX
+      );
+    }
+  }
 
   // ────────────────────────────────────────────────────────────────
   // 3) Module: Profile Exam Form (panels, exam rules, auto overall)
@@ -733,6 +865,7 @@
     initProfileExamForm();
     initGlobalInvalidHighlight();
     initAssessmentLlmQuestion1();
+    initAssessmentLlmQuestion2();
 
     // ── Respect hash for assessment flow (e.g. #followup-q1-card) ──
     const hash = window.location.hash;
@@ -746,11 +879,4 @@
       }
     }
   });
-
-
-
-
-
-
-
 })();

@@ -11,7 +11,7 @@ from django.utils import timezone
 from profiles.models import Profile
 from profiles.utils import require_complete_profile
 
-from .forms import LLMQuestion1AnswerForm, WritingAnswerForm
+from .forms import LLMQuestion1AnswerForm, LLMQuestion2AnswerForm, WritingAnswerForm
 from .llm_client import get_openai_client
 from .models import Assessment
 
@@ -71,25 +71,35 @@ def home(request):
     - Allows students to save drafts (even empty) while unlocked.
     - Enforces submit rules (250–300 words), locks final answer on submit.
     - Once the writing answer is locked, ignores further save/submit attempts.
-    - Handles follow-up question 1 (draft + submit/lock).
-    - For HTMX submits on writing, avoids full-page redirects.
+    - Handles follow-up question 1 and 2 (draft + submit/lock).
+    - For HTMX submits on writing, avoids full-page redirects (returns 204).
     """
 
     assessment, _ = Assessment.objects.get_or_create(user=request.user)
     writing_locked = bool(assessment.writing_answer_final)
     is_hx = "HX-Request" in request.headers
 
-    # Pre-build Q1 form (unbound) for GET / non-Q1 POST paths
+    # ── Pre-build follow-up forms for GET / non-own POST paths ─────────────
+    # Q1: only if a question exists
     llm_q1_form = None
     if assessment.llm_question_1:
         llm_q1_form = LLMQuestion1AnswerForm(
             initial={"llm_question_1_answer": assessment.llm_question_1_answer_draft}
         )
 
+    # Q2: only if a question exists
+    llm_q2_form = None
+    if assessment.llm_question_2:
+        llm_q2_form = LLMQuestion2AnswerForm(
+            initial={"llm_question_2_answer": assessment.llm_question_2_answer_draft}
+        )
+
     if request.method == "POST":
         action = (request.POST.get("action") or "").strip()
 
-        # ── Follow-up Question 1: save / submit ─────────────────────────────
+        # ─────────────────────────────────────────────────────────────────────
+        # Follow-up Question 1: save / submit
+        # ─────────────────────────────────────────────────────────────────────
         if action in {"q1_save", "q1_submit"}:
             # Must have an LLM question before allowing answers
             if not assessment.llm_question_1:
@@ -107,6 +117,7 @@ def home(request):
                 )
                 return redirect("assessments:home")
 
+            # Bind Q1 form from POST
             llm_q1_form = LLMQuestion1AnswerForm(request.POST)
             if not llm_q1_form.is_valid():
                 messages.error(request, "Please check your answer and try again.")
@@ -122,24 +133,26 @@ def home(request):
                         "form": form,
                         "writing_locked": writing_locked,
                         "llm_q1_form": llm_q1_form,
+                        "llm_q2_form": llm_q2_form,
                     },
                 )
 
             q1_answer = llm_q1_form.cleaned_data.get("llm_question_1_answer") or ""
             MAX_CHARS = 3000  # keep in sync with client-side
 
+            # Draft path: no word-limit enforcement
             if action == "q1_save":
-                # Draft only, no word limit enforcement
                 assessment.llm_question_1_answer_draft = q1_answer[:MAX_CHARS]
                 assessment.save(update_fields=["llm_question_1_answer_draft", "updated_at"])
                 messages.success(request, "Follow-up question 1 draft saved.")
                 return redirect("assessments:home")
 
-            # action == "q1_submit": enforce word range and lock
+            # Submit path: enforce 250–300 words, then lock
             MIN_W, MAX_W = 250, 300
             n_words = _count_words(q1_answer)
 
             if n_words < MIN_W or n_words > MAX_W:
+                # Keep latest draft; do not lock
                 assessment.llm_question_1_answer_draft = q1_answer[:MAX_CHARS]
                 assessment.save(update_fields=["llm_question_1_answer_draft", "updated_at"])
                 messages.error(
@@ -164,6 +177,7 @@ def home(request):
                         "form": form,
                         "writing_locked": writing_locked,
                         "llm_q1_form": llm_q1_form,
+                        "llm_q2_form": llm_q2_form,
                     },
                 )
 
@@ -186,12 +200,119 @@ def home(request):
             )
             return redirect("assessments:home")
 
-        # ── Writing: save / submit ──────────────────────────────────────────
+        # ─────────────────────────────────────────────────────────────────────
+        # Follow-up Question 2: save / submit
+        # ─────────────────────────────────────────────────────────────────────
+        if action in {"q2_save", "q2_submit"}:
+            # Q2 only makes sense if:
+            # - The Q2 prompt exists AND
+            # - The Q1 answer has been fully submitted
+            if not assessment.llm_question_2 or not assessment.llm_question_1_answer_final:
+                messages.error(
+                    request,
+                    "Follow-up question 2 is not available yet.",
+                )
+                return redirect("assessments:home")
+
+            # Once final is set, ignore further edits
+            if assessment.llm_question_2_answer_final:
+                messages.info(
+                    request,
+                    "Your answer to follow-up question 2 has already been submitted.",
+                )
+                return redirect("assessments:home")
+
+            # Bind Q2 form from POST
+            llm_q2_form = LLMQuestion2AnswerForm(request.POST)
+            if not llm_q2_form.is_valid():
+                messages.error(request, "Please check your answer and try again.")
+                form = WritingAnswerForm(
+                    initial={"writing_answer": assessment.writing_answer_draft}
+                )
+                return render(
+                    request,
+                    "assessments/home.html",
+                    {
+                        "assessment": assessment,
+                        "form": form,
+                        "writing_locked": writing_locked,
+                        "llm_q1_form": llm_q1_form,
+                        "llm_q2_form": llm_q2_form,
+                    },
+                )
+
+            q2_answer = llm_q2_form.cleaned_data.get("llm_question_2_answer") or ""
+            MAX_CHARS = 3000  # keep in sync with client-side
+
+            # Draft path: no word-limit enforcement
+            if action == "q2_save":
+                assessment.llm_question_2_answer_draft = q2_answer[:MAX_CHARS]
+                assessment.save(update_fields=["llm_question_2_answer_draft", "updated_at"])
+                messages.success(request, "Follow-up question 2 draft saved.")
+                return redirect("assessments:home")
+
+            # Submit path: enforce 250–300 words, then lock
+            MIN_W, MAX_W = 250, 300
+            n_words = _count_words(q2_answer)
+
+            if n_words < MIN_W or n_words > MAX_W:
+                # Keep latest draft; do not lock
+                assessment.llm_question_2_answer_draft = q2_answer[:MAX_CHARS]
+                assessment.save(update_fields=["llm_question_2_answer_draft", "updated_at"])
+                messages.error(
+                    request,
+                    (
+                        f"Your answer to follow-up question 2 is {n_words} words. "
+                        f"It must be between {MIN_W} and {MAX_W} words to submit."
+                    ),
+                )
+                # Rebuild forms with latest draft values
+                llm_q2_form = LLMQuestion2AnswerForm(
+                    initial={"llm_question_2_answer": assessment.llm_question_2_answer_draft}
+                )
+                form = WritingAnswerForm(
+                    initial={"writing_answer": assessment.writing_answer_draft}
+                )
+                return render(
+                    request,
+                    "assessments/home.html",
+                    {
+                        "assessment": assessment,
+                        "form": form,
+                        "writing_locked": writing_locked,
+                        "llm_q1_form": llm_q1_form,
+                        "llm_q2_form": llm_q2_form,
+                    },
+                )
+
+            # ✅ Lock Q2 answer
+            assessment.llm_question_2_answer_draft = q2_answer[:MAX_CHARS]
+            assessment.llm_question_2_answer_final = assessment.llm_question_2_answer_draft
+            assessment.llm_question_2_answer_submitted_at = timezone.now()
+            assessment.save(
+                update_fields=[
+                    "llm_question_2_answer_draft",
+                    "llm_question_2_answer_final",
+                    "llm_question_2_answer_submitted_at",
+                    "updated_at",
+                ]
+            )
+
+            messages.success(
+                request,
+                "Your answer to follow-up question 2 has been submitted.",
+            )
+            # 🔜 Future: trigger LLM Q3 generation here if needed
+            return redirect("assessments:home")
+
+        # ─────────────────────────────────────────────────────────────────────
+        # Writing: save / submit
+        # ─────────────────────────────────────────────────────────────────────
         # Short-circuit: once writing is locked, ignore further save/submit attempts
         if writing_locked and action in {"save", "submit"}:
             messages.info(
                 request,
-                ("Your writing answer has already been submitted and " "cannot be changed."),
+                "Your writing answer has already been submitted and cannot be changed.",
             )
             if is_hx:
                 # HTMX: no redirect; frontend stays on the current page
@@ -210,6 +331,7 @@ def home(request):
                     "form": form,
                     "writing_locked": writing_locked,
                     "llm_q1_form": llm_q1_form,
+                    "llm_q2_form": llm_q2_form,
                 },
             )
 
@@ -272,6 +394,7 @@ def home(request):
                         ),
                         "writing_locked": False,  # still unlocked if validation failed
                         "llm_q1_form": llm_q1_form,
+                        "llm_q2_form": llm_q2_form,
                     },
                 )
 
@@ -288,7 +411,7 @@ def home(request):
                 ]
             )
 
-            # LLM follow-up generation
+            # LLM follow-up generation (Q1 + Q2 prompts)
             try:
                 data = generate_followups_from_statement(assessment.writing_answer_final)
                 q1 = (data.get("question1") or "").strip()
@@ -323,7 +446,9 @@ def home(request):
                 return HttpResponse(status=204)
             return redirect("assessments:home")
 
-        # Unknown action
+        # ─────────────────────────────────────────────────────────────────────
+        # Fallback: unknown action
+        # ─────────────────────────────────────────────────────────────────────
         messages.error(request, "Unknown action.")
         form = WritingAnswerForm(initial={"writing_answer": assessment.writing_answer_draft})
         return render(
@@ -334,10 +459,13 @@ def home(request):
                 "form": form,
                 "writing_locked": writing_locked,
                 "llm_q1_form": llm_q1_form,
+                "llm_q2_form": llm_q2_form,
             },
         )
 
-    # GET: prefill form with current draft
+    # ─────────────────────────────────────────────────────────────────────────
+    # GET: prefill writing form with current draft
+    # ─────────────────────────────────────────────────────────────────────────
     form = WritingAnswerForm(initial={"writing_answer": assessment.writing_answer_draft})
     return render(
         request,
@@ -347,5 +475,6 @@ def home(request):
             "form": form,
             "writing_locked": writing_locked,
             "llm_q1_form": llm_q1_form,
+            "llm_q2_form": llm_q2_form,
         },
     )

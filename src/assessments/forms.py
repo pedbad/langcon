@@ -30,3 +30,18 @@ class LLMQuestion1AnswerForm(forms.Form):
         ),
         required=False,  # drafts can be empty
     )
+
+
+class LLMQuestion2AnswerForm(forms.Form):
+    llm_question_2_answer = forms.CharField(
+        label="Your answer to follow-up question 2",
+        widget=forms.Textarea(
+            attrs={
+                "rows": 8,
+                "placeholder": "Write your answer to this second follow-up question here…",
+                "maxlength": "3000",
+                "class": "writing-answer-input",
+            }
+        ),
+        required=False,
+    )  # drafts can be empty

@@ -37,9 +37,15 @@ class Assessment(models.Model):
     llm_question_1 = models.TextField(blank=True)
     llm_question_2 = models.TextField(blank=True)
 
+    # Follow-up Question 1 answers
     llm_question_1_answer_draft = models.TextField(blank=True)
     llm_question_1_answer_final = models.TextField(blank=True)
     llm_question_1_answer_submitted_at = models.DateTimeField(null=True, blank=True)
+
+    # Follow-up Question 2 answers
+    llm_question_2_answer_draft = models.TextField(blank=True)
+    llm_question_2_answer_final = models.TextField(blank=True)
+    llm_question_2_answer_submitted_at = models.DateTimeField(null=True, blank=True)
 
     @property
     def has_writing(self) -> bool:
@@ -52,6 +58,14 @@ class Assessment(models.Model):
     @property
     def has_llm_q1_answer(self) -> bool:
         return bool(self.llm_question_1_answer_final)
+
+    @property
+    def has_llm_q2(self) -> bool:
+        return bool(self.llm_question_2)
+
+    @property
+    def has_llm_q2_answer(self) -> bool:
+        return bool(self.llm_question_2_answer_final)
 
     def is_complete(self) -> bool:
         # For now: “complete” = writing + first follow-up answer submitted.
