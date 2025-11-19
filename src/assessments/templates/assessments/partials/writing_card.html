@@ -145,7 +145,11 @@
               hx-include="closest form"
               hx-swap="none"
               hx-trigger="click"
-              hx-on="htmx:afterRequest: window.location.reload()"
+              hx-on="
+                htmx:afterRequest:
+                  window.location.hash = '#followup-q1-card';
+                  window.location.reload();
+              "
               class="group bg-writing text-white hover:bg-writing/90 hover:shadow-lg active:shadow-inner transition duration-200"
             %}
               {% icon 'rubric' class_='h-4 w-4 text-white' %}
