@@ -1,7 +1,60 @@
 # src/assessments/admin.py
+from django import forms
 from django.contrib import admin
 
 from .models import Assessment
+
+
+class AssessmentAdminForm(forms.ModelForm):
+    """
+    Custom form to make long text answer fields full-width and taller
+    in the admin change view.
+    """
+
+    class Meta:
+        model = Assessment
+        fields = "__all__"
+        widgets = {
+            # Writing Q1 answers
+            "writing_answer_draft": forms.Textarea(
+                attrs={
+                    "rows": 10,
+                    "style": "width: 100%; max-width: 100%;",
+                }
+            ),
+            "writing_answer_final": forms.Textarea(
+                attrs={
+                    "rows": 10,
+                    "style": "width: 100%; max-width: 100%;",
+                }
+            ),
+            # LLM Q1 answers
+            "llm_question_1_answer_draft": forms.Textarea(
+                attrs={
+                    "rows": 10,
+                    "style": "width: 100%; max-width: 100%;",
+                }
+            ),
+            "llm_question_1_answer_final": forms.Textarea(
+                attrs={
+                    "rows": 10,
+                    "style": "width: 100%; max-width: 100%;",
+                }
+            ),
+            # LLM Q2 answers
+            "llm_question_2_answer_draft": forms.Textarea(
+                attrs={
+                    "rows": 10,
+                    "style": "width: 100%; max-width: 100%;",
+                }
+            ),
+            "llm_question_2_answer_final": forms.Textarea(
+                attrs={
+                    "rows": 10,
+                    "style": "width: 100%; max-width: 100%;",
+                }
+            ),
+        }
 
 
 @admin.register(Assessment)
@@ -10,7 +63,10 @@ class AssessmentAdmin(admin.ModelAdmin):
     Custom admin for Assessment:
     - Shows writing and both LLM follow-up question blocks.
     - Provides compact previews in list view for readability.
+    - Uses a custom form so long-text fields are full-width.
     """
+
+    form = AssessmentAdminForm
 
     # Columns in the list view (ordered to match logical grouping)
     list_display = (
@@ -55,46 +111,45 @@ class AssessmentAdmin(admin.ModelAdmin):
         (
             "Writing Q1 (Initial Statement)",
             {
+                "classes": ("wide",),
                 "fields": (
                     "writing_q1_prompt",
                     "writing_answer_draft",
                     "writing_answer_final",
                     "writing_submitted_at",
-                )
+                ),
             },
         ),
         (
-            "Follow-up Questions (LLM-generated)",
+            "LLM Q1 – Question & answer",
             {
+                "classes": ("wide",),
                 "fields": (
                     "llm_question_1",
-                    "llm_question_2",
-                ),
-                "description": (
-                    "These are generated automatically from the student's initial statement."
-                ),
-            },
-        ),
-        (
-            "LLM Q1 – Student answer",
-            {
-                "fields": (
                     "llm_question_1_answer_draft",
                     "llm_question_1_answer_final",
                     "llm_question_1_answer_submitted_at",
                 ),
-                "description": ("Draft and final answer for the first LLM follow-up question."),
+                "description": (
+                    "First follow-up question generated from the student's initial statement, "
+                    "with their draft and final answer."
+                ),
             },
         ),
         (
-            "LLM Q2 – Student answer",
+            "LLM Q2 – Question & answer",
             {
+                "classes": ("wide",),
                 "fields": (
+                    "llm_question_2",
                     "llm_question_2_answer_draft",
                     "llm_question_2_answer_final",
                     "llm_question_2_answer_submitted_at",
                 ),
-                "description": ("Draft and final answer for the second LLM follow-up question."),
+                "description": (
+                    "Second follow-up question generated from the student's initial statement, "
+                    "with their draft and final answer."
+                ),
             },
         ),
         ("Timestamps", {"fields": ("created_at", "updated_at")}),

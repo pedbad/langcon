@@ -82,7 +82,11 @@
           </div>
 
           {# Draft form for follow-up question 2 #}
-          <form method="post" class="mt-6 space-y-4">
+          <form
+            method="post"
+            class="mt-6 space-y-4"
+            autocomplete="off"
+            aria-labelledby="llm-q2-prompt">
             {% csrf_token %}
 
             {# Hidden action field:

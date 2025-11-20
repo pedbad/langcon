@@ -81,7 +81,11 @@
       </div>
 
       {# ✏️ Unlocked state: form with live word count and actions #}
-      <form method="post" class="mt-6 space-y-4" aria-labelledby="writing-prompt">
+      <form
+        method="post"
+        class="mt-6 space-y-4"
+        aria-labelledby="writing-prompt"
+        autocomplete="off">
         {% csrf_token %}
 
         {# Hidden action field:

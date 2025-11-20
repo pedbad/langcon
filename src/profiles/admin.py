@@ -1,3 +1,4 @@
+# src/profiles/admin.py
 from django.contrib import admin
 from django.urls import reverse
 from django.utils.html import format_html
@@ -28,6 +29,9 @@ class ProfileAdmin(admin.ModelAdmin):
         "updated_at",
         "row_delete",
     )
+
+    # 👉 Make both ID and user (email) clickable to the Profile change page
+    list_display_links = ("id", "user")
 
     list_filter = (
         "is_locked",
@@ -79,7 +83,6 @@ class ProfileAdmin(admin.ModelAdmin):
         ("Timestamps", {"fields": ("created_at", "updated_at")}),
     )
 
-    # Always show a bottom "Delete" button on the change page
     def change_view(self, request, object_id, form_url="", extra_context=None):
         extra_context = extra_context or {}
         extra_context["show_delete"] = True
