@@ -32,6 +32,34 @@
   });
 
   // ────────────────────────────────────────────────────────────────
+  // 1b) Shared helpers: word count + chip styling
+  // ────────────────────────────────────────────────────────────────
+  const countWords = (s) => {
+    s = (s || "").trim();
+    return s ? s.split(/\s+/).filter(Boolean).length : 0;
+  };
+
+  function styleWordChip(chipEl, n, maxWords, warningThreshold) {
+    if (!chipEl) return;
+
+    chipEl.textContent = `${n} / ${maxWords} words`;
+
+    // neutral styling
+    chipEl.classList.remove("text-red-600", "border-red-600", "bg-red-50");
+    chipEl.classList.add("text-slate-700", "border-slate-400", "bg-slate-50");
+
+    // warning tint near upper limit
+    if (n >= warningThreshold) {
+      chipEl.classList.remove(
+        "text-slate-700",
+        "border-slate-400",
+        "bg-slate-50"
+      );
+      chipEl.classList.add("text-red-600", "border-red-600", "bg-red-50");
+    }
+  }
+
+  // ────────────────────────────────────────────────────────────────
   // 2) Module: Assessment Writing (word count, toast, submit toggle)
   // ────────────────────────────────────────────────────────────────
   function initAssessmentsWriting() {
@@ -50,11 +78,6 @@
     const MIN = 250;
     const MAX = 300;
     const WARNING = 295;
-
-    const countWords = (s) => {
-      s = (s || "").trim();
-      return s ? s.split(/\s+/).filter(Boolean).length : 0;
-    };
 
     const showClientWarning = (show, text) => {
       if (!warnToast) return;
@@ -129,30 +152,13 @@
 
     const renderCount = (evt) => {
       const n = countWords(writingTa.value);
-      wordChip.textContent = `${n} / ${MAX} words`;
 
       // If the user is typing, clear any manual warning flag
       if (evt && evt.type === "input") {
         manualWarning = false;
       }
 
-      // neutral styling
-      wordChip.classList.remove("text-red-600", "border-red-600", "bg-red-50");
-      wordChip.classList.add(
-        "text-slate-700",
-        "border-slate-400",
-        "bg-slate-50"
-      );
-
-      // warning tint near upper limit
-      if (n >= WARNING) {
-        wordChip.classList.remove(
-          "text-slate-700",
-          "border-slate-400",
-          "bg-slate-50"
-        );
-        wordChip.classList.add("text-red-600", "border-red-600", "bg-red-50");
-      }
+      styleWordChip(wordChip, n, MAX, WARNING);
 
       // live client warning: only > MAX; short answers are allowed to *attempt* submit
       if (n > MAX) {
@@ -177,31 +183,40 @@
   }
 
   // ────────────────────────────────────────────────────────────────
-  // 2b) Module: Assessment LLM Question 1 (word count, spinner, warning, HTMX submit)
+  // 2b) Shared helper: LLM Question modules (Q1, Q2)
   // ────────────────────────────────────────────────────────────────
-  function initAssessmentLlmQuestion1() {
-    // Mirror writing behaviour, but for llm_question_1_answer
-    const q1Ta = document.getElementById("id_llm_question_1_answer");
-    const q1Chip = document.getElementById("llm-q1-word-count");
-    const q1SubmitBtn = document.getElementById("submit-llm-q1");
-    const q1ActionField = document.getElementById("q1-action");
-    const q1Spinner = document.getElementById("q1-submit-status");
-    const warnToast = document.getElementById("q1-client-word-warning");
-    const warnToastText = warnToast
-      ? warnToast.querySelector("[data-role='q1-word-warning-text']")
-      : null;
+  function initLlmQuestionModule(config) {
+    const {
+      textareaId,
+      chipId,
+      submitBtnId,
+      actionFieldId,
+      submitActionValue,
+      spinnerId,
+      warnToastId,
+      warnTextDataAttr,
+      minWords = 250,
+      maxWords = 300,
+      warningThreshold = 295,
+    } = config;
 
-    // If we're not on the Q1 card, bail out quietly
-    if (!q1Ta || !q1Chip) return;
+    const ta = document.getElementById(textareaId);
+    const chip = document.getElementById(chipId);
+    const submitBtn = document.getElementById(submitBtnId);
+    const actionField = document.getElementById(actionFieldId);
+    const spinner = spinnerId ? document.getElementById(spinnerId) : null;
+    const warnToast = document.getElementById(warnToastId);
+    const warnToastText =
+      warnToast && warnTextDataAttr
+        ? warnToast.querySelector(warnTextDataAttr)
+        : null;
 
-    const MIN = 250;
-    const MAX = 300;
-    const WARNING = 295;
+    // If we're not on this card, bail out quietly
+    if (!ta || !chip) return;
 
-    const countWords = (s) => {
-      s = (s || "").trim();
-      return s ? s.split(/\s+/).filter(Boolean).length : 0;
-    };
+    const MIN = minWords;
+    const MAX = maxWords;
+    const WARNING = warningThreshold;
 
     const showClientWarning = (show, text) => {
       if (!warnToast) return;
@@ -214,34 +229,16 @@
     };
 
     const setSubmitEnabled = (enabled) => {
-      if (!q1SubmitBtn) return;
-      q1SubmitBtn.disabled = !enabled;
-      q1SubmitBtn.setAttribute("aria-disabled", String(!enabled));
-      q1SubmitBtn.classList.toggle("opacity-60", !enabled);
-      q1SubmitBtn.classList.toggle("cursor-not-allowed", !enabled);
+      if (!submitBtn) return;
+      submitBtn.disabled = !enabled;
+      submitBtn.setAttribute("aria-disabled", String(!enabled));
+      submitBtn.classList.toggle("opacity-60", !enabled);
+      submitBtn.classList.toggle("cursor-not-allowed", !enabled);
     };
 
     const renderCount = () => {
-      const n = countWords(q1Ta.value);
-      q1Chip.textContent = `${n} / ${MAX} words`;
-
-      // neutral
-      q1Chip.classList.remove("text-red-600", "border-red-600", "bg-red-50");
-      q1Chip.classList.add(
-        "text-slate-700",
-        "border-slate-400",
-        "bg-slate-50"
-      );
-
-      // warning tint near the upper limit
-      if (n >= WARNING) {
-        q1Chip.classList.remove(
-          "text-slate-700",
-          "border-slate-400",
-          "bg-slate-50"
-        );
-        q1Chip.classList.add("text-red-600", "border-red-600", "bg-red-50");
-      }
+      const n = countWords(ta.value);
+      styleWordChip(chip, n, MAX, WARNING);
 
       // live warning + disable submit if outside [MIN, MAX]
       if (n < MIN || n > MAX) {
@@ -258,23 +255,23 @@
 
     // Initial render + live updates
     renderCount();
-    q1Ta.addEventListener("input", renderCount);
-    q1Ta.addEventListener("change", renderCount);
+    ta.addEventListener("input", renderCount);
+    ta.addEventListener("change", renderCount);
 
     // HTMX submit + hard client-side enforcement
-    if (q1SubmitBtn && q1ActionField) {
-      q1SubmitBtn.addEventListener(
+    if (submitBtn && actionField) {
+      submitBtn.addEventListener(
         "click",
         (evt) => {
-          const n = countWords(q1Ta.value);
+          const n = countWords(ta.value);
 
           if (n < MIN || n > MAX) {
             // BLOCK HTMX
             evt.preventDefault();
             evt.stopPropagation();
 
-            // Just in case, ensure spinner is hidden
-            if (q1Spinner) q1Spinner.classList.add("hidden");
+            // Ensure spinner is hidden
+            if (spinner) spinner.classList.add("hidden");
 
             // Strong warning with exact word count
             showClientWarning(
@@ -286,11 +283,11 @@
             return; // ❌ no POST
           }
 
-          // ✅ Valid → set action to "q1_submit" and let HTMX POST
-          q1ActionField.value = "q1_submit";
+          // ✅ Valid → set action to the configured submit value and let HTMX POST
+          actionField.value = submitActionValue;
 
-          if (q1Spinner) {
-            q1Spinner.classList.remove("hidden");
+          if (spinner) {
+            spinner.classList.remove("hidden");
           }
 
           // HTMX will reload the page; we just keep the state consistent
@@ -301,129 +298,37 @@
     }
   }
 
-  // ────────────────────────────────────────────────────────────────
-  // 2c) Module: Assessment LLM Question 2 (word count, spinner, warning, HTMX submit)
-  // ────────────────────────────────────────────────────────────────
+  // Thin wrappers for clarity / backwards compatibility
+  function initAssessmentLlmQuestion1() {
+    initLlmQuestionModule({
+      textareaId: "id_llm_question_1_answer",
+      chipId: "llm-q1-word-count",
+      submitBtnId: "submit-llm-q1",
+      actionFieldId: "q1-action",
+      submitActionValue: "q1_submit",
+      spinnerId: "q1-submit-status",
+      warnToastId: "q1-client-word-warning",
+      warnTextDataAttr: "[data-role='q1-word-warning-text']",
+      minWords: 250,
+      maxWords: 300,
+      warningThreshold: 295,
+    });
+  }
+
   function initAssessmentLlmQuestion2() {
-    // Mirror Q1 behaviour, but for llm_question_2_answer
-    const q2Ta = document.getElementById("id_llm_question_2_answer");
-    const q2Chip = document.getElementById("llm-q2-word-count");
-    const q2SubmitBtn = document.getElementById("submit-llm-q2");
-    const q2ActionField = document.getElementById("q2-action");
-    const q2Spinner = document.getElementById("q2-submit-status");
-    const warnToast = document.getElementById("q2-client-word-warning");
-    const warnToastText = warnToast
-      ? warnToast.querySelector("[data-role='q2-word-warning-text']")
-      : null;
-
-    // If we're not on the Q2 card, bail out quietly
-    if (!q2Ta || !q2Chip) return;
-
-    const MIN = 250;
-    const MAX = 300;
-    const WARNING = 295;
-
-    const countWords = (s) => {
-      s = (s || "").trim();
-      return s ? s.split(/\s+/).filter(Boolean).length : 0;
-    };
-
-    const showClientWarning = (show, text) => {
-      if (!warnToast) return;
-      if (show) {
-        if (text && warnToastText) warnToastText.textContent = text;
-        warnToast.classList.remove("hidden");
-      } else {
-        warnToast.classList.add("hidden");
-      }
-    };
-
-    const setSubmitEnabled = (enabled) => {
-      if (!q2SubmitBtn) return;
-      q2SubmitBtn.disabled = !enabled;
-      q2SubmitBtn.setAttribute("aria-disabled", String(!enabled));
-      q2SubmitBtn.classList.toggle("opacity-60", !enabled);
-      q2SubmitBtn.classList.toggle("cursor-not-allowed", !enabled);
-    };
-
-    const renderCount = () => {
-      const n = countWords(q2Ta.value);
-      q2Chip.textContent = `${n} / ${MAX} words`;
-
-      // neutral
-      q2Chip.classList.remove("text-red-600", "border-red-600", "bg-red-50");
-      q2Chip.classList.add(
-        "text-slate-700",
-        "border-slate-400",
-        "bg-slate-50"
-      );
-
-      // warning tint near the upper limit
-      if (n >= WARNING) {
-        q2Chip.classList.remove(
-          "text-slate-700",
-          "border-slate-400",
-          "bg-slate-50"
-        );
-        q2Chip.classList.add("text-red-600", "border-red-600", "bg-red-50");
-      }
-
-      // live warning + disable submit if outside [MIN, MAX]
-      if (n < MIN || n > MAX) {
-        showClientWarning(
-          true,
-          "Your answer must be between 250 and 300 words to submit. You can still save a draft."
-        );
-        setSubmitEnabled(false);
-      } else {
-        showClientWarning(false);
-        setSubmitEnabled(true);
-      }
-    };
-
-    // Initial render + live updates
-    renderCount();
-    q2Ta.addEventListener("input", renderCount);
-    q2Ta.addEventListener("change", renderCount);
-
-    // HTMX submit + hard client-side enforcement
-    if (q2SubmitBtn && q2ActionField) {
-      q2SubmitBtn.addEventListener(
-        "click",
-        (evt) => {
-          const n = countWords(q2Ta.value);
-
-          if (n < MIN || n > MAX) {
-            // BLOCK HTMX
-            evt.preventDefault();
-            evt.stopPropagation();
-
-            // Ensure spinner is hidden
-            if (q2Spinner) q2Spinner.classList.add("hidden");
-
-            // Strong warning with exact word count
-            showClientWarning(
-              true,
-              `Your answer is ${n} words. It must be between ${MIN} and ${MAX} words to submit.`
-            );
-
-            setSubmitEnabled(false);
-            return; // ❌ no POST
-          }
-
-          // ✅ Valid → set action to "q2_submit" and let HTMX POST
-          q2ActionField.value = "q2_submit";
-
-          if (q2Spinner) {
-            q2Spinner.classList.remove("hidden");
-          }
-
-          // HTMX will reload the page
-          setSubmitEnabled(true);
-        },
-        { capture: true } // run before HTMX
-      );
-    }
+    initLlmQuestionModule({
+      textareaId: "id_llm_question_2_answer",
+      chipId: "llm-q2-word-count",
+      submitBtnId: "submit-llm-q2",
+      actionFieldId: "q2-action",
+      submitActionValue: "q2_submit",
+      spinnerId: "q2-submit-status",
+      warnToastId: "q2-client-word-warning",
+      warnTextDataAttr: "[data-role='q2-word-warning-text']",
+      minWords: 250,
+      maxWords: 300,
+      warningThreshold: 295,
+    });
   }
 
   // ────────────────────────────────────────────────────────────────
@@ -867,7 +772,7 @@
     initAssessmentLlmQuestion1();
     initAssessmentLlmQuestion2();
 
-    // ── Respect hash for assessment flow (e.g. #followup-q1-card) ──
+    // ── Respect hash for assessment flow (e.g. #followup-q1-card / #followup-q2-card) ──
     const hash = window.location.hash;
     if (hash) {
       const target = document.querySelector(hash);
