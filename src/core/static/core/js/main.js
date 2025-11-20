@@ -491,14 +491,37 @@
 
     // 3.c) Dynamic exam rules: placeholders, min/max/step, auto-overall
     const EXAM_RULES = {
+      // IELTS: 0–9 in 0.5 steps, overall = avg → nearest 0.5
       ielts: {
-        subMin: 0,
-        subMax: 9,
+        subMin: 0.0,
+        subMax: 9.0,
         subStep: 0.5,
+        overallMin: 0.0,
+        overallMax: 9.0,
+        overallKind: "avg_half", // average of subs → nearest 0.5
+      },
+
+      // TOEFL (0–120): subs 0–30, overall is sum of subs
+      toefl_120: {
+        subMin: 0,
+        subMax: 30,
+        subStep: 1,
         overallMin: 0,
-        overallMax: 9,
+        overallMax: 120,
+        overallKind: "sum", // sum of subs
+      },
+
+      // TOEFL (0–6): subs 0–6 in 0.5 steps, overall = avg → nearest 0.5
+      toefl_6: {
+        subMin: 0.0,
+        subMax: 6.0,
+        subStep: 0.5,
+        overallMin: 0.0,
+        overallMax: 6.0,
         overallKind: "avg_half",
       },
+
+      // Optional alias to keep any legacy "toefl" values behaving as 0–120
       toefl: {
         subMin: 0,
         subMax: 30,
@@ -507,23 +530,29 @@
         overallMax: 120,
         overallKind: "sum",
       },
+
+      // Cambridge C1: 160–210
       c1: {
         subMin: 160,
         subMax: 210,
         subStep: 1,
         overallMin: 160,
         overallMax: 210,
-        overallKind: "avg_int",
+        overallKind: "avg_int", // average of subs → nearest int
       },
+
+      // Cambridge C2: **180–230** (updated from the old 200–230)
       c2: {
-        subMin: 200,
+        subMin: 180,
         subMax: 230,
         subStep: 1,
-        overallMin: 200,
+        overallMin: 180,
         overallMax: 230,
         overallKind: "avg_int",
       },
     };
+    Object.freeze(EXAM_RULES);
+
 
     const toNum = (el) => {
       if (!el) return null;
@@ -548,12 +577,15 @@
         el.setAttribute("max", String(rules.subMax));
         el.setAttribute("step", String(rules.subStep));
 
-        // IELTS → show “0–9 (0.5 steps)”
-        // all others → show “0–30”, “160–210”, etc.
+        // IELTS + TOEFL (0–6) → show “0–9 (0.5 steps)”, “0–6 (0.5 steps)”
+        // all others → show “0–30”, “160–210”, “180–230”, etc.
         let ph = `${rules.subMin}–${rules.subMax}`;
-        if (et === "ielts") ph += ` (${rules.subStep} steps)`;
+        if (et === "ielts" || et === "toefl_6") {
+          ph += ` (${rules.subStep} steps)`;
+        }
         el.setAttribute("placeholder", ph);
       };
+
 
       setAttrs(reading);
       setAttrs(listening);

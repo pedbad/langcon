@@ -5,7 +5,7 @@ Test suite: Profile exam submission and validation flow
 Covers the full end-to-end behaviour of the student profile exam form, ensuring:
 
 1. Exam type–specific rules:
-   • IELTS / TOEFL clear any Cambridge-only fields (grade, use_of_english).
+   • IELTS / TOEFL (0–120) clear any Cambridge-only fields (grade, use_of_english).
    • Cambridge C1/C2 correctly save all sub-scores and additional fields.
    • Overall score auto-computes according to exam type (sum, avg, or half-step).
 
@@ -105,7 +105,7 @@ class ProfileExamFlowTests(TestCase):
 
     def test_toefl_submission_clears_cambridge_fields(self):
         data = self.base | {
-            "exam_type": "toefl",
+            "exam_type": "toefl_120",
             "reading_score": "25",
             "listening_score": "23",
             "writing_score": "24",
@@ -115,9 +115,13 @@ class ProfileExamFlowTests(TestCase):
         }
         resp, prof = self.post(data)
         self.assertEqual(resp.status_code, 200)
-        self.assertEqual(prof.exam_type, "toefl")
-        # overall should be sum of subs
+
+        # exam_type should be stored using the new key
+        self.assertEqual(prof.exam_type, "toefl_120")
+        # overall should be sum of subs for TOEFL (0–120)
         self.assertEqual(float(prof.overall_score), 25 + 23 + 24 + 22)
+
+        # Cambridge-only fields must be cleared for non-C1/C2
         self.assertIsNone(prof.cambridge_grade)
         self.assertIsNone(prof.cambridge_use_of_english)
 

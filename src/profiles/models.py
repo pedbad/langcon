@@ -1,3 +1,4 @@
+# src/profiles/models.py
 from datetime import date
 from decimal import Decimal, ROUND_HALF_UP
 
@@ -51,13 +52,23 @@ EXAM_RULES = {
         "overall_max": Decimal("9.0"),
         "overall_kind": "avg_half",  # average of subs → nearest 0.5
     },
-    "toefl": {
+    "toefl_120": {
+        # Old TOEFL scheme: 0–120 total (4 × 0–30)
         "sub_min": Decimal("0"),
         "sub_max": Decimal("30"),
         "sub_step": Decimal("1"),
         "overall_min": Decimal("0"),
         "overall_max": Decimal("120"),
         "overall_kind": "sum_int",  # sum of subs
+    },
+    "toefl_6": {
+        # New TOEFL scheme: 0–6 per skill in 0.5 steps
+        "sub_min": Decimal("0.0"),
+        "sub_max": Decimal("6.0"),
+        "sub_step": Decimal("0.5"),
+        "overall_min": Decimal("0.0"),
+        "overall_max": Decimal("6.0"),
+        "overall_kind": "avg_half",  # like IELTS: average → nearest 0.5
     },
     "c1": {
         "sub_min": Decimal("160"),
@@ -68,14 +79,17 @@ EXAM_RULES = {
         "overall_kind": "avg_int",  # average of subs → nearest int
     },
     "c2": {
-        "sub_min": Decimal("200"),
+        "sub_min": Decimal("180"),
         "sub_max": Decimal("230"),
         "sub_step": Decimal("1"),
-        "overall_min": Decimal("200"),
+        "overall_min": Decimal("180"),
         "overall_max": Decimal("230"),
         "overall_kind": "avg_int",
     },
 }
+
+# Backwards-compatibility: support old "toefl" rows transparently
+EXAM_RULES["toefl"] = EXAM_RULES["toefl_120"]
 
 
 class Profile(models.Model):
@@ -106,6 +120,7 @@ class Profile(models.Model):
     # ── Subject area ───────────────────────────────────────────────
     SUBJECT_AREA_CHOICES = [
         ("arts_humanities", "Arts and Humanities"),
+        ("business_management", "Business and Management"),
         ("computing", "Computing"),
         ("education", "Education"),
         ("engineering", "Engineering"),
@@ -135,12 +150,14 @@ class Profile(models.Model):
     )
 
     TEST_CHOICES = (
-        ("", "Select exam..."),  # placeholder for forms
-        ("ielts", "IELTS"),
-        ("toefl", "TOEFL"),
-        ("c1", "Cambridge C1 Advanced"),
-        ("c2", "Cambridge C2 Proficiency"),
+        ("", "Select your exam…"),  # placeholder
+        ("ielts", "IELTS (0–9, half points)"),
+        ("toefl_120", "TOEFL (0–120)"),
+        ("toefl_6", "TOEFL (0–6, half points)"),
+        ("c1", "Cambridge C1 Advanced (160–210)"),
+        ("c2", "Cambridge C2 Proficiency (180–230)"),
     )
+
     exam_type = models.CharField(
         max_length=20,
         choices=TEST_CHOICES,
