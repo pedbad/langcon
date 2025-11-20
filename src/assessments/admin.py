@@ -8,25 +8,28 @@ from .models import Assessment
 class AssessmentAdmin(admin.ModelAdmin):
     """
     Custom admin for Assessment:
-    - Shows both writing and LLM follow-up question data.
+    - Shows writing and both LLM follow-up question blocks.
     - Provides compact previews in list view for readability.
     """
 
-    # Columns in the list view (ordered to match your desired grouping)
+    # Columns in the list view (ordered to match logical grouping)
     list_display = (
         "user",
         # Writing block
         "writing_q1_preview",
         "answer_draft_preview",
         "answer_final_preview",
-        "writing_submitted_at",  # Writing submitted at
+        "writing_submitted_at",  # Writing submitted at (model field)
         # LLM Q1 block
         "llm_q1_preview",
         "llm_q1_answer_draft_preview",
         "llm_q1_answer_final_preview",
-        "llm_q1_submitted_at",  # LLM submitted at
-        # LLM Q2 question (no answers yet)
+        "llm_q1_submitted_at",  # LLM Q1 submitted at (helper → model field)
+        # LLM Q2 block
         "llm_q2_preview",
+        "llm_q2_answer_draft_preview",
+        "llm_q2_answer_final_preview",
+        "llm_q2_submitted_at",  # LLM Q2 submitted at (helper → model field)
         # Metadata
         "created_at",
     )
@@ -34,18 +37,19 @@ class AssessmentAdmin(admin.ModelAdmin):
     search_fields = ("user__email", "user__username")
     list_filter = ("writing_submitted_at", "created_at")
 
-    # Read-only metadata
+    # Read-only metadata / generated bits
     readonly_fields = (
         "writing_q1_prompt",
         "writing_submitted_at",
         "llm_question_1_answer_submitted_at",
+        "llm_question_2_answer_submitted_at",
         "created_at",
         "updated_at",
         "llm_question_1",
         "llm_question_2",
     )
 
-    # Fieldsets organize the edit form (your structure here is already good)
+    # Fieldsets organize the edit form
     fieldsets = (
         (None, {"fields": ("user",)}),
         (
@@ -80,6 +84,17 @@ class AssessmentAdmin(admin.ModelAdmin):
                     "llm_question_1_answer_submitted_at",
                 ),
                 "description": ("Draft and final answer for the first LLM follow-up question."),
+            },
+        ),
+        (
+            "LLM Q2 – Student answer",
+            {
+                "fields": (
+                    "llm_question_2_answer_draft",
+                    "llm_question_2_answer_final",
+                    "llm_question_2_answer_submitted_at",
+                ),
+                "description": ("Draft and final answer for the second LLM follow-up question."),
             },
         ),
         ("Timestamps", {"fields": ("created_at", "updated_at")}),
@@ -141,3 +156,23 @@ class AssessmentAdmin(admin.ModelAdmin):
 
     llm_q2_preview.short_description = "LLM Q2 – Question"
     llm_q2_preview.admin_order_field = "llm_question_2"
+
+    def llm_q2_answer_draft_preview(self, obj):
+        text = obj.llm_question_2_answer_draft or ""
+        return (text[:80] + "…") if len(text) > 80 else text
+
+    llm_q2_answer_draft_preview.short_description = "LLM Q2 – Draft answer"
+    llm_q2_answer_draft_preview.admin_order_field = "llm_question_2_answer_draft"
+
+    def llm_q2_answer_final_preview(self, obj):
+        text = obj.llm_question_2_answer_final or ""
+        return (text[:80] + "…") if len(text) > 80 else text
+
+    llm_q2_answer_final_preview.short_description = "LLM Q2 – Final answer"
+    llm_q2_answer_final_preview.admin_order_field = "llm_question_2_answer_final"
+
+    def llm_q2_submitted_at(self, obj):
+        return obj.llm_question_2_answer_submitted_at
+
+    llm_q2_submitted_at.short_description = "LLM Q2 – Submitted at"
+    llm_q2_submitted_at.admin_order_field = "llm_question_2_answer_submitted_at"
