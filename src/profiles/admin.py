@@ -10,7 +10,8 @@ from .models import Profile
 class ProfileAdmin(admin.ModelAdmin):
     list_display = (
         "id",
-        "user",
+        "user",  # usually shows email (CustomUser.__str__)
+        "student_number",  # ← NEW: USN/CRSid column, right after email
         "is_locked",
         "subject_area",
         "phone",
@@ -30,8 +31,8 @@ class ProfileAdmin(admin.ModelAdmin):
         "row_delete",
     )
 
-    # 👉 Make both ID and user (email) clickable to the Profile change page
-    list_display_links = ("id", "user")
+    # Make ID, user (email) and student_number clickable to open the Profile
+    list_display_links = ("id", "user", "student_number")
 
     list_filter = (
         "is_locked",
@@ -50,7 +51,16 @@ class ProfileAdmin(admin.ModelAdmin):
     )
 
     fieldsets = (
-        (None, {"fields": ("user", "is_locked")}),
+        (
+            None,
+            {
+                "fields": (
+                    "user",
+                    "student_number",  # ← NEW: shown prominently at the top
+                    "is_locked",
+                )
+            },
+        ),
         ("Contact & Area", {"fields": ("phone", "subject_area")}),
         ("Visa", {"fields": ("requires_uk_student_visa",)}),
         (

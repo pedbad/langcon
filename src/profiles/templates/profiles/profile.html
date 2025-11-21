@@ -75,12 +75,15 @@
         <fieldset {% if is_readonly %}disabled aria-disabled="true"{% endif %} class="space-y-5">
 
         {# ─────────────────────────────────────────────────────────────
-           Two-column: Phone (left) + Subject area (right)
-           ───────────────────────────────────────────────────────────── #}
+          Two-column: Phone (left) + Subject area (right)
+        ───────────────────────────────────────────────────────────── #}
         <div class="grid gap-4 sm:grid-cols-2">
-          {# Phone #}
+          {# Phone + Unique Student Number (stacked in left column) #}
           <div>
-            <label for="{{ form.phone.id_for_label }}" class="mb-1 block text-sm font-medium text-foreground">Phone</label>
+            {# Phone #}
+            <label for="{{ form.phone.id_for_label }}" class="mb-1 block text-sm font-medium text-foreground">
+              Phone
+            </label>
             <div class="flex rounded-md shadow-sm">
               <span class="inline-flex h-10 items-center rounded-l-md border border-input border-r-0 bg-muted px-3 text-muted-foreground shrink-0">
                 {% icon 'phone' class_='size-6 opacity-80 -mt-[1px]' label='Phone' %}
@@ -90,7 +93,28 @@
             {% if form.phone.errors %}
               <p class="mt-1 text-sm text-destructive">{{ form.phone.errors.0 }}</p>
             {% endif %}
-            <p id="{{ form.phone.auto_id }}_helptext" class="mt-1 text-xs text-muted-foreground">Include country code if possible (e.g. +44 …).</p>
+            <p id="{{ form.phone.auto_id }}_helptext" class="mt-1 text-xs text-muted-foreground">
+              Include country code if possible (e.g. +44 …).
+            </p>
+
+            {# Unique Student Number (USN / CRSid) #}
+            <div class="mt-4">
+              <label for="{{ form.student_number.id_for_label }}" class="mb-1 block text-sm font-medium text-foreground">
+                Unique Student Number (USN)
+              </label>
+              <div class="flex rounded-md shadow-sm">
+                <span class="inline-flex h-10 items-center rounded-l-md border border-input border-r-0 bg-muted px-3 text-muted-foreground shrink-0">
+                  {% icon 'user_attributes' class_='size-6 opacity-80 -mt-[1px]' label='Unique student number' %}
+                </span>
+                {{ form.student_number }}
+              </div>
+              {% if form.student_number.errors %}
+                <p class="mt-1 text-sm text-destructive">{{ form.student_number.errors.0 }}</p>
+              {% endif %}
+              <p id="{{ form.student_number.auto_id }}_helptext" class="mt-1 text-xs text-muted-foreground">
+                Enter your Unique Student Number (USN).
+              </p>
+            </div>
           </div>
 
           {# Subject area (native <select> with explicit placeholder control) #}
@@ -103,8 +127,7 @@
               id="id_subject_area"
               name="{{ form.subject_area.html_name }}"
               required
-              class="w-full rounded-md border border-input bg-background text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring px-3 py-2 appearance-none pr-10"
-            >
+              class="w-full rounded-md border border-input bg-background text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring px-3 py-2 appearance-none pr-10">
               {# Placeholder: show when no bound value and no non-empty initial #}
               <option value=""
                 {% if form.is_bound %}
@@ -130,13 +153,16 @@
             {% if form.subject_area.errors %}
               <p class="mt-1 text-sm text-destructive">{{ form.subject_area.errors.0 }}</p>
             {% endif %}
-            <p id="{{ form.subject_area.auto_id }}_helptext" class="mt-1 text-xs text-muted-foreground">Choose the closest match.</p>
+            <p id="{{ form.subject_area.auto_id }}_helptext" class="mt-1 text-xs text-muted-foreground">
+              Choose the closest match.
+            </p>
           </div>
         </div> {# ← CLOSES the 2-column grid! #}
 
+
         {# ─────────────────────────────────────────────────────────────
-           Visa segmented control (FULL WIDTH)
-           ───────────────────────────────────────────────────────────── #}
+          Visa segmented control (FULL WIDTH)
+        ───────────────────────────────────────────────────────────── #}
         <div class="rounded-xl border p-4 bg-sky-50 border-sky-200 dark:bg-sky-900/30 dark:border-sky-700">
           <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div class="flex items-center gap-3 min-w-0">
@@ -152,13 +178,55 @@
               <fieldset role="radiogroup" aria-labelledby="visa-question-label" class="w-full">
                 <legend class="sr-only">UK student visa requirement</legend>
                 <div class="flex w-full overflow-hidden rounded-md border border-input shadow-sm">
-                  <input type="radio" name="{{ form.requires_uk_student_visa.html_name }}" id="visa_yes" value="True" class="peer/visaYes sr-only" aria-label="Yes, I require a UK student visa"
-                    {% with v=form.requires_uk_student_visa.value|stringformat:'s' %}{% if v == 'True' or v == '' %}checked{% endif %}{% endwith %}/>
-                  <label for="visa_yes" class="flex-1 cursor-pointer select-none px-4 py-2 text-center text-sm font-medium transition-colors rounded-l-md bg-background text-foreground hover:bg-green-600 hover:text-white peer-checked/visaYes:bg-green-600 peer-checked/visaYes:text-white">Yes</label>
+                  <input
+                    type="radio"
+                    name="{{ form.requires_uk_student_visa.html_name }}"
+                    id="visa_yes"
+                    value="True"
+                    class="peer/visaYes sr-only"
+                    aria-label="Yes, I require a UK student visa"
+                    {% with v=form.requires_uk_student_visa.value|stringformat:'s' %}{% if v == 'True' or v == '' %}checked{% endif %}{% endwith %}
+                  />
+                  <label
+                    for="visa_yes"
+                    class="
+                      flex-1 select-none px-4 py-2 text-center text-sm font-medium transition-colors
+                      rounded-l-md bg-background text-foreground
+                      peer-checked/visaYes:bg-green-600 peer-checked/visaYes:text-white
+                      {% if is_readonly %}
+                        cursor-default pointer-events-none opacity-60
+                      {% else %}
+                        cursor-pointer hover:bg-green-600 hover:text-white
+                      {% endif %}
+                    "
+                  >
+                    Yes
+                  </label>
 
-                  <input type="radio" name="{{ form.requires_uk_student_visa.html_name }}" id="visa_no" value="False" class="peer/visaNo sr-only" aria-label="No, I do not require a UK student visa"
-                    {% if form.requires_uk_student_visa.value|stringformat:'s' == 'False' %}checked{% endif %}/>
-                  <label for="visa_no" class="flex-1 cursor-pointer select-none px-4 py-2 text-center text-sm font-medium transition-colors -ml-px rounded-r-md bg-background text-foreground hover:bg-red-600 hover:text-white peer-checked/visaNo:bg-red-600 peer-checked/visaNo:text-white">No</label>
+                  <input
+                    type="radio"
+                    name="{{ form.requires_uk_student_visa.html_name }}"
+                    id="visa_no"
+                    value="False"
+                    class="peer/visaNo sr-only"
+                    aria-label="No, I do not require a UK student visa"
+                    {% if form.requires_uk_student_visa.value|stringformat:'s' == 'False' %}checked{% endif %}
+                  />
+                  <label
+                    for="visa_no"
+                    class="
+                      flex-1 select-none px-4 py-2 text-center text-sm font-medium transition-colors -ml-px
+                      rounded-r-md bg-background text-foreground
+                      peer-checked/visaNo:bg-red-600 peer-checked/visaNo:text-white
+                      {% if is_readonly %}
+                        cursor-default pointer-events-none opacity-60
+                      {% else %}
+                        cursor-pointer hover:bg-red-600 hover:text-white
+                      {% endif %}
+                    "
+                  >
+                    No
+                  </label>
                 </div>
               </fieldset>
             </div>
@@ -186,13 +254,55 @@
               <fieldset role="radiogroup" aria-labelledby="exam-question-label" class="w-full">
                 <legend class="sr-only">Recent English exam confirmation</legend>
                 <div class="flex w-full overflow-hidden rounded-md border border-input shadow-sm">
-                  <input type="radio" name="{{ form.has_recent_english_exam.html_name }}" id="exam_yes" value="True" class="peer/examYes sr-only" aria-label="Yes, I have taken an exam"
-                    {% with v=form.has_recent_english_exam.value|stringformat:'s' %}{% if v == 'True' or v == '' %}checked{% endif %}{% endwith %}/>
-                  <label for="exam_yes" class="flex-1 cursor-pointer select-none px-4 py-2 text-center text-sm font-medium transition-colors rounded-l-md bg-background text-foreground hover:bg-green-600 hover:text-white peer-checked/examYes:bg-green-600 peer-checked/examYes:text-white">Yes</label>
+                  <input
+                    type="radio"
+                    name="{{ form.has_recent_english_exam.html_name }}"
+                    id="exam_yes"
+                    value="True"
+                    class="peer/examYes sr-only"
+                    aria-label="Yes, I have taken an exam"
+                    {% with v=form.has_recent_english_exam.value|stringformat:'s' %}{% if v == 'True' or v == '' %}checked{% endif %}{% endwith %}
+                  />
+                  <label
+                    for="exam_yes"
+                    class="
+                      flex-1 select-none px-4 py-2 text-center text-sm font-medium transition-colors
+                      rounded-l-md bg-background text-foreground
+                      peer-checked/examYes:bg-green-600 peer-checked/examYes:text-white
+                      {% if is_readonly %}
+                        cursor-default pointer-events-none opacity-60
+                      {% else %}
+                        cursor-pointer hover:bg-green-600 hover:text-white
+                      {% endif %}
+                    "
+                  >
+                    Yes
+                  </label>
 
-                  <input type="radio" name="{{ form.has_recent_english_exam.html_name }}" id="exam_no" value="False" class="peer/examNo sr-only" aria-label="No, I have not taken an exam"
-                    {% if form.has_recent_english_exam.value|stringformat:'s' == 'False' %}checked{% endif %}/>
-                  <label for="exam_no" class="flex-1 cursor-pointer select-none px-4 py-2 text-center text-sm font-medium transition-colors -ml-px rounded-r-md bg-background text-foreground hover:bg-red-600 hover:text-white peer-checked/examNo:bg-red-600 peer-checked/examNo:text-white">No</label>
+                  <input
+                    type="radio"
+                    name="{{ form.has_recent_english_exam.html_name }}"
+                    id="exam_no"
+                    value="False"
+                    class="peer/examNo sr-only"
+                    aria-label="No, I have not taken an exam"
+                    {% if form.has_recent_english_exam.value|stringformat:'s' == 'False' %}checked{% endif %}
+                  />
+                  <label
+                    for="exam_no"
+                    class="
+                      flex-1 select-none px-4 py-2 text-center text-sm font-medium transition-colors -ml-px
+                      rounded-r-md bg-background text-foreground
+                      peer-checked/examNo:bg-red-600 peer-checked/examNo:text-white
+                      {% if is_readonly %}
+                        cursor-default pointer-events-none opacity-60
+                      {% else %}
+                        cursor-pointer hover:bg-red-600 hover:text-white
+                      {% endif %}
+                    "
+                  >
+                    No
+                  </label>
                 </div>
               </fieldset>
             </div>

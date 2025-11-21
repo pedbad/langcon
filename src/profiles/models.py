@@ -105,6 +105,13 @@ class Profile(models.Model):
         help_text="Linked user account for this profile.",
     )
 
+    # ── Student number (USN / CRSid) ───────────────────────────────
+    student_number = models.CharField(
+        max_length=20,
+        unique=True,
+        help_text="Unique Student Number (USN)",
+    )
+
     # ── Contact ───────────────────────────────────────────────────
     phone = models.CharField(
         max_length=20,
@@ -397,7 +404,9 @@ class Profile(models.Model):
     # ── Completion logic used by gating nav, etc. ──────────────────
     def is_complete(self) -> bool:
         # Base requirements + honour code
-        base_ok = bool(self.phone and self.subject_area and not self.is_locked)
+        base_ok = bool(
+            self.phone and self.student_number and self.subject_area and not self.is_locked
+        )
         if not base_ok:
             return False
         if not self.academic_integrity_confirmed:

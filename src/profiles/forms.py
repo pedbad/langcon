@@ -70,6 +70,23 @@ def _year_choices(span=5):
 
 class ProfileForm(forms.ModelForm):
     # ─────────────────────────────
+    # Student number (USN / CRSid)
+    # ─────────────────────────────
+    student_number = forms.CharField(
+        label="Unique Student Number",
+        required=True,
+        max_length=20,
+        help_text="Your Unique Student Number (USN) or CRSid (up to 20 characters).",
+        widget=forms.TextInput(
+            attrs={
+                "id": "id_student_number",
+                "placeholder": "e.g. 301004293",
+                "class": PHONE_INPUT,
+            }
+        ),
+    )
+
+    # ─────────────────────────────
     # Visa + Exam “switch” fields
     # ─────────────────────────────
     requires_uk_student_visa = forms.TypedChoiceField(
@@ -202,6 +219,7 @@ class ProfileForm(forms.ModelForm):
         model = Profile
         fields = [
             "phone",
+            "student_number",
             "subject_area",
             "requires_uk_student_visa",
             "has_recent_english_exam",
