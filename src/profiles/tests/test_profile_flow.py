@@ -55,6 +55,7 @@ class ProfileExamFlowTests(TestCase):
             "requires_uk_student_visa": "True",
             # honour code must be ticked to allow save
             "academic_integrity_confirmed": "true",
+            "student_number": "USNTEST123",
             # exam switch + split date
             "has_recent_english_exam": "True",
             "exam_type": "",

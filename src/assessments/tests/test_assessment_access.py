@@ -35,6 +35,7 @@ def test_assessment_allowed_when_profile_complete(client, student):
     prof.requires_uk_student_visa = True
     prof.academic_integrity_confirmed = True
     prof.has_recent_english_exam = False
+    prof.student_number = "TEST-USN-1"
     prof.full_clean()
     prof.save()
 
@@ -52,6 +53,7 @@ def test_profile_page_shows_begin_assessment_cta_when_complete(client, student):
     prof.requires_uk_student_visa = True
     prof.academic_integrity_confirmed = True
     prof.has_recent_english_exam = False
+    prof.student_number = "TEST-USN-2"
     prof.full_clean()
     prof.save()
 

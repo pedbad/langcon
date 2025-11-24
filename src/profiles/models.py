@@ -242,6 +242,45 @@ class Profile(models.Model):
         return f"Profile<{user_ident}>"
 
     # ── Helpers ────────────────────────────────────────────────────
+    @classmethod
+    def generate_student_number_for_pk(cls, pk: int) -> str:
+        """
+        Generate a unique USN based on a numeric PK (usually the user_id).
+
+        Produces values like:
+            USN000001
+            USN000001-1 (if the base already exists), etc.
+        """
+        base = f"USN{pk:06d}"
+        candidate = base
+        suffix = 1
+
+        # Ensure uniqueness by appending a suffix if needed
+        while cls.objects.filter(student_number=candidate).exists():
+            candidate = f"{base}-{suffix}"
+            suffix += 1
+
+        return candidate
+
+    def ensure_student_number(self) -> None:
+        """
+        Ensure this profile has a non-empty, unique student_number.
+
+        - For new instances created via the signal, we use user_id as the seed.
+        - For any existing instance with a missing USN, we fall back to its own pk.
+        """
+        if self.student_number:
+            return  # already set
+
+        # Prefer the linked user_id as a stable seed for the USN
+        seed_pk = self.user_id or self.pk
+        if seed_pk is None:
+            # Can't generate a deterministic USN without *some* PK;
+            # let normal validation surface any issues.
+            return
+
+        self.student_number = type(self).generate_student_number_for_pk(seed_pk)
+
     def _clear_exam_scores(self):
         self.reading_score = None
         self.listening_score = None
@@ -363,6 +402,9 @@ class Profile(models.Model):
 
     # 🔧 make sure this is at CLASS LEVEL (not nested inside clean)
     def save(self, *args, **kwargs):
+        # Always make sure we have a USN before hitting the database
+        self.ensure_student_number()
+
         # Track confirmation timestamp transition (False -> True)
         if self.pk is not None:
             try:
