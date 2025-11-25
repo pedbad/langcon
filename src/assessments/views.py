@@ -11,7 +11,12 @@ from django.utils import timezone
 from profiles.models import Profile
 from profiles.utils import require_complete_profile
 
-from .forms import LLMQuestion1AnswerForm, LLMQuestion2AnswerForm, WritingAnswerForm
+from .forms import (
+    ListeningAnswerForm,
+    LLMQuestion1AnswerForm,
+    LLMQuestion2AnswerForm,
+    WritingAnswerForm,
+)
 from .llm_client import get_openai_client
 from .models import Assessment
 
@@ -72,6 +77,7 @@ def home(request):
     - Enforces submit rules (250–300 words), locks final answer on submit.
     - Once the writing answer is locked, ignores further save/submit attempts.
     - Handles follow-up question 1 and 2 (draft + submit/lock).
+    - Handles listening comprehension (draft + submit/lock).
     - For HTMX submits on writing, avoids full-page redirects (returns 204).
     """
 
@@ -92,6 +98,13 @@ def home(request):
     if assessment.llm_question_2:
         llm_q2_form = LLMQuestion2AnswerForm(
             initial={"llm_question_2_answer": assessment.llm_question_2_answer_draft}
+        )
+
+    # Listening: only if Q2 final exists and listening not yet final
+    listening_form = None
+    if assessment.llm_question_2_answer_final and not assessment.listening_answer_final:
+        listening_form = ListeningAnswerForm(
+            initial={"listening_answer": assessment.listening_answer_draft}
         )
 
     if request.method == "POST":
@@ -134,6 +147,7 @@ def home(request):
                         "writing_locked": writing_locked,
                         "llm_q1_form": llm_q1_form,
                         "llm_q2_form": llm_q2_form,
+                        "listening_form": listening_form,
                     },
                 )
 
@@ -178,6 +192,7 @@ def home(request):
                         "writing_locked": writing_locked,
                         "llm_q1_form": llm_q1_form,
                         "llm_q2_form": llm_q2_form,
+                        "listening_form": listening_form,
                     },
                 )
 
@@ -238,6 +253,7 @@ def home(request):
                         "writing_locked": writing_locked,
                         "llm_q1_form": llm_q1_form,
                         "llm_q2_form": llm_q2_form,
+                        "listening_form": listening_form,
                     },
                 )
 
@@ -282,6 +298,7 @@ def home(request):
                         "writing_locked": writing_locked,
                         "llm_q1_form": llm_q1_form,
                         "llm_q2_form": llm_q2_form,
+                        "listening_form": listening_form,
                     },
                 )
 
@@ -303,6 +320,111 @@ def home(request):
                 "Your answer to follow-up question 2 has been submitted.",
             )
             # 🔜 Future: trigger LLM Q3 generation here if needed
+            return redirect("assessments:home")
+
+        # ─────────────────────────────────────────────────────────────────────
+        # Listening comprehension: save / submit
+        # ─────────────────────────────────────────────────────────────────────
+        if action in {"listening_save", "listening_submit"}:
+            # Listening only makes sense if:
+            # - Q2 has a final answer
+            if not assessment.llm_question_2_answer_final:
+                messages.error(
+                    request,
+                    "The listening exercise is not available yet.",
+                )
+                return redirect("assessments:home")
+
+            # Once final is set, ignore further edits
+            if assessment.listening_answer_final:
+                messages.info(
+                    request,
+                    "Your listening answer has already been submitted.",
+                )
+                return redirect("assessments:home")
+
+            # Bind listening form from POST
+            listening_form = ListeningAnswerForm(request.POST)
+            if not listening_form.is_valid():
+                messages.error(request, "Please check your answer and try again.")
+                form = WritingAnswerForm(
+                    initial={"writing_answer": assessment.writing_answer_draft}
+                )
+                return render(
+                    request,
+                    "assessments/home.html",
+                    {
+                        "assessment": assessment,
+                        "form": form,
+                        "writing_locked": writing_locked,
+                        "llm_q1_form": llm_q1_form,
+                        "llm_q2_form": llm_q2_form,
+                        "listening_form": listening_form,
+                    },
+                )
+
+            listening_answer = listening_form.cleaned_data.get("listening_answer") or ""
+            MAX_CHARS = 3000  # keep in sync with client-side
+
+            # Draft path: no word-limit enforcement
+            if action == "listening_save":
+                assessment.listening_answer_draft = listening_answer[:MAX_CHARS]
+                assessment.save(update_fields=["listening_answer_draft", "updated_at"])
+                messages.success(request, "Listening draft saved.")
+                return redirect("assessments:home")
+
+            # Submit path: enforce 250–300 words, then lock
+            MIN_W, MAX_W = 250, 300
+            n_words = _count_words(listening_answer)
+
+            if n_words < MIN_W or n_words > MAX_W:
+                # Keep latest draft; do not lock
+                assessment.listening_answer_draft = listening_answer[:MAX_CHARS]
+                assessment.save(update_fields=["listening_answer_draft", "updated_at"])
+                messages.error(
+                    request,
+                    (
+                        f"Your listening summary is {n_words} words. "
+                        f"It must be between {MIN_W} and {MAX_W} words to submit."
+                    ),
+                )
+                # Rebuild forms with latest draft values
+                listening_form = ListeningAnswerForm(
+                    initial={"listening_answer": assessment.listening_answer_draft}
+                )
+                form = WritingAnswerForm(
+                    initial={"writing_answer": assessment.writing_answer_draft}
+                )
+                return render(
+                    request,
+                    "assessments/home.html",
+                    {
+                        "assessment": assessment,
+                        "form": form,
+                        "writing_locked": writing_locked,
+                        "llm_q1_form": llm_q1_form,
+                        "llm_q2_form": llm_q2_form,
+                        "listening_form": listening_form,
+                    },
+                )
+
+            # ✅ Lock listening answer
+            assessment.listening_answer_draft = listening_answer[:MAX_CHARS]
+            assessment.listening_answer_final = assessment.listening_answer_draft
+            assessment.listening_answer_submitted_at = timezone.now()
+            assessment.save(
+                update_fields=[
+                    "listening_answer_draft",
+                    "listening_answer_final",
+                    "listening_answer_submitted_at",
+                    "updated_at",
+                ]
+            )
+
+            messages.success(
+                request,
+                "Your listening answer has been submitted.",
+            )
             return redirect("assessments:home")
 
         # ─────────────────────────────────────────────────────────────────────
@@ -332,6 +454,7 @@ def home(request):
                     "writing_locked": writing_locked,
                     "llm_q1_form": llm_q1_form,
                     "llm_q2_form": llm_q2_form,
+                    "listening_form": listening_form,
                 },
             )
 
@@ -395,6 +518,7 @@ def home(request):
                         "writing_locked": False,  # still unlocked if validation failed
                         "llm_q1_form": llm_q1_form,
                         "llm_q2_form": llm_q2_form,
+                        "listening_form": listening_form,
                     },
                 )
 
@@ -460,6 +584,7 @@ def home(request):
                 "writing_locked": writing_locked,
                 "llm_q1_form": llm_q1_form,
                 "llm_q2_form": llm_q2_form,
+                "listening_form": listening_form,
             },
         )
 
@@ -476,5 +601,6 @@ def home(request):
             "writing_locked": writing_locked,
             "llm_q1_form": llm_q1_form,
             "llm_q2_form": llm_q2_form,
+            "listening_form": listening_form,
         },
     )

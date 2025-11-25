@@ -331,6 +331,25 @@
     });
   }
 
+  // Thin wrapper for Listening Comprehension:
+  // reuses the same 250–300 word band and UX as the LLM follow-up questions.
+  function initAssessmentListening() {
+    initLlmQuestionModule({
+      textareaId: "id_listening_answer",                // from ListeningAnswerForm
+      chipId: "listening-word-count",                   // in listening_card.html
+      submitBtnId: "submit-listening",                  // HTMX submit button
+      actionFieldId: "listening-action",                // hidden <input name="action">
+      submitActionValue: "listening_submit",            // value checked in views.py
+      spinnerId: "listening-submit-status",             // small “submitting…” banner
+      warnToastId: "listening-client-word-warning",     // client-side warning toast
+      warnTextDataAttr: "[data-role='listening-word-warning-text']",
+      minWords: 250,
+      maxWords: 300,
+      warningThreshold: 295,
+    });
+  }
+
+
   // ────────────────────────────────────────────────────────────────
   // 3) Module: Profile Exam Form (panels, exam rules, auto overall)
   // ────────────────────────────────────────────────────────────────
@@ -803,6 +822,7 @@
     initGlobalInvalidHighlight();
     initAssessmentLlmQuestion1();
     initAssessmentLlmQuestion2();
+    initAssessmentListening();
 
     // ── Respect hash for assessment flow (e.g. #followup-q1-card / #followup-q2-card) ──
     const hash = window.location.hash;

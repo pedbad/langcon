@@ -30,6 +30,18 @@ class Assessment(models.Model):
     writing_answer_final = models.TextField(blank=True)
     writing_submitted_at = models.DateTimeField(null=True, blank=True)
 
+    # Listening comprehension fields
+    listening_q1_prompt = models.TextField(
+        default=(
+            "You are going to listen to a lecture related to your subject area. "
+            "The lecture is approximately ten minutes long. Write a short summary of the lecture."
+        ),
+        editable=False,
+    )
+    listening_answer_draft = models.TextField(blank=True)
+    listening_answer_final = models.TextField(blank=True)
+    listening_answer_submitted_at = models.DateTimeField(null=True, blank=True)
+
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -67,9 +79,24 @@ class Assessment(models.Model):
     def has_llm_q2_answer(self) -> bool:
         return bool(self.llm_question_2_answer_final)
 
+    @property
+    def has_listening_prompt(self) -> bool:
+        return bool(self.listening_q1_prompt)
+
+    @property
+    def has_listening_answer(self) -> bool:
+        return bool(self.listening_answer_final)
+
     def is_complete(self) -> bool:
-        # For now: “complete” = writing + first follow-up answer submitted.
-        return self.has_writing and self.has_llm_q1_answer
+        """
+        “Complete” = writing + both follow-up answers + listening submitted.
+        """
+        return (
+            self.has_writing
+            and self.has_llm_q1_answer
+            and self.has_llm_q2_answer
+            and self.has_listening_answer
+        )
 
     def __str__(self):
         return f"Assessment for {self.user.email}"

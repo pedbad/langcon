@@ -452,12 +452,12 @@
                       type="checkbox"
                       value="true"
                       {% if form.overall_manual_override.value %}checked{% endif %}
-                      class="relative h-[1.125rem] w-[1.125rem] appearance-none rounded-[0.25rem]
+                      class="relative h-4.5 w-4.5 appearance-none rounded-sm
                             border border-gray-400 outline-none cursor-pointer
                             checked:border-blue-600 checked:bg-blue-600
-                            before:absolute before:content-[''] before:block before:inset-0 before:rounded-[0.25rem] before:bg-transparent
-                            checked:after:absolute checked:after:content-[''] checked:after:left-[0.25rem] checked:after:top-[0.05rem]
-                            checked:after:w-[0.375rem] checked:after:h-[0.75rem] checked:after:border-[0.125rem]
+                            before:absolute before:content-[''] before:block before:inset-0 before:rounded-sm before:bg-transparent
+                            checked:after:absolute checked:after:content-[''] checked:after:left-1 checked:after:top-[0.05rem]
+                            checked:after:w-1.5 checked:after:h-3 checked:after:border-2
                             checked:after:border-white checked:after:border-t-0 checked:after:border-l-0
                             checked:after:rotate-45 transition-colors duration-150"
                     />
@@ -530,21 +530,7 @@
                       {% endif %}
                       <p id="{{ form.cambridge_use_of_english.auto_id }}_helptext" class="text-xs text-muted-foreground mt-1">{{ form.cambridge_use_of_english.help_text }}</p>
                     </div>
-
-
-
-
                   </div>
-
-
-
-
-
-
-
-
-
-
                 </div>
               {% endwith %}
             </div>
@@ -552,8 +538,8 @@
         {% endwith %}
 
         {# ─────────────────────────────────────────────────────────────
-           Honour Code (FULL WIDTH)
-           ───────────────────────────────────────────────────────────── #}
+          Honour Code (FULL WIDTH)
+          ───────────────────────────────────────────────────────────── #}
         <div class="mt-8 rounded-xl border p-4 shadow-sm bg-red-50 border-red-300 dark:bg-red-900/30 dark:border-red-700">
           <div class="relative flex items-start">
             <div class="flex h-6 items-center">
@@ -564,25 +550,48 @@
                 value="true"
                 {% if form.academic_integrity_confirmed.value %}checked{% endif %}
                 aria-required="true"
-                class="relative h-[1.125rem] w-[1.125rem] appearance-none rounded-[0.25rem]
+                class="relative h-4.5 w-4.5 appearance-none rounded-sm
                       border border-gray-400 outline-none cursor-pointer
                       checked:border-blue-600 checked:bg-blue-600
-                      before:absolute before:content-[''] before:block before:inset-0 before:rounded-[0.25rem] before:bg-transparent
-                      checked:after:absolute checked:after:content-[''] checked:after:left-[0.25rem] checked:after:top-[0.05rem]
-                      checked:after:w-[0.375rem] checked:after:h-[0.75rem] checked:after:border-[0.125rem]
+                      before:absolute before:content-[''] before:block before:inset-0 before:rounded-sm before:bg-transparent
+                      checked:after:absolute checked:after:content-[''] checked:after:left-1 checked:after:top-[0.05rem]
+                      checked:after:w-1.5 checked:after:h-3 checked:after:border-2
                       checked:after:border-white checked:after:border-t-0 checked:after:border-l-0
                       checked:after:rotate-45 transition-colors duration-150"
               />
             </div>
             <div class="ml-3 text-sm leading-snug">
-              <label for="id_academic_integrity_confirmed" class="font-semibold cursor-pointer text-red-800 dark:text-red-200">
-                {{ form.academic_integrity_confirmed.label }}
+              <label
+                for="id_academic_integrity_confirmed"
+                class="font-semibold cursor-pointer text-red-800 dark:text-red-200"
+              >
+                I,
+                <span class="font-semibold">
+                  {{ request.user.first_name|default:"First" }} {{ request.user.last_name|default:"Last" }}
+                </span>
+                {% if profile.student_number %}
+                  (USN:
+                  <span class="font-mono">
+                    {{ profile.student_number }}
+                  </span>
+                  )
+                {% endif %}
+                , confirm that the information I have provided is accurate and that all work I submit
+                will be my own unaided effort, completed without the use of AI tools or large language
+                models.
               </label>
-              <p id="{{ form.academic_integrity_confirmed.auto_id }}_helptext" class="text-sm mt-1 text-red-800/80 dark:text-red-200/90">
-                {{ form.academic_integrity_confirmed.help_text }}
+
+              <p
+                id="{{ form.academic_integrity_confirmed.auto_id }}_helptext"
+                class="text-sm mt-1 text-red-800/80 dark:text-red-200/90"
+              >
+                This confirmation is required in order to save your profile and begin the assessment.
               </p>
+
               {% if form.academic_integrity_confirmed.errors %}
-                <p class="text-sm text-destructive mt-1">{{ form.academic_integrity_confirmed.errors.0 }}</p>
+                <p class="text-sm text-destructive mt-1">
+                  {{ form.academic_integrity_confirmed.errors.0 }}
+                </p>
               {% endif %}
             </div>
           </div>

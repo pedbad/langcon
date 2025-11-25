@@ -54,6 +54,19 @@ class AssessmentAdminForm(forms.ModelForm):
                     "style": "width: 100%; max-width: 100%;",
                 }
             ),
+            # Listening answers
+            "listening_answer_draft": forms.Textarea(
+                attrs={
+                    "rows": 10,
+                    "style": "width: 100%; max-width: 100%;",
+                }
+            ),
+            "listening_answer_final": forms.Textarea(
+                attrs={
+                    "rows": 10,
+                    "style": "width: 100%; max-width: 100%;",
+                }
+            ),
         }
 
 
@@ -61,7 +74,7 @@ class AssessmentAdminForm(forms.ModelForm):
 class AssessmentAdmin(admin.ModelAdmin):
     """
     Custom admin for Assessment:
-    - Shows writing and both LLM follow-up question blocks.
+    - Shows writing, both LLM follow-up question blocks, and listening.
     - Provides compact previews in list view for readability.
     - Uses a custom form so long-text fields are full-width.
     """
@@ -86,6 +99,11 @@ class AssessmentAdmin(admin.ModelAdmin):
         "llm_q2_answer_draft_preview",
         "llm_q2_answer_final_preview",
         "llm_q2_submitted_at",  # LLM Q2 submitted at (helper → model field)
+        # Listening block
+        "listening_q1_preview",
+        "listening_answer_draft_preview",
+        "listening_answer_final_preview",
+        "listening_submitted_at",  # Listening submitted at (helper → model field)
         # Metadata
         "created_at",
     )
@@ -99,6 +117,8 @@ class AssessmentAdmin(admin.ModelAdmin):
         "writing_submitted_at",
         "llm_question_1_answer_submitted_at",
         "llm_question_2_answer_submitted_at",
+        "listening_q1_prompt",
+        "listening_answer_submitted_at",
         "created_at",
         "updated_at",
         "llm_question_1",
@@ -149,6 +169,22 @@ class AssessmentAdmin(admin.ModelAdmin):
                 "description": (
                     "Second follow-up question generated from the student's initial statement, "
                     "with their draft and final answer."
+                ),
+            },
+        ),
+        (
+            "Listening comprehension",
+            {
+                "classes": ("wide",),
+                "fields": (
+                    "listening_q1_prompt",
+                    "listening_answer_draft",
+                    "listening_answer_final",
+                    "listening_answer_submitted_at",
+                ),
+                "description": (
+                    "Listening comprehension task: default prompt and the student's "
+                    "draft/final summary."
                 ),
             },
         ),
@@ -231,3 +267,32 @@ class AssessmentAdmin(admin.ModelAdmin):
 
     llm_q2_submitted_at.short_description = "LLM Q2 – Submitted at"
     llm_q2_submitted_at.admin_order_field = "llm_question_2_answer_submitted_at"
+
+    # --- Listening previews ---
+
+    def listening_q1_preview(self, obj):
+        text = obj.listening_q1_prompt or ""
+        return (text[:80] + "…") if len(text) > 80 else text
+
+    listening_q1_preview.short_description = "Listening – Prompt"
+    listening_q1_preview.admin_order_field = "listening_q1_prompt"
+
+    def listening_answer_draft_preview(self, obj):
+        text = obj.listening_answer_draft or ""
+        return (text[:80] + "…") if len(text) > 80 else text
+
+    listening_answer_draft_preview.short_description = "Listening – Draft summary"
+    listening_answer_draft_preview.admin_order_field = "listening_answer_draft"
+
+    def listening_answer_final_preview(self, obj):
+        text = obj.listening_answer_final or ""
+        return (text[:80] + "…") if len(text) > 80 else text
+
+    listening_answer_final_preview.short_description = "Listening – Final summary"
+    listening_answer_final_preview.admin_order_field = "listening_answer_final"
+
+    def listening_submitted_at(self, obj):
+        return obj.listening_answer_submitted_at
+
+    listening_submitted_at.short_description = "Listening – Submitted at"
+    listening_submitted_at.admin_order_field = "listening_answer_submitted_at"

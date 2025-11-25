@@ -45,3 +45,18 @@ class LLMQuestion2AnswerForm(forms.Form):
         ),
         required=False,
     )  # drafts can be empty
+
+
+class ListeningAnswerForm(forms.Form):
+    listening_answer = forms.CharField(
+        label="Your listening summary",
+        widget=forms.Textarea(
+            attrs={
+                "rows": 8,
+                "placeholder": "Write your 250–300 word summary of the lecture here…",
+                "maxlength": "3000",  # similar cap to other answers
+                "class": "writing-answer-input",
+            }
+        ),
+        required=False,  # drafts can be empty; submit handler will enforce band
+    )

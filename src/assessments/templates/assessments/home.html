@@ -16,8 +16,8 @@
   {# ── LLM Question 2 Card ─────────────────────────────────────────────── #}
   {% include "assessments/partials/followup_q2_card.html" with assessment=assessment llm_q2_form=llm_q2_form %}
 
-
-
+  {# ── Listening Comprehension Card ───────────────────────────────────────── #}
+  {% include "assessments/partials/listening_card.html" with assessment=assessment listening_form=listening_form %}
 
 </div>
 {% endblock %}
