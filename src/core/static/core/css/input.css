@@ -337,6 +337,7 @@
   .card-solid {
     @apply border-[1.5px] border-border/90 dark:border-white/60 shadow-md; /* Increased opacity for dark mode */
   }
+
   /* === Accessible, tokenized focus rings (new) === */
   .focus-ring {
     @apply outline-none focus-visible:ring-2 focus-visible:ring-ring
@@ -350,7 +351,85 @@
            rounded-md transition-shadow;
   }
 
+  /* === LangCon custom checkbox (Unfold-style) ==================== */
+  .lc-checkbox {
+    /* Reset native checkbox look so we can style it consistently */
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+
+    display: inline-block;
+    position: relative;
+    height: 1rem;       /* 4px × 4 */
+    width: 1rem;
+    min-width: 1rem;
+
+    border-radius: 4px;
+    border: 1px solid rgb(209, 213, 219);     /* slate-300-ish */
+    background-color: #ffffff;
+    cursor: pointer;
+    box-shadow: 0 0 0 1px rgba(15, 23, 42, 0.03); /* subtle “shadow-xs” */
+    transition:
+      border-color 0.15s ease,
+      background-color 0.15s ease,
+      box-shadow 0.15s ease;
+  }
+
+  .lc-checkbox:hover {
+    border-color: rgb(148, 163, 184); /* slate-400-ish */
+  }
+
+  .lc-checkbox:focus-visible {
+    outline: 2px solid rgb(59, 130, 246);      /* blue-500-ish */
+    outline-offset: 2px;
+  }
+
+  /* Checkmark icon using Material Symbols (like Unfold) */
+  .lc-checkbox::after {
+    /* Use a plain Unicode tick so we don't depend on a special icon font */
+    content: "✓";
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+      sans-serif;
+    font-size: 0.75rem;
+    line-height: 1;
+
+    color: #ffffff;
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    transform: scale(0);
+    opacity: 0;
+    transition:
+      transform 0.12s ease-out,
+      opacity 0.12s ease-out;
+  }
+
+
+  .lc-checkbox:checked {
+    background-color: rgb(37, 99, 235); /* blue-600-ish */
+    border-color: rgb(37, 99, 235);
+  }
+
+  .lc-checkbox:checked::after {
+    transform: scale(1);
+    opacity: 1;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    .lc-checkbox {
+      background-color: rgb(15, 23, 42);  /* slate-900-ish */
+      border-color: rgb(100, 116, 139);   /* slate-500-ish */
+    }
+
+    .lc-checkbox:checked::after {
+      color: rgb(15, 23, 42);             /* dark background for the tick */
+    }
+  }
 }
+
 
 /* ==========================================================================
    Reduced Motion (global guard for transition helpers)
