@@ -1,4 +1,5 @@
 # src/profiles/admin.py
+from django import forms
 from django.contrib import admin
 from django.urls import reverse
 from django.utils.html import format_html
@@ -6,12 +7,51 @@ from django.utils.html import format_html
 from .models import Profile
 
 
+class ProfileAdminForm(forms.ModelForm):
+    """
+    Admin form for Profile:
+    - Enforces student_number as required in the admin UI.
+    - Makes subject_area required and shows an explicit blank choice
+      so new profiles don't default visually to 'Arts and Humanities'.
+    """
+
+    class Meta:
+        model = Profile
+        fields = "__all__"
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        # ── Student number (USN) ───────────────────────────────────
+        sn = self.fields.get("student_number")
+        if sn:
+            sn.required = True
+            sn.help_text = (
+                "Required: enter the student's real Unique Student Number (USN) "
+                "or CRSid (letters and digits only)."
+            )
+            sn.widget.attrs.setdefault("placeholder", "e.g. 301004293")
+
+        # ── Subject area ───────────────────────────────────────────
+        sa = self.fields.get("subject_area")
+        if sa:
+            sa.required = True
+            # Prepend an explicit blank option so an unset value doesn't
+            # appear as a real subject (e.g. 'Arts and Humanities').
+            choices = list(sa.choices)
+            if not choices or choices[0][0] != "":
+                choices.insert(0, ("", "---------"))
+            sa.choices = choices
+
+
 @admin.register(Profile)
 class ProfileAdmin(admin.ModelAdmin):
+    form = ProfileAdminForm
+
     list_display = (
         "id",
         "user",  # usually shows email (CustomUser.__str__)
-        "student_number",  # ← NEW: USN/CRSid column, right after email
+        "student_number",  # USN/CRSid column, right after email
         "is_locked",
         "subject_area",
         "phone",
@@ -56,7 +96,7 @@ class ProfileAdmin(admin.ModelAdmin):
             {
                 "fields": (
                     "user",
-                    "student_number",  # ← NEW: shown prominently at the top
+                    "student_number",  # shown prominently at the top
                     "is_locked",
                 )
             },
