@@ -29,6 +29,9 @@ class AssessmentAdminForm(forms.ModelForm):
             # Listening answers
             "listening_answer_draft": UnfoldAdminTextareaWidget(attrs={"rows": 10}),
             "listening_answer_final": UnfoldAdminTextareaWidget(attrs={"rows": 10}),
+            # Reading answers
+            "reading_answer_draft": UnfoldAdminTextareaWidget(attrs={"rows": 10}),
+            "reading_answer_final": UnfoldAdminTextareaWidget(attrs={"rows": 10}),
         }
 
 
@@ -36,7 +39,7 @@ class AssessmentAdminForm(forms.ModelForm):
 class AssessmentAdmin(ModelAdmin):
     """
     Custom admin for Assessment:
-    - Shows writing, both LLM follow-up question blocks, and listening.
+    - Shows writing, both LLM follow-up question blocks, listening, and reading.
     - Provides compact previews in list view for readability.
     - Uses a custom form so long-text fields are taller, but still styled by Unfold.
     """
@@ -66,6 +69,11 @@ class AssessmentAdmin(ModelAdmin):
         "listening_answer_draft_preview",
         "listening_answer_final_preview",
         "listening_submitted_at",  # Listening submitted at (helper → model field)
+        # Reading block
+        "reading_debate_question",
+        "reading_answer_draft_preview",
+        "reading_answer_final_preview",
+        "reading_submitted_at",
         # Metadata
         "created_at",
     )
@@ -81,6 +89,7 @@ class AssessmentAdmin(ModelAdmin):
         "llm_question_2_answer_submitted_at",
         "listening_q1_prompt",
         "listening_answer_submitted_at",
+        "reading_answer_submitted_at",
         "created_at",
         "updated_at",
         "llm_question_1",
@@ -147,6 +156,22 @@ class AssessmentAdmin(ModelAdmin):
                 "description": (
                     "Listening comprehension task: default prompt and the student's "
                     "draft/final summary."
+                ),
+            },
+        ),
+        (
+            "Reading comprehension",
+            {
+                "classes": ("wide",),
+                "fields": (
+                    "reading_debate",
+                    "reading_answer_draft",
+                    "reading_answer_final",
+                    "reading_answer_submitted_at",
+                ),
+                "description": (
+                    "Reading comprehension task: debate topic shown to the student and their "
+                    "draft/final answer."
                 ),
             },
         ),
@@ -259,6 +284,35 @@ class AssessmentAdmin(ModelAdmin):
     listening_submitted_at.short_description = "Listening – Submitted at"
     listening_submitted_at.admin_order_field = "listening_answer_submitted_at"
 
+    # --- Reading previews ---
+
+    def reading_debate_question(self, obj):
+        if obj.reading_debate:
+            return obj.reading_debate.question
+        return "—"
+
+    reading_debate_question.short_description = "Reading topic"
+
+    def reading_answer_draft_preview(self, obj):
+        text = obj.reading_answer_draft or ""
+        return (text[:80] + "…") if len(text) > 80 else text
+
+    reading_answer_draft_preview.short_description = "Reading – Draft answer"
+    reading_answer_draft_preview.admin_order_field = "reading_answer_draft"
+
+    def reading_answer_final_preview(self, obj):
+        text = obj.reading_answer_final or ""
+        return (text[:80] + "…") if len(text) > 80 else text
+
+    reading_answer_final_preview.short_description = "Reading – Final answer"
+    reading_answer_final_preview.admin_order_field = "reading_answer_final"
+
+    def reading_submitted_at(self, obj):
+        return obj.reading_answer_submitted_at
+
+    reading_submitted_at.short_description = "Reading – Submitted at"
+    reading_submitted_at.admin_order_field = "reading_answer_submitted_at"
+
 
 class DebateTopicAdminForm(forms.ModelForm):
     """
@@ -274,8 +328,7 @@ class DebateTopicAdminForm(forms.ModelForm):
             "question": UnfoldAdminTextareaWidget(attrs={"rows": 3}),
             "position_a_body": UnfoldAdminTextareaWidget(attrs={"rows": 10}),
             "position_b_body": UnfoldAdminTextareaWidget(attrs={"rows": 10}),
-            # Titles use the default Unfold text input widget,
-            # so we don't override them here.
+            # Titles use the default Unfold text input widget.
         }
 
 

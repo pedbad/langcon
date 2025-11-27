@@ -42,6 +42,29 @@ class Assessment(models.Model):
     listening_answer_final = models.TextField(blank=True)
     listening_answer_submitted_at = models.DateTimeField(null=True, blank=True)
 
+    # Reading comprehension fields
+    reading_debate = models.ForeignKey(
+        "DebateTopic",
+        null=True,
+        blank=True,
+        on_delete=models.PROTECT,
+        related_name="assessments",
+        help_text=("Debate topic shown to the student for the Reading Comprehension step."),
+    )
+    reading_answer_draft = models.TextField(
+        blank=True,
+        help_text="Student's draft answer for the reading comprehension task.",
+    )
+    reading_answer_final = models.TextField(
+        blank=True,
+        help_text="Student's final answer for the reading comprehension task.",
+    )
+    reading_answer_submitted_at = models.DateTimeField(
+        null=True,
+        blank=True,
+        help_text="When the reading final answer was submitted.",
+    )
+
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

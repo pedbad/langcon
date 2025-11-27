@@ -18,9 +18,7 @@ from .forms import (
     WritingAnswerForm,
 )
 from .llm_client import get_openai_client
-from .models import Assessment
-
-# add at the top with other imports
+from .models import Assessment, DebateTopic
 from .services.questions import generate_followups_from_statement
 
 
@@ -78,10 +76,28 @@ def home(request):
     - Once the writing answer is locked, ignores further save/submit attempts.
     - Handles follow-up question 1 and 2 (draft + submit/lock).
     - Handles listening comprehension (draft + submit/lock).
+    - Ensures each Assessment is assigned a random reading debate topic.
     - For HTMX submits on writing, avoids full-page redirects (returns 204).
     """
 
+    # Each user gets exactly one Assessment row (created on first visit).
     assessment, _ = Assessment.objects.get_or_create(user=request.user)
+
+    # ─────────────────────────────────────────────────────────────────────
+    # Ensure a reading debate is assigned as soon as the Assessment exists.
+    #
+    # We:
+    # - Pick a random active DebateTopic (if any exist).
+    # - Only assign it once per Assessment.
+    # - Use PROTECT on the FK so topics cannot be deleted while in use.
+    # This keeps reading_debate stable for the lifetime of the Assessment.
+    # ─────────────────────────────────────────────────────────────────────
+    if assessment.reading_debate is None:
+        debate = DebateTopic.objects.filter(is_active=True).order_by("?").first()
+        if debate is not None:
+            assessment.reading_debate = debate
+            assessment.save(update_fields=["reading_debate"])
+
     writing_locked = bool(assessment.writing_answer_final)
     is_hx = "HX-Request" in request.headers
 
