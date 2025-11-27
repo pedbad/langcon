@@ -1,0 +1,95 @@
+{# assessments/partials/reading_card.html #}
+{% load icons cotton %}
+
+{#
+  Show Reading Comprehension only when:
+  - Listening answer has been fully submitted
+  - A reading_debate has been assigned to this Assessment
+#}
+{% if assessment.listening_answer_final and assessment.reading_debate %}
+  <section id="reading-card">
+    {% c card class="card-strong" %}
+      {% c card/header %}
+        <div class="flex items-center gap-4 text-5xl text-reading border-b-8 border-reading pb-3">
+          {% icon 'book_open' class_='h-12 w-12 text-reading' %}
+          {% c card/title %}Reading Comprehension{% endc %}
+        </div>
+        {% c card/description %}
+          Read both positions on the topic carefully. In the next step, you will
+          write a short response comparing them.
+        {% endc %}
+      {% endc %}
+
+      {% c card/content %}
+        {% with assessment.reading_debate as debate %}
+          <article class="space-y-6">
+            <header class="space-y-2">
+              <p class="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                {% if debate.topic_number %}
+                  Topic {{ debate.topic_number }}
+                {% else %}
+                  Topic
+                {% endif %}
+              </p>
+
+              {# Main reading prompt: match writing / LLM / listening style #}
+              <p
+                id="reading-prompt"
+                class="assessment-prompt border-reading"
+              >
+                {{ debate.question }}
+              </p>
+            </header>
+
+            <div class="grid gap-4 md:grid-cols-2">
+              {# ── Position A ───────────────────────────────────────────── #}
+              <section class="space-y-2 rounded-lg border border-border/60 bg-card p-3 shadow-sm">
+                <div class="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                  <span class="inline-flex h-5 items-center rounded-full bg-background/80 px-2">
+                    Position A
+                  </span>
+                </div>
+                <h4 class="text-sm font-semibold text-foreground">
+                  {{ debate.position_a_title }}
+                </h4>
+
+                {# subtle divider under the title, using reading colour #}
+                <div class="border-t border-reading/50"></div>
+
+                <p class="mt-2 text-sm leading-relaxed whitespace-pre-wrap">{{ debate.position_a_body }}</p>
+              </section>
+
+              {# ── Position B ───────────────────────────────────────────── #}
+              <section class="space-y-2 rounded-lg border border-border/60 bg-card p-3 shadow-sm">
+                <div class="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                  <span class="inline-flex h-5 items-center rounded-full bg-background/80 px-2">
+                    Position B
+                  </span>
+                </div>
+                <h4 class="text-sm font-semibold text-foreground">
+                  {{ debate.position_b_title }}
+                </h4>
+
+                {# subtle divider under the title, using reading colour #}
+                <div class="border-t border-reading/50"></div>
+
+                <p class="mt-2 text-sm leading-relaxed whitespace-pre-wrap">{{ debate.position_b_body }}</p>
+              </section>
+            </div>
+
+            <p class="text-xs text-muted-foreground">
+              The text above will remain visible while you write your answer.
+            </p>
+          </article>
+        {% endwith %}
+      {% endc %}
+
+      {% c card/footer class="justify-start gap-2" %}
+        <p class="text-sm text-muted-foreground">
+          Next, you will be asked to write a short response (250–300 words) comparing these
+          positions.
+        </p>
+      {% endc %}
+    {% endc %}
+  </section>
+{% endif %}
