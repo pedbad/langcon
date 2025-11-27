@@ -25,10 +25,7 @@
         {# LLM Question 2 shown exactly as stored in the DB #}
         <p
           id="llm-q2-prompt"
-          class="text-lg leading-relaxed text-foreground/90
-                 bg-sky-50 dark:bg-sky-900/30
-                 border-l-4 border-writing
-                 px-4 py-3 rounded-r-lg shadow-sm">
+          class="assessment-prompt border-writing">
           {{ assessment.llm_question_2 }}
         </p>
 
@@ -53,7 +50,7 @@
           {# 🔔 Client-side warning toast (shown by JS if invalid word count) #}
           <div
             id="q2-client-word-warning"
-            class="hidden mt-4 mb-3 flex items-start gap-2 rounded-lg border border-amber-400 bg-amber-50 px-3 py-2 text-sm text-amber-900"
+            class="hidden assessment-warning"
             role="alert"
             aria-live="polite"
           >
@@ -66,7 +63,7 @@
           {# Client-side submit status for Q2 submit (spinner while POST in-flight) #}
           <div
             id="q2-submit-status"
-            class="hidden mb-3 mt-1 rounded-lg border border-emerald-500 bg-emerald-50 px-3 py-2 text-sm text-emerald-900"
+            class="hidden assessment-submit-status"
             role="status"
             aria-live="polite"
           >
@@ -74,10 +71,7 @@
               <span>
                 Submitting your answer to follow-up question 2…
               </span>
-              <span
-                class="inline-block h-4 w-4 rounded-full border-2 border-emerald-600 border-t-transparent animate-spin"
-                aria-hidden="true"
-              ></span>
+              <span class="assessment-submit-spinner" aria-hidden="true"></span>
             </div>
           </div>
 
@@ -108,7 +102,7 @@
                 </span>
               </label>
               <span
-                class="inline-flex items-center rounded-full border border-slate-400 bg-slate-50 px-3 py-1 text-xs font-semibold text-slate-700"
+                id="llm-q1-word-count"
                 id="llm-q2-word-count"
                 aria-live="polite"
               >
