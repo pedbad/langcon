@@ -1,14 +1,16 @@
 # src/assessments/admin.py
 from django import forms
 from django.contrib import admin
+from unfold.admin import ModelAdmin
+from unfold.widgets import UnfoldAdminTextareaWidget
 
-from .models import Assessment
+from .models import Assessment, DebateTopic
 
 
 class AssessmentAdminForm(forms.ModelForm):
     """
-    Custom form to make long text answer fields full-width and taller
-    in the admin change view.
+    Custom form to make long text answer fields taller,
+    while keeping Unfold's styling (borders, focus ring, etc.).
     """
 
     class Meta:
@@ -16,67 +18,27 @@ class AssessmentAdminForm(forms.ModelForm):
         fields = "__all__"
         widgets = {
             # Writing Q1 answers
-            "writing_answer_draft": forms.Textarea(
-                attrs={
-                    "rows": 10,
-                    "style": "width: 100%; max-width: 100%;",
-                }
-            ),
-            "writing_answer_final": forms.Textarea(
-                attrs={
-                    "rows": 10,
-                    "style": "width: 100%; max-width: 100%;",
-                }
-            ),
+            "writing_answer_draft": UnfoldAdminTextareaWidget(attrs={"rows": 10}),
+            "writing_answer_final": UnfoldAdminTextareaWidget(attrs={"rows": 10}),
             # LLM Q1 answers
-            "llm_question_1_answer_draft": forms.Textarea(
-                attrs={
-                    "rows": 10,
-                    "style": "width: 100%; max-width: 100%;",
-                }
-            ),
-            "llm_question_1_answer_final": forms.Textarea(
-                attrs={
-                    "rows": 10,
-                    "style": "width: 100%; max-width: 100%;",
-                }
-            ),
+            "llm_question_1_answer_draft": UnfoldAdminTextareaWidget(attrs={"rows": 10}),
+            "llm_question_1_answer_final": UnfoldAdminTextareaWidget(attrs={"rows": 10}),
             # LLM Q2 answers
-            "llm_question_2_answer_draft": forms.Textarea(
-                attrs={
-                    "rows": 10,
-                    "style": "width: 100%; max-width: 100%;",
-                }
-            ),
-            "llm_question_2_answer_final": forms.Textarea(
-                attrs={
-                    "rows": 10,
-                    "style": "width: 100%; max-width: 100%;",
-                }
-            ),
+            "llm_question_2_answer_draft": UnfoldAdminTextareaWidget(attrs={"rows": 10}),
+            "llm_question_2_answer_final": UnfoldAdminTextareaWidget(attrs={"rows": 10}),
             # Listening answers
-            "listening_answer_draft": forms.Textarea(
-                attrs={
-                    "rows": 10,
-                    "style": "width: 100%; max-width: 100%;",
-                }
-            ),
-            "listening_answer_final": forms.Textarea(
-                attrs={
-                    "rows": 10,
-                    "style": "width: 100%; max-width: 100%;",
-                }
-            ),
+            "listening_answer_draft": UnfoldAdminTextareaWidget(attrs={"rows": 10}),
+            "listening_answer_final": UnfoldAdminTextareaWidget(attrs={"rows": 10}),
         }
 
 
 @admin.register(Assessment)
-class AssessmentAdmin(admin.ModelAdmin):
+class AssessmentAdmin(ModelAdmin):
     """
     Custom admin for Assessment:
     - Shows writing, both LLM follow-up question blocks, and listening.
     - Provides compact previews in list view for readability.
-    - Uses a custom form so long-text fields are full-width.
+    - Uses a custom form so long-text fields are taller, but still styled by Unfold.
     """
 
     form = AssessmentAdminForm
@@ -296,3 +258,67 @@ class AssessmentAdmin(admin.ModelAdmin):
 
     listening_submitted_at.short_description = "Listening – Submitted at"
     listening_submitted_at.admin_order_field = "listening_answer_submitted_at"
+
+
+class DebateTopicAdminForm(forms.ModelForm):
+    """
+    Custom form for DebateTopic:
+    - Uses Unfold's textarea widget so borders / focus / width look consistent.
+    - Only tweaks textarea height via `rows`.
+    """
+
+    class Meta:
+        model = DebateTopic
+        fields = "__all__"
+        widgets = {
+            "question": UnfoldAdminTextareaWidget(attrs={"rows": 3}),
+            "position_a_body": UnfoldAdminTextareaWidget(attrs={"rows": 10}),
+            "position_b_body": UnfoldAdminTextareaWidget(attrs={"rows": 10}),
+            # Titles use the default Unfold text input widget,
+            # so we don't override them here.
+        }
+
+
+@admin.register(DebateTopic)
+class DebateTopicAdmin(ModelAdmin):
+    form = DebateTopicAdminForm
+
+    list_display = (
+        "topic_number",
+        "question_short",
+        "is_active",
+    )
+    list_display_links = ("question_short",)
+    list_filter = ("is_active",)
+    search_fields = (
+        "question",
+        "position_a_title",
+        "position_b_title",
+        "slug",
+    )
+    prepopulated_fields = {
+        "slug": ("question",),
+    }
+    fieldsets = (
+        (
+            None,
+            {
+                "classes": ("wide",),
+                "fields": (
+                    "topic_number",
+                    "slug",
+                    "question",
+                    "position_a_title",
+                    "position_a_body",
+                    "position_b_title",
+                    "position_b_body",
+                    "is_active",
+                ),
+            },
+        ),
+    )
+
+    def question_short(self, obj):
+        return obj.question[:80]
+
+    question_short.short_description = "Question"

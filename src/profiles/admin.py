@@ -3,6 +3,7 @@ from django import forms
 from django.contrib import admin
 from django.urls import reverse
 from django.utils.html import format_html
+from unfold.admin import ModelAdmin
 
 from .models import Profile
 
@@ -45,7 +46,7 @@ class ProfileAdminForm(forms.ModelForm):
 
 
 @admin.register(Profile)
-class ProfileAdmin(admin.ModelAdmin):
+class ProfileAdmin(ModelAdmin):
     form = ProfileAdminForm
 
     list_display = (

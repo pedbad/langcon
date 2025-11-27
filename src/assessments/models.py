@@ -100,3 +100,53 @@ class Assessment(models.Model):
 
     def __str__(self):
         return f"Assessment for {self.user.email}"
+
+
+class DebateTopic(models.Model):
+    """Reading comprehension debate topic (Position A / Position B)."""
+
+    topic_number = models.PositiveSmallIntegerField(
+        unique=True,
+        help_text="Short numeric identifier, e.g. 1–10.",
+    )
+    slug = models.SlugField(
+        max_length=50,
+        unique=True,
+        help_text="Short label, e.g. 'ubi', 'ai-decisions'.",
+    )
+
+    # Main question shown as the topic heading
+    question = models.TextField(
+        help_text="Full debate question shown to students.",
+    )
+
+    # Position A
+    position_a_title = models.CharField(
+        max_length=255,
+        help_text="Short heading for Position A.",
+    )
+    position_a_body = models.TextField(
+        help_text="Full text for Position A.",
+    )
+
+    # Position B
+    position_b_title = models.CharField(
+        max_length=255,
+        help_text="Short heading for Position B.",
+    )
+    position_b_body = models.TextField(
+        help_text="Full text for Position B.",
+    )
+
+    is_active = models.BooleanField(
+        default=True,
+        help_text="Only active topics are used for new assessments.",
+    )
+
+    class Meta:
+        ordering = ("topic_number",)
+        verbose_name = "Debate topic"
+        verbose_name_plural = "Debate topics"
+
+    def __str__(self) -> str:  # pragma: no cover - trivial
+        return f"Topic {self.topic_number}: {self.question[:80]}"
