@@ -11,14 +11,43 @@
   <section id="followup-q1-card" class="scroll-mt-32">
     {% c card class="card-strong" %}
       {% c card/header %}
-        <div class="flex items-center gap-4 text-5xl text-writing border-b-8 border-writing pb-3">
-          {% icon 'ink_pen' class_='h-12 w-12 text-writing' %}
-          {% c card/title %}Follow-up Question 1{% endc %}
+        <div class="flex items-center justify-between gap-4 border-b-8 border-writing pb-3">
+          {# Left: icon + title #}
+          <div class="flex items-center gap-4 text-5xl text-writing">
+            {% icon 'ink_pen' class_='h-12 w-12 text-writing' %}
+            {% c card/title %}Follow-up Question 1{% endc %}
+          </div>
+
+          {# Right: Step 2 of X badge with coloured status #}
+          <span
+            class="inline-flex items-center rounded-full border px-2 py-0.5 text-[11px] font-medium
+              {% if assessment.llm_question_1_answer_final %}
+                border-emerald-500 bg-emerald-50 text-emerald-700
+              {% elif assessment.llm_question_1_answer_draft %}
+                border-amber-500 bg-amber-50 text-amber-700
+              {% else %}
+                border-slate-300 bg-muted text-muted-foreground
+              {% endif %}
+            "
+          >
+            Step 2 of {{ assessment.steps_total|default:5 }}
+            <span class="ml-1 hidden sm:inline">
+              {% if assessment.llm_question_1_answer_final %}
+                · Completed
+              {% elif assessment.llm_question_1_answer_draft %}
+                · In progress
+              {% else %}
+                · Not started
+              {% endif %}
+            </span>
+          </span>
         </div>
+
         {% c card/description %}
           Please answer the following question based on your writing response:
         {% endc %}
       {% endc %}
+
 
       {% c card/content %}
         {# LLM Question 1 shown exactly as stored in the DB for audit consistency #}

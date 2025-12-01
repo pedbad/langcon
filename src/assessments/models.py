@@ -82,6 +82,9 @@ class Assessment(models.Model):
     llm_question_2_answer_final = models.TextField(blank=True)
     llm_question_2_answer_submitted_at = models.DateTimeField(null=True, blank=True)
 
+    # ─────────────────────────────────────────
+    # Simple flags
+    # ─────────────────────────────────────────
     @property
     def has_writing(self) -> bool:
         return bool(self.writing_answer_final)
@@ -110,9 +113,22 @@ class Assessment(models.Model):
     def has_listening_answer(self) -> bool:
         return bool(self.listening_answer_final)
 
+    @property
+    def has_reading_answer(self) -> bool:
+        """
+        Convenience flag for the Reading Comprehension step.
+        """
+        return bool(self.reading_answer_final)
+
+    # ─────────────────────────────────────────
+    # Legacy completeness (pre-reading)
+    # ─────────────────────────────────────────
     def is_complete(self) -> bool:
         """
         “Complete” = writing + both follow-up answers + listening submitted.
+
+        This preserves the original semantics used elsewhere in the codebase.
+        The Reading step is handled separately via `is_fully_complete`.
         """
         return (
             self.has_writing
@@ -120,6 +136,56 @@ class Assessment(models.Model):
             and self.has_llm_q2_answer
             and self.has_listening_answer
         )
+
+    # ─────────────────────────────────────────
+    # New: progress helpers for UI
+    # ─────────────────────────────────────────
+    @property
+    def step_states(self):
+        """
+        Ordered list of main assessment steps and whether they are done.
+
+        Used by the UI to render progress bars / steppers.
+        """
+        return [
+            ("writing", "Writing", self.has_writing),
+            ("followup1", "Follow-up Question 1", self.has_llm_q1_answer),
+            ("followup2", "Follow-up Question 2", self.has_llm_q2_answer),
+            ("listening", "Listening", self.has_listening_answer),
+            ("reading", "Reading Comprehension", self.has_reading_answer),
+        ]
+
+    @property
+    def steps_completed(self) -> int:
+        return sum(1 for _key, _label, done in self.step_states if done)
+
+    @property
+    def steps_total(self) -> int:
+        return len(self.step_states)
+
+    @property
+    def progress_pct(self) -> int:
+        if self.steps_total == 0:
+            return 0
+        return int(self.steps_completed * 100 / self.steps_total)
+
+    @property
+    def is_fully_complete(self) -> bool:
+        """
+        Stricter definition: all five steps completed, including Reading.
+        """
+        return self.steps_completed == self.steps_total
+
+    @property
+    def status_label(self) -> str:
+        """
+        Human-friendly status string for the UI.
+        """
+        if self.steps_completed == 0:
+            return "Not started"
+        if self.is_fully_complete:
+            return "Assessment completed"
+        return "In progress"
 
     def __str__(self):
         return f"Assessment for {self.user.email}"

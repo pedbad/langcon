@@ -6,6 +6,52 @@
 
 {% block content %}
 <div class="mx-auto max-w-5xl pt-2 space-y-8">
+  {# ─────────────────────────────────────────────
+   Assessment progress: badge + mini progress bar
+   ───────────────────────────────────────────── #}
+  <div class="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+    <div class="flex items-center gap-2">
+      <span class="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+        Assessment status
+      </span>
+
+      {% if assessment.is_fully_complete %}
+        <span
+          class="inline-flex items-center rounded-full border border-emerald-500 bg-emerald-50 px-2.5 py-1 text-xs font-medium text-emerald-700 dark:border-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-100"
+        >
+          ● {{ assessment.status_label }}
+        </span>
+      {% elif assessment.steps_completed > 0 %}
+        <span
+          class="inline-flex items-center rounded-full border border-amber-500 bg-amber-50 px-2.5 py-1 text-xs font-medium text-amber-700 dark:border-amber-700 dark:bg-amber-900/40 dark:text-amber-100"
+        >
+          ● {{ assessment.status_label }}
+        </span>
+      {% else %}
+        <span
+          class="inline-flex items-center rounded-full border border-red-500 bg-red-50 px-2.5 py-1 text-xs font-medium text-red-700 dark:border-red-700 dark:bg-red-900/40 dark:text-red-100"
+        >
+          ● {{ assessment.status_label }}
+        </span>
+      {% endif %}
+    </div>
+
+    <div class="w-full sm:max-w-xs">
+      <div class="mb-1 flex items-center justify-between text-xs text-muted-foreground">
+        <span>
+          {{ assessment.steps_completed }} / {{ assessment.steps_total }} steps completed
+        </span>
+        <span>{{ assessment.progress_pct }}%</span>
+      </div>
+      <div class="h-2 rounded-full bg-muted">
+        <div
+          class="h-full rounded-full bg-primary transition-all duration-300"
+          style="width: {{ assessment.progress_pct }}%;"
+        ></div>
+      </div>
+    </div>
+  </div>
+
 
   {# ── Writing Card ────────────────────────────────────────────────────── #}
   {% include "assessments/partials/writing_card.html" with assessment=assessment form=form writing_locked=writing_locked %}
