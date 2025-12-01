@@ -7,7 +7,13 @@
   - A reading_debate has been assigned to this Assessment
 #}
 {% if assessment.listening_answer_final and assessment.reading_debate %}
-  <section id="reading-card">
+  <section
+    id="reading-card"
+    class="scroll-mt-32"
+    {% if assessment.reading_answer_final %}
+      data-reading-final="true"
+    {% endif %}>
+
     {% c card class="card-strong" %}
       {% c card/header %}
         <div class="flex items-center gap-4 text-5xl text-reading border-b-8 border-reading pb-3">

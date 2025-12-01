@@ -848,11 +848,30 @@
     if (hash) {
       const target = document.querySelector(hash);
       if (target) {
-        target.scrollIntoView({
-          behavior: "smooth",
-          block: "start",
-        });
+        // If we're on the Reading card *and* it's already final,
+        // don't auto-scroll back to it (nothing new to show).
+        const skipReading =
+          hash === "#reading-card" && target.dataset.readingFinal === "true";
+
+        if (!skipReading) {
+          target.scrollIntoView({
+            behavior: "smooth",
+            block: "start",
+          });
+        } else {
+          // Optional: strip the hash so refreshes don't keep trying to scroll
+          try {
+            history.replaceState(
+              null,
+              "",
+              window.location.pathname + window.location.search
+            );
+          } catch {
+            /* no-op */
+          }
+        }
       }
     }
+
   });
 })();

@@ -9,7 +9,7 @@
   - Follow-up Q2 question exists (created at writing submit time)
 #}
 {% if assessment.writing_answer_final and assessment.llm_question_1 and assessment.llm_question_1_answer_final and assessment.llm_question_2 %}
-  <section id="followup-q2-card">
+  <section id="followup-q2-card" class="scroll-mt-32">
     {% c card class="card-strong" %}
       {% c card/header %}
         <div class="flex items-center gap-4 text-5xl text-writing border-b-8 border-writing pb-3">
