@@ -349,6 +349,24 @@
     });
   }
 
+    // Thin wrapper for Reading Comprehension:
+  // reuses the same 250–300 word band and UX as the LLM questions.
+  function initAssessmentReading() {
+    initLlmQuestionModule({
+      textareaId: "id_reading_answer",               // from ReadingAnswerForm
+      chipId: "reading-word-count",                  // in reading_card.html
+      submitBtnId: "submit-reading",                 // HTMX submit button
+      actionFieldId: "reading-action",               // hidden <input name="action">
+      submitActionValue: "reading_submit",           // value checked in views.py
+      spinnerId: "reading-submit-status",            // “Submitting your reading answer…”
+      warnToastId: "reading-client-word-warning",    // client-side warning toast
+      warnTextDataAttr: "[data-role='reading-word-warning-text']",
+      minWords: 250,
+      maxWords: 300,
+      warningThreshold: 295,
+    });
+  }
+
 
   // ────────────────────────────────────────────────────────────────
   // 3) Module: Profile Exam Form (panels, exam rules, auto overall)
@@ -823,6 +841,7 @@
     initAssessmentLlmQuestion1();
     initAssessmentLlmQuestion2();
     initAssessmentListening();
+    initAssessmentReading();
 
     // ── Respect hash for assessment flow (e.g. #followup-q1-card / #followup-q2-card) ──
     const hash = window.location.hash;

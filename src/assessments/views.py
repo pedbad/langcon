@@ -15,6 +15,7 @@ from .forms import (
     ListeningAnswerForm,
     LLMQuestion1AnswerForm,
     LLMQuestion2AnswerForm,
+    ReadingAnswerForm,
     WritingAnswerForm,
 )
 from .llm_client import get_openai_client
@@ -76,6 +77,7 @@ def home(request):
     - Once the writing answer is locked, ignores further save/submit attempts.
     - Handles follow-up question 1 and 2 (draft + submit/lock).
     - Handles listening comprehension (draft + submit/lock).
+    - Handles reading comprehension (draft + submit/lock).
     - Ensures each Assessment is assigned a random reading debate topic.
     - For HTMX submits on writing, avoids full-page redirects (returns 204).
     """
@@ -123,6 +125,18 @@ def home(request):
             initial={"listening_answer": assessment.listening_answer_draft}
         )
 
+    # Reading: only if listening final exists, a debate is assigned,
+    # and reading answer is not yet final
+    reading_form = None
+    if (
+        assessment.listening_answer_final
+        and assessment.reading_debate
+        and not assessment.reading_answer_final
+    ):
+        reading_form = ReadingAnswerForm(
+            initial={"reading_answer": assessment.reading_answer_draft}
+        )
+
     if request.method == "POST":
         action = (request.POST.get("action") or "").strip()
 
@@ -164,6 +178,7 @@ def home(request):
                         "llm_q1_form": llm_q1_form,
                         "llm_q2_form": llm_q2_form,
                         "listening_form": listening_form,
+                        "reading_form": reading_form,
                     },
                 )
 
@@ -209,6 +224,7 @@ def home(request):
                         "llm_q1_form": llm_q1_form,
                         "llm_q2_form": llm_q2_form,
                         "listening_form": listening_form,
+                        "reading_form": reading_form,
                     },
                 )
 
@@ -270,6 +286,7 @@ def home(request):
                         "llm_q1_form": llm_q1_form,
                         "llm_q2_form": llm_q2_form,
                         "listening_form": listening_form,
+                        "reading_form": reading_form,
                     },
                 )
 
@@ -315,6 +332,7 @@ def home(request):
                         "llm_q1_form": llm_q1_form,
                         "llm_q2_form": llm_q2_form,
                         "listening_form": listening_form,
+                        "reading_form": reading_form,
                     },
                 )
 
@@ -376,6 +394,7 @@ def home(request):
                         "llm_q1_form": llm_q1_form,
                         "llm_q2_form": llm_q2_form,
                         "listening_form": listening_form,
+                        "reading_form": reading_form,
                     },
                 )
 
@@ -421,6 +440,7 @@ def home(request):
                         "llm_q1_form": llm_q1_form,
                         "llm_q2_form": llm_q2_form,
                         "listening_form": listening_form,
+                        "reading_form": reading_form,
                     },
                 )
 
@@ -440,6 +460,114 @@ def home(request):
             messages.success(
                 request,
                 "Your listening answer has been submitted.",
+            )
+            return redirect("assessments:home")
+
+        # ─────────────────────────────────────────────────────────────────────
+        # Reading comprehension: save / submit
+        # ─────────────────────────────────────────────────────────────────────
+        if action in {"reading_save", "reading_submit"}:
+            # Reading only makes sense if:
+            # - The listening summary has a final answer AND
+            # - A DebateTopic has been assigned
+            if not assessment.listening_answer_final or not assessment.reading_debate:
+                messages.error(
+                    request,
+                    "The reading exercise is not available yet.",
+                )
+                return redirect("assessments:home")
+
+            # Once final is set, ignore further edits
+            if assessment.reading_answer_final:
+                messages.info(
+                    request,
+                    "Your reading answer has already been submitted.",
+                )
+                return redirect("assessments:home")
+
+            # Bind reading form from POST
+            reading_form = ReadingAnswerForm(request.POST)
+            if not reading_form.is_valid():
+                messages.error(request, "Please check your answer and try again.")
+                form = WritingAnswerForm(
+                    initial={"writing_answer": assessment.writing_answer_draft}
+                )
+                return render(
+                    request,
+                    "assessments/home.html",
+                    {
+                        "assessment": assessment,
+                        "form": form,
+                        "writing_locked": writing_locked,
+                        "llm_q1_form": llm_q1_form,
+                        "llm_q2_form": llm_q2_form,
+                        "listening_form": listening_form,
+                        "reading_form": reading_form,
+                    },
+                )
+
+            reading_answer = reading_form.cleaned_data.get("reading_answer") or ""
+            MAX_CHARS = 3000  # keep in sync with client-side
+
+            # Draft path: no word-limit enforcement
+            if action == "reading_save":
+                assessment.reading_answer_draft = reading_answer[:MAX_CHARS]
+                assessment.save(update_fields=["reading_answer_draft", "updated_at"])
+                messages.success(request, "Reading draft saved.")
+                return redirect("assessments:home")
+
+            # Submit path: enforce 250–300 words, then lock
+            MIN_W, MAX_W = 250, 300
+            n_words = _count_words(reading_answer)
+
+            if n_words < MIN_W or n_words > MAX_W:
+                # Keep latest draft; do not lock
+                assessment.reading_answer_draft = reading_answer[:MAX_CHARS]
+                assessment.save(update_fields=["reading_answer_draft", "updated_at"])
+                messages.error(
+                    request,
+                    (
+                        f"Your reading answer is {n_words} words. "
+                        f"It must be between {MIN_W} and {MAX_W} words to submit."
+                    ),
+                )
+                # Rebuild forms with latest draft values
+                reading_form = ReadingAnswerForm(
+                    initial={"reading_answer": assessment.reading_answer_draft}
+                )
+                form = WritingAnswerForm(
+                    initial={"writing_answer": assessment.writing_answer_draft}
+                )
+                return render(
+                    request,
+                    "assessments/home.html",
+                    {
+                        "assessment": assessment,
+                        "form": form,
+                        "writing_locked": writing_locked,
+                        "llm_q1_form": llm_q1_form,
+                        "llm_q2_form": llm_q2_form,
+                        "listening_form": listening_form,
+                        "reading_form": reading_form,
+                    },
+                )
+
+            # ✅ Lock reading answer
+            assessment.reading_answer_draft = reading_answer[:MAX_CHARS]
+            assessment.reading_answer_final = assessment.reading_answer_draft
+            assessment.reading_answer_submitted_at = timezone.now()
+            assessment.save(
+                update_fields=[
+                    "reading_answer_draft",
+                    "reading_answer_final",
+                    "reading_answer_submitted_at",
+                    "updated_at",
+                ]
+            )
+
+            messages.success(
+                request,
+                "Your reading answer has been submitted.",
             )
             return redirect("assessments:home")
 
@@ -471,6 +599,7 @@ def home(request):
                     "llm_q1_form": llm_q1_form,
                     "llm_q2_form": llm_q2_form,
                     "listening_form": listening_form,
+                    "reading_form": reading_form,
                 },
             )
 
@@ -535,6 +664,7 @@ def home(request):
                         "llm_q1_form": llm_q1_form,
                         "llm_q2_form": llm_q2_form,
                         "listening_form": listening_form,
+                        "reading_form": reading_form,
                     },
                 )
 
@@ -601,6 +731,7 @@ def home(request):
                 "llm_q1_form": llm_q1_form,
                 "llm_q2_form": llm_q2_form,
                 "listening_form": listening_form,
+                "reading_form": reading_form,
             },
         )
 
@@ -618,5 +749,6 @@ def home(request):
             "llm_q1_form": llm_q1_form,
             "llm_q2_form": llm_q2_form,
             "listening_form": listening_form,
+            "reading_form": reading_form,
         },
     )

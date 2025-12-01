@@ -60,3 +60,25 @@ class ListeningAnswerForm(forms.Form):
         ),
         required=False,  # drafts can be empty; submit handler will enforce band
     )
+
+
+class ReadingAnswerForm(forms.Form):
+    """
+    Simple form for the student's Reading Comprehension answer.
+
+    We keep it as a plain Form (not ModelForm) to mirror the other
+    assessment forms and keep the view logic explicit.
+    """
+
+    reading_answer = forms.CharField(
+        label="Reading answer",
+        required=False,  # allow empty drafts
+        widget=forms.Textarea(
+            attrs={
+                "id": "id_reading_answer",
+                "rows": 10,
+                "maxlength": "3000",  # ≈ 500 words, consistent with other tasks
+                "class": "writing-answer-input",  # reuse the nice textarea styling
+            }
+        ),
+    )

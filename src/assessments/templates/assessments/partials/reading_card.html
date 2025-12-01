@@ -15,8 +15,8 @@
           {% c card/title %}Reading Comprehension{% endc %}
         </div>
         {% c card/description %}
-          Read both positions on the topic carefully. In the next step, you will
-          write a short response comparing them.
+          Read both positions on the topic carefully. Then write a short response
+          comparing them.
         {% endc %}
       {% endc %}
 
@@ -56,7 +56,9 @@
                 {# subtle divider under the title, using reading colour #}
                 <div class="border-t border-reading/50"></div>
 
-                <p class="mt-2 text-sm leading-relaxed whitespace-pre-wrap">{{ debate.position_a_body }}</p>
+                <p class="mt-2 text-sm leading-relaxed whitespace-pre-wrap">
+                  {{ debate.position_a_body }}
+                </p>
               </section>
 
               {# ── Position B ───────────────────────────────────────────── #}
@@ -73,7 +75,9 @@
                 {# subtle divider under the title, using reading colour #}
                 <div class="border-t border-reading/50"></div>
 
-                <p class="mt-2 text-sm leading-relaxed whitespace-pre-wrap">{{ debate.position_b_body }}</p>
+                <p class="mt-2 text-sm leading-relaxed whitespace-pre-wrap">
+                  {{ debate.position_b_body }}
+                </p>
               </section>
             </div>
 
@@ -82,12 +86,133 @@
             </p>
           </article>
         {% endwith %}
+
+        {# ────────────────────────────────────────────────────────────────
+           Answer area (draft / final) under the reading texts
+           ──────────────────────────────────────────────────────────────── #}
+
+        {% if assessment.reading_answer_final %}
+          {# ✅ Read-only view once the reading answer is submitted #}
+          <div class="mt-6 space-y-3">
+            <p class="text-sm font-medium text-emerald-700">
+              Your reading answer has been submitted and cannot be edited.
+            </p>
+            <div
+              class="rounded-md border border-muted bg-muted/60 px-3 py-3 text-sm leading-relaxed whitespace-pre-wrap">
+              {{ assessment.reading_answer_final }}
+            </div>
+            {% if assessment.reading_answer_submitted_at %}
+              <p class="text-xs text-muted-foreground">
+                Submitted on {{ assessment.reading_answer_submitted_at|date:"Y-m-d H:i" }}.
+              </p>
+            {% endif %}
+          </div>
+
+        {% elif reading_form %}
+          {# 🔔 Client-side warning toast (shown by JS when word band invalid) #}
+          <div
+            id="reading-client-word-warning"
+            class="mt-6 mb-3 flex items-start gap-2 rounded-lg border border-amber-400 bg-amber-50 px-3 py-2 text-sm text-amber-900"
+            role="alert"
+            aria-live="polite"
+          >
+            {% icon 'warning' class_='h-4 w-4 text-amber-600 mt-0.5' %}
+            <span data-role="reading-word-warning-text">
+              Your answer must be between 250 and 300 words to submit. You can still save a draft.
+            </span>
+          </div>
+
+          {# Client-side submit status for reading submit (spinner while POST in-flight) #}
+          <div
+            id="reading-submit-status"
+            class="hidden mb-3 mt-1 rounded-lg border border-emerald-500 bg-emerald-50 px-3 py-2 text-sm text-emerald-900"
+            role="status"
+            aria-live="polite"
+          >
+            <div class="flex items-center gap-2">
+              <span>
+                Submitting your reading answer…
+              </span>
+              <span
+                class="inline-block h-4 w-4 rounded-full border-2 border-emerald-600 border-t-transparent animate-spin"
+                aria-hidden="true"
+              ></span>
+            </div>
+          </div>
+
+          {# ✏️ Draft form for reading comprehension #}
+          <form
+            method="post"
+            class="mt-4 space-y-4"
+            autocomplete="off"
+            aria-labelledby="reading-prompt">
+            {% csrf_token %}
+
+            {# Hidden action field:
+               - Default = "reading_save" so plain submit → save draft
+               - JS can flip this to "reading_submit" when the Submit button is clicked
+            #}
+            <input type="hidden" name="action" id="reading-action" value="reading_save" />
+
+            {# Instruction + live word count placeholder #}
+            <div class="flex flex-wrap items-center justify-between gap-3">
+              <label
+                for="id_reading_answer"
+                class="font-medium text-sm text-red-600 dark:text-red-400 leading-snug"
+              >
+                <span>Please write a minimum of 250 and a maximum of 300 words.</span><br />
+                <span>
+                  Please note that responses longer than 300 words will not be recorded
+                  by the system.
+                </span>
+              </label>
+              <span
+                class="inline-flex items-center rounded-full border border-slate-400 bg-slate-50 px-3 py-1 text-xs font-semibold text-slate-700"
+                id="reading-word-count"
+                aria-live="polite"
+              >
+                0 / 300 words
+              </span>
+            </div>
+
+            {{ reading_form.reading_answer }}
+
+            <div class="flex flex-wrap items-center justify-end gap-3">
+              {# ✅ Save Draft: normal HTML submit (classic POST + redirect) #}
+              {% c button
+                type="submit"
+                name="action"
+                value="reading_save"
+                variant="secondary"
+                class="group transition duration-200 hover:bg-writing/15 hover:text-writing hover:shadow-md active:shadow-inner"
+              %}
+                {% icon 'save' class_='h-4 w-4 text-writing' %}
+                <span>Save Draft</span>
+              {% endc %}
+
+              {# ✅ Submit: HTMX POST (reload after success to show locked state) #}
+              {% c button
+                id="submit-reading"
+                type="button"
+                variant="default"
+                hx-post="."
+                hx-include="closest form"
+                hx-swap="none"
+                hx-trigger="click"
+                hx-on="htmx:afterRequest: window.location.hash = '#reading-card'; window.location.reload()"
+                class="group bg-writing text-white hover:bg-writing/90 hover:shadow-lg active:shadow-inner transition duration-200"
+              %}
+                {% icon 'rubric' class_='h-4 w-4 text-white' %}
+                <span>Submit</span>
+              {% endc %}
+            </div>
+          </form>
+        {% endif %}
       {% endc %}
 
       {% c card/footer class="justify-start gap-2" %}
         <p class="text-sm text-muted-foreground">
-          Next, you will be asked to write a short response (250–300 words) comparing these
-          positions.
+          Your reading answer will also need to be between 250–300 words.
         </p>
       {% endc %}
     {% endc %}
