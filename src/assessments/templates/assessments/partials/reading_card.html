@@ -75,40 +75,68 @@
             </header>
 
             <div class="grid gap-4 md:grid-cols-2">
-              {# ── Position A ───────────────────────────────────────────── #}
-              <section class="space-y-2 rounded-lg border border-border/60 bg-card p-3 shadow-sm">
-                <div class="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                  <span class="inline-flex h-5 items-center rounded-full bg-background/80 px-2">
-                    Position A
+              {# ── Position A (FOR) ───────────────────────────────────────────── #}
+              <section class="space-y-2 rounded-lg border border-border/60 bg-card p-3 shadow-sm border-l-2 border-l-emerald-200">
+                <div class="flex items-center justify-between gap-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                  <div class="inline-flex items-center gap-2">
+                    <span
+                      class="inline-flex items-center rounded-full border border-emerald-500 bg-emerald-50/90 px-3 py-1
+                            text-xs sm:text-sm font-bold tracking-wide text-emerald-700"
+                    >
+                      Position A
+                    </span>
+                    <span class="hidden text-[11px] text-muted-foreground/80 sm:inline">
+                      Supports the statement
+                    </span>
+                  </div>
+
+                  <span class="inline-flex items-center gap-1 rounded-full border border-emerald-500 bg-emerald-50 px-2 py-0.5 text-[11px] font-semibold text-emerald-700">
+                    {% icon 'thumb_up' class_='h-3.5 w-3.5 text-emerald-500' %}
+                    For
                   </span>
                 </div>
+
                 <h4 class="text-sm font-semibold text-foreground">
                   {{ debate.position_a_title }}
                 </h4>
 
                 {# subtle divider under the title, using reading colour #}
-                <div class="border-t border-reading/50"></div>
+                <div class="border-t-2 border-emerald-500/40"></div>
 
-                <p class="mt-2 text-sm leading-relaxed whitespace-pre-wrap">
+                <p class="mt-2 text-sm leading-relaxed text-foreground/90 whitespace-pre-wrap">
                   {{ debate.position_a_body }}
                 </p>
               </section>
 
-              {# ── Position B ───────────────────────────────────────────── #}
-              <section class="space-y-2 rounded-lg border border-border/60 bg-card p-3 shadow-sm">
-                <div class="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                  <span class="inline-flex h-5 items-center rounded-full bg-background/80 px-2">
-                    Position B
+              {# ── Position B (AGAINST) ───────────────────────────────────────────── #}
+              <section class="space-y-2 rounded-lg border border-border/60 bg-card p-3 shadow-sm border-l-2 border-l-rose-200">
+                <div class="flex items-center justify-between gap-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                  <div class="inline-flex items-center gap-2">
+                    <span
+                      class="inline-flex items-center rounded-full border border-rose-500 bg-rose-50/90 px-3 py-1
+                            text-xs sm:text-sm font-bold tracking-wide text-rose-700"
+                    >
+                      Position B
+                    </span>
+                    <span class="hidden text-[11px] text-muted-foreground/80 sm:inline">
+                      Opposes the statement
+                    </span>
+                  </div>
+
+                  <span class="inline-flex items-center gap-1 rounded-full border border-rose-500 bg-rose-50 px-2 py-0.5 text-[11px] font-semibold text-rose-700">
+                    {% icon 'thumb_down' class_='h-3.5 w-3.5 text-rose-500' %}
+                    Against
                   </span>
                 </div>
+
                 <h4 class="text-sm font-semibold text-foreground">
                   {{ debate.position_b_title }}
                 </h4>
 
-                {# subtle divider under the title, using reading colour #}
-                <div class="border-t border-reading/50"></div>
+                {# subtle divider under the title, using “against” colour #}
+                <div class="border-t-2 border-rose-500/40"></div>
 
-                <p class="mt-2 text-sm leading-relaxed whitespace-pre-wrap">
+                <p class="mt-2 text-sm leading-relaxed text-foreground/90 whitespace-pre-wrap">
                   {{ debate.position_b_body }}
                 </p>
               </section>
