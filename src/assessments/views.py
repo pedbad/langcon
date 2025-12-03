@@ -569,7 +569,8 @@ def home(request):
                 request,
                 "Your reading answer has been submitted.",
             )
-            return redirect("assessments:home")
+
+            return redirect("users:student_home")
 
         # ─────────────────────────────────────────────────────────────────────
         # Writing: save / submit

@@ -251,21 +251,17 @@
                 <span>Save Draft</span>
               {% endc %}
 
-              {# ✅ Submit: HTMX POST (reload after success to show locked state) #}
+              {# ✅ Submit: normal HTML submit (JS enforces word band, then browser POSTs) #}
               {% c button
                 id="submit-reading"
-                type="button"
+                type="submit"
                 variant="default"
-                hx-post="."
-                hx-include="closest form"
-                hx-swap="none"
-                hx-trigger="click"
-                hx-on="htmx:afterRequest: window.location.hash = '#reading-card'; window.location.reload()"
                 class="group bg-writing text-white hover:bg-writing/90 hover:shadow-lg active:shadow-inner transition duration-200"
               %}
                 {% icon 'rubric' class_='h-4 w-4 text-white' %}
                 <span>Submit</span>
               {% endc %}
+
             </div>
           </form>
         {% endif %}
