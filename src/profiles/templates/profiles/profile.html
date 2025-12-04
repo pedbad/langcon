@@ -16,14 +16,25 @@
         </div>
 
         {% if profile_complete %}
-          <span class="inline-flex items-center rounded-full transition-colors duration-300 border border-green-500 bg-green-50 px-2.5 py-1 text-xs font-medium text-green-700 dark:border-green-800 dark:bg-green-900/30 dark:text-green-200">
+          {% c badge
+            variant="outline"
+            class="border-emerald-500 bg-emerald-50 text-emerald-700
+                   dark:bg-emerald-900/40 dark:text-emerald-100"
+          %}
+            {% icon 'check_circle' class_='mr-1 h-3.5 w-3.5 text-emerald-500' %}
             Profile completed
-          </span>
+          {% endc %}
         {% else %}
-          <span class="inline-flex items-center rounded-full transition-colors duration-300 border border-red-500 bg-red-50 px-2.5 py-1 text-xs font-medium text-red-700 dark:border-red-700 dark:bg-red-900/30 dark:text-red-200">
+          {% c badge
+            variant="outline"
+            class="border-red-500 bg-red-50 text-red-700
+                   dark:bg-red-900/40 dark:text-red-100"
+          %}
+            {% icon 'cancel' class_='mr-1 h-3.5 w-3.5 text-red-500' %}
             Profile not completed
-          </span>
+          {% endc %}
         {% endif %}
+
       </div>
 
       {% c card/description %}
@@ -586,32 +597,66 @@
 
         {# Save button / CTA #}
         {% if profile.is_locked %}
-          <p class="text-sm text-muted-foreground">Your profile is locked and cannot be edited.</p>
+          <p class="text-sm text-muted-foreground">
+            Your profile is locked and cannot be edited.
+          </p>
+
         {% elif profile_complete %}
           {% url 'assessments:home' as assessment_url %}
           {% if assessment_url %}
-            <a href="{{ assessment_url }}" aria-label="Begin your assessment" class="inline-flex z-0 w-full items-center justify-center gap-2 rounded-md border border-input bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring">
-              {% icon 'assignment_ind' class_='h-5 w-5' %}<span>Begin your assessment</span>
-            </a>
+            {% if assessment and assessment.is_fully_complete %}
+              {# ✅ Assessment complete → "See your assessment" #}
+              <a
+                href="{{ assessment_url }}"
+                aria-label="See your assessment"
+                class="group inline-flex z-0 w-full items-center justify-center gap-2
+                       rounded-md border border-input bg-primary px-4 py-2 text-sm font-medium
+                       text-primary-foreground shadow-sm transition-colors
+                       hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-1
+                       focus-visible:ring-ring"
+              >
+                {% icon 'rubric' class_='h-5 w-5' %}
+                <span>View your assessment</span>
+                {% icon 'arrow_right' class_='h-5 w-5 transition-transform duration-200 group-hover:translate-x-1' %}
+              </a>
+            {% else %}
+              {# 🟢 Assessment not yet complete → "Begin your assessment" #}
+              <a
+                href="{{ assessment_url }}"
+                aria-label="Begin your assessment"
+                class="group inline-flex z-0 w-full items-center justify-center gap-2
+                       rounded-md border border-input bg-primary px-4 py-2 text-sm font-medium
+                       text-primary-foreground shadow-sm transition-colors
+                       hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-1
+                       focus-visible:ring-ring"
+              >
+                {% icon 'data_alert' class_='h-5 w-5' %}
+                <span>Begin your assessment</span>
+                {% icon 'arrow_right' class_='h-5 w-5 transition-transform duration-200 group-hover:translate-x-1' %}
+              </a>
+            {% endif %}
           {% else %}
-            <p class="text-sm text-muted-foreground" role="status">Assessment link is currently unavailable. Please contact support.</p>
+            <p class="text-sm text-muted-foreground" role="status">
+              Assessment link is currently unavailable. Please contact support.
+            </p>
           {% endif %}
+
         {% else %}
           <button
             type="submit"
             id="save-profile"
             class="inline-flex w-full cursor-pointer items-center justify-center gap-2
-                  rounded-md border border-input bg-primary px-4 py-2 text-sm font-medium
-                  text-primary-foreground shadow-sm transition-all duration-150 ease-out
-                  hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-1
-                  focus-visible:ring-ring active:scale-[0.99]
-                  disabled:pointer-events-none disabled:opacity-50"
+                   rounded-md border border-input bg-primary px-4 py-2 text-sm font-medium
+                   text-primary-foreground shadow-sm transition-all duration-150 ease-out
+                   hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-1
+                   focus-visible:ring-ring active:scale-[0.99]
+                   disabled:pointer-events-none disabled:opacity-50"
           >
             {% icon 'save' class_='h-5 w-5' %}
             <span>Save Changes</span>
           </button>
-
         {% endif %}
+
       </form>
       {% endwith %}
     {% endc %}

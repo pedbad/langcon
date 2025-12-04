@@ -6,6 +6,8 @@ from django.contrib.auth.decorators import login_required
 from django.http import HttpResponseForbidden
 from django.shortcuts import redirect, render
 
+from assessments.models import Assessment
+
 from .forms import ProfileForm
 from .models import Profile
 
@@ -23,6 +25,9 @@ def student_profile_entry(request):
     )
 
     profile_readonly = profile.is_locked or profile.is_complete()
+
+    # 🔹 fetch this student's Assessment (if it exists)
+    assessment = Assessment.objects.filter(user=request.user).first()
 
     if request.method == "POST":
         if profile_readonly:
@@ -60,5 +65,6 @@ def student_profile_entry(request):
         "profile_complete": profile.is_complete(),
         "form": form,
         "form_readonly": profile_readonly,
+        "assessment": assessment,
     }
     return render(request, "profiles/profile.html", context)
