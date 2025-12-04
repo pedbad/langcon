@@ -96,13 +96,20 @@
         role="status"
         aria-live="polite"
       >
-        <div class="flex items-center gap-2">
-          <span>
-            Your answer has been submitted. We’re preparing your follow-up questions…
-          </span>
+        <div class="assessment-submit-status-inner">
           <span class="assessment-submit-spinner" aria-hidden="true"></span>
+
+          <div class="space-y-1">
+            <p class="font-semibold">
+              Your answer has been submitted.
+            </p>
+            <p class="text-xs sm:text-sm text-emerald-900/80 dark:text-emerald-50/80">
+              We’re preparing your follow-up questions. This may take a few moments — please keep this page open.
+            </p>
+          </div>
         </div>
       </div>
+
 
       {# ✏️ Unlocked state: form with live word count and actions #}
       <form

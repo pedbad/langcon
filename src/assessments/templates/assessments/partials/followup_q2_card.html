@@ -93,13 +93,20 @@
             role="status"
             aria-live="polite"
           >
-            <div class="flex items-center gap-2">
-              <span>
-                Submitting your answer to follow-up question 2…
-              </span>
+            <div class="assessment-submit-status-inner">
               <span class="assessment-submit-spinner" aria-hidden="true"></span>
+
+              <div class="space-y-1">
+                <p class="font-semibold">
+                  Submitting your answer to follow-up question 2…
+                </p>
+                <p class="text-xs sm:text-sm text-emerald-900/80 dark:text-emerald-50/80">
+                  We’re processing your response and updating your assessment progress. This may take a few moments.
+                </p>
+              </div>
             </div>
           </div>
+
 
           {# Draft form for follow-up question 2 #}
           <form

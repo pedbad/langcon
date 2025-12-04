@@ -7,61 +7,68 @@
 {% block content %}
 <div class="mx-auto max-w-5xl pt-2 space-y-8">
   {# ─────────────────────────────────────────────
-    Assessment progress: badge + mini progress bar
+    Assessment progress: badge + mini progress bar (sticky)
     ───────────────────────────────────────────── #}
-  <div class="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-    <div class="flex items-center gap-2">
-      <span class="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-        Assessment status
-      </span>
-
-      {% if assessment.is_fully_complete %}
-        {% c badge
-          variant="outline"
-          class="border-emerald-500 bg-emerald-50 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-100"
-        %}
-          {% icon 'check_circle' class_='mr-1 h-3.5 w-3.5 text-emerald-500' %}
-          {{ assessment.status_label }}
-        {% endc %}
-      {% elif assessment.steps_completed > 0 %}
-        {% c badge
-          variant="outline"
-          class="border-amber-500 bg-amber-50 text-amber-700 dark:bg-amber-900/40 dark:text-amber-100"
-        %}
-          {% icon 'data_check' class_='mr-1 h-3.5 w-3.5 text-amber-500' %}
-          {{ assessment.status_label }}
-        {% endc %}
-      {% else %}
-        {% c badge
-          variant="outline"
-          class="border-red-500 bg-red-50 text-red-700 dark:bg-red-900/40 dark:text-red-100"
-        %}
-          {% icon 'data_alert' class_='mr-1 h-3.5 w-3.5 text-red-500' %}
-          {{ assessment.status_label }}
-        {% endc %}
-      {% endif %}
-    </div>
-
-    <div class="w-full sm:max-w-xs">
-      <div class="mb-1 flex items-center justify-between text-xs text-muted-foreground">
-        <span>
-          {{ assessment.steps_completed }} / {{ assessment.steps_total }} steps completed
+  <div
+    class="sticky top-16 z-30 border-b border-border/60
+           bg-background/95 backdrop-blur
+           supports-[backdrop-filter]:bg-background/80
+           pb-3"
+  >
+    <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+      <div class="flex items-center gap-2">
+        <span class="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+          Assessment status
         </span>
-        <span>{{ assessment.progress_pct }}%</span>
+
+        {% if assessment.is_fully_complete %}
+          {% c badge
+            variant="outline"
+            class="border-emerald-500 bg-emerald-50 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-100"
+          %}
+            {% icon 'check_circle' class_='mr-1 h-3.5 w-3.5 text-emerald-500' %}
+            {{ assessment.status_label }}
+          {% endc %}
+        {% elif assessment.steps_completed > 0 %}
+          {% c badge
+            variant="outline"
+            class="border-amber-500 bg-amber-50 text-amber-700 dark:bg-amber-900/40 dark:text-amber-100"
+          %}
+            {% icon 'data_check' class_='mr-1 h-3.5 w-3.5 text-amber-500' %}
+            {{ assessment.status_label }}
+          {% endc %}
+        {% else %}
+          {% c badge
+            variant="outline"
+            class="border-red-500 bg-red-50 text-red-700 dark:bg-red-900/40 dark:text-red-100"
+          %}
+            {% icon 'data_alert' class_='mr-1 h-3.5 w-3.5 text-red-500' %}
+            {{ assessment.status_label }}
+          {% endc %}
+        {% endif %}
       </div>
 
-      {# Tailwind progress bar (no shadcn) #}
-      <div
-        class="h-2 w-full overflow-hidden rounded-full bg-muted/70 dark:bg-muted/40"
-        role="progressbar"
-        aria-valuenow="{{ assessment.progress_pct }}"
-        aria-valuemin="0"
-        aria-valuemax="100"
-      >
+      <div class="w-full sm:max-w-xs">
+        <div class="mb-1 flex items-center justify-between text-xs text-muted-foreground">
+          <span>
+            {{ assessment.steps_completed }} / {{ assessment.steps_total }} steps completed
+          </span>
+          <span>{{ assessment.progress_pct }}%</span>
+        </div>
+
+        {# Tailwind progress bar (no shadcn) #}
         <div
-          class="h-full rounded-full bg-violet-600 dark:bg-violet-400 transition-[width] duration-300 ease-out"
-          style="width: {{ assessment.progress_pct }}%;"
-        ></div>
+          class="h-2 w-full overflow-hidden rounded-full bg-muted/70 dark:bg-muted/40"
+          role="progressbar"
+          aria-valuenow="{{ assessment.progress_pct }}"
+          aria-valuemin="0"
+          aria-valuemax="100"
+        >
+          <div
+            class="h-full rounded-full bg-violet-600 dark:bg-violet-400 transition-[width] duration-300 ease-out"
+            style="width: {{ assessment.progress_pct }}%;"
+          ></div>
+        </div>
       </div>
     </div>
   </div>

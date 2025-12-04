@@ -80,9 +80,6 @@
   --color-writing-soft:   color-mix(in oklch, var(--color-writing)   14%, var(--color-background));
   --color-speaking-soft:  color-mix(in oklch, var(--color-speaking)  14%, var(--color-background));
   --color-overall-soft:   color-mix(in oklch, var(--color-overall)   14%, var(--color-background));
-
-
-
 }
 
 /* ----- DARK MODE OVERRIDES ----- */
@@ -191,20 +188,27 @@
            text-sm text-amber-900;
   }
 
-  /* Green “submitting / submitted” status bar */
-  .assessment-submit-status {
-    @apply mb-3 mt-1
-           rounded-lg border border-emerald-500
-           bg-emerald-50 px-3 py-2
-           text-sm text-emerald-900;
-  }
+/* Prominent “submitting / submitted” status bar (reusable) */
+.assessment-submit-status {
+  @apply mt-3 mb-3
+          rounded-xl border border-emerald-500/85
+          bg-emerald-50/95 px-4 py-4
+          text-sm text-emerald-900 shadow-sm
+          dark:border-emerald-600 dark:bg-emerald-900/40 dark:text-emerald-50;
+}
 
-  /* Small circular spinner inside submit status */
-  .assessment-submit-spinner {
-    @apply inline-block h-4 w-4 rounded-full
-           border-2 border-emerald-600 border-t-transparent
-           animate-spin;
-  }
+/* Inner layout: spinner + text */
+.assessment-submit-status-inner {
+  @apply flex items-start gap-3;
+}
+
+/* Reusable circular loader */
+.assessment-submit-spinner {
+  @apply mt-0.5 inline-flex h-6 w-6 items-center justify-center rounded-full
+          border-2 border-emerald-500 border-r-transparent
+          animate-spin;
+}
+
 
   /* Word-count chip on the right-hand side */
   .assessment-word-count {
@@ -213,7 +217,6 @@
            bg-slate-50 px-3 py-1
            text-xs font-semibold text-slate-700;
   }
-
 
 
   .writing-answer-input {
