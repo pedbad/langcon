@@ -3,7 +3,7 @@
    ========================================================================== */
 
 /* Tell Tailwind where to look for classes in your Django templates & Python files */
-@source "./src/core/templates/**/*.html";     /* All core HTML templates */
+@source "./src/**/*.html";     /* All apps HTML templates */
 @source "./templates/cotton/**/*.html";       /* shadcn-django components */
 @source "./src/**/*.py";                      /* Python files that render templates */
 

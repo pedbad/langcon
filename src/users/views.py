@@ -4,6 +4,7 @@
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import get_user_model
+from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import AbstractBaseUser
 from django.contrib.auth.views import (
     LoginView,
@@ -18,6 +19,7 @@ from django.shortcuts import redirect, render
 from django.urls import reverse, reverse_lazy
 from django.views.generic import CreateView
 
+from assessments.models import Assessment
 from profiles.models import Profile
 
 # Local imports
@@ -144,23 +146,34 @@ class PasswordResetCompleteView(PasswordResetCompleteView):
 # --------------------------
 # Simple role home placeholders
 # --------------------------
-
-
+@login_required
 @role_required(["student"])
 def student_home(request):
-    profile, _ = Profile.objects.get_or_create(user=request.user, defaults={"phone": ""})
+    # Ensure the student has a Profile
+    profile, _ = Profile.objects.get_or_create(
+        user=request.user,
+        defaults={"phone": ""},  # or whatever you used elsewhere
+    )
+    profile_complete = profile.is_complete()
+
+    # Try to get their Assessment row, if it exists
+    assessment = Assessment.objects.filter(user=request.user).first()
+
     context = {
         "profile": profile,
-        "profile_complete": profile.is_complete(),
+        "profile_complete": profile_complete,
+        "assessment": assessment,
     }
     return render(request, "users/student_home.html", context)
 
 
+@login_required
 @role_required(["teacher"])
 def teacher_home(request):
     return render(request, "users/teacher_home.html")
 
 
+@login_required
 @role_required(["admin"])
 def admin_home(request):
     return render(request, "users/admin_home.html")
