@@ -4,7 +4,7 @@ from django.contrib import admin
 from unfold.admin import ModelAdmin
 from unfold.widgets import UnfoldAdminTextareaWidget
 
-from .models import Assessment, DebateTopic
+from .models import Assessment, AssessmentEvaluation, DebateTopic
 
 
 class AssessmentAdminForm(forms.ModelForm):
@@ -35,6 +35,115 @@ class AssessmentAdminForm(forms.ModelForm):
         }
 
 
+class DebateTopicAdminForm(forms.ModelForm):
+    """
+    Custom form for DebateTopic:
+    - Uses Unfold's textarea widget so borders / focus / width look consistent.
+    - Only tweaks textarea height via `rows`.
+    """
+
+    class Meta:
+        model = DebateTopic
+        fields = "__all__"
+        widgets = {
+            "question": UnfoldAdminTextareaWidget(attrs={"rows": 3}),
+            "position_a_body": UnfoldAdminTextareaWidget(attrs={"rows": 10}),
+            "position_b_body": UnfoldAdminTextareaWidget(attrs={"rows": 10}),
+            # Titles use the default Unfold text input widget.
+        }
+
+
+class AssessmentEvaluationAdminForm(forms.ModelForm):
+    """
+    Custom admin form for AssessmentEvaluation:
+    - Makes the LLM evaluation text and assessor comments taller.
+    """
+
+    class Meta:
+        model = AssessmentEvaluation
+        fields = "__all__"
+        widgets = {
+            "llm_evaluation_text": UnfoldAdminTextareaWidget(attrs={"rows": 10}),
+            "assessor_comment": UnfoldAdminTextareaWidget(attrs={"rows": 6}),
+        }
+
+
+# ─────────────────────────────────────────
+# Inline: show 1–1 AssessmentEvaluation under Assessment
+# ─────────────────────────────────────────
+class AssessmentEvaluationInline(admin.StackedInline):
+    """
+    Inline view of the single AssessmentEvaluation attached to an Assessment.
+
+    - LLM fields are read-only (they come from the model call).
+    - Assessor can edit recommendation, comments, and flags inline.
+    """
+
+    model = AssessmentEvaluation
+    form = AssessmentEvaluationAdminForm
+    fk_name = "assessment"
+    extra = 0
+    can_delete = False
+
+    readonly_fields = (
+        "student_email",
+        "student_usn",
+        "submitted_at",
+        "completion_duration",
+        "llm_evaluation_text",
+        "llm_model_name",
+        "llm_generated_at",
+        "llm_error",
+        "created_at",
+        "updated_at",
+    )
+
+    fieldsets = (
+        (
+            "Assessment linkage",
+            {
+                "fields": (
+                    "student_email",
+                    "student_usn",
+                    "submitted_at",
+                    "completion_duration",
+                )
+            },
+        ),
+        (
+            "LLM evaluation",
+            {
+                "classes": ("wide",),
+                "fields": (
+                    "llm_evaluation_text",
+                    "llm_model_name",
+                    "llm_generated_at",
+                    "llm_error",
+                ),
+            },
+        ),
+        (
+            "Assessor decision",
+            {
+                "classes": ("wide",),
+                "fields": (
+                    "recommendation",
+                    "assessor_comment",
+                    "exam_marked",
+                    "phone_follow_up",
+                    "exam_archived",
+                    "assessor",
+                    "assessor_reviewed_at",
+                ),
+            },
+        ),
+        (
+            "Timestamps",
+            {"fields": ("created_at", "updated_at")},
+        ),
+    )
+
+
 @admin.register(Assessment)
 class AssessmentAdmin(ModelAdmin):
     """
@@ -45,6 +154,7 @@ class AssessmentAdmin(ModelAdmin):
     """
 
     form = AssessmentAdminForm
+    inlines = [AssessmentEvaluationInline]
 
     # Columns in the list view (ordered to match logical grouping)
     list_display = (
@@ -314,24 +424,6 @@ class AssessmentAdmin(ModelAdmin):
     reading_submitted_at.admin_order_field = "reading_answer_submitted_at"
 
 
-class DebateTopicAdminForm(forms.ModelForm):
-    """
-    Custom form for DebateTopic:
-    - Uses Unfold's textarea widget so borders / focus / width look consistent.
-    - Only tweaks textarea height via `rows`.
-    """
-
-    class Meta:
-        model = DebateTopic
-        fields = "__all__"
-        widgets = {
-            "question": UnfoldAdminTextareaWidget(attrs={"rows": 3}),
-            "position_a_body": UnfoldAdminTextareaWidget(attrs={"rows": 10}),
-            "position_b_body": UnfoldAdminTextareaWidget(attrs={"rows": 10}),
-            # Titles use the default Unfold text input widget.
-        }
-
-
 @admin.register(DebateTopic)
 class DebateTopicAdmin(ModelAdmin):
     form = DebateTopicAdminForm
@@ -375,3 +467,88 @@ class DebateTopicAdmin(ModelAdmin):
         return obj.question[:80]
 
     question_short.short_description = "Question"
+
+
+@admin.register(AssessmentEvaluation)
+class AssessmentEvaluationAdmin(ModelAdmin):
+    form = AssessmentEvaluationAdminForm
+
+    list_display = (
+        "assessment",
+        "student_email",
+        "student_usn",
+        "submitted_at",
+        "completion_duration",
+        "recommendation",
+        "exam_marked",
+        "phone_follow_up",
+        "exam_archived",
+        "llm_generated_at",
+        "created_at",
+    )
+    list_display_links = ("assessment",)
+    search_fields = ("student_email", "student_usn", "assessment__user__email")
+    list_filter = ("recommendation", "exam_marked", "exam_archived", "llm_generated_at")
+
+    readonly_fields = (
+        "assessment",
+        "student_email",
+        "student_usn",
+        "submitted_at",
+        "completion_duration",
+        "llm_evaluation_text",
+        "llm_model_name",
+        "llm_generated_at",
+        "llm_error",
+        "created_at",
+        "updated_at",
+    )
+
+    fieldsets = (
+        (
+            "Assessment linkage",
+            {
+                "fields": (
+                    "assessment",
+                    "student_email",
+                    "student_usn",
+                    "submitted_at",
+                    "completion_duration",
+                )
+            },
+        ),
+        (
+            "LLM evaluation",
+            {
+                "classes": ("wide",),
+                "fields": (
+                    "llm_evaluation_text",
+                    "llm_model_name",
+                    "llm_generated_at",
+                    "llm_error",
+                ),
+            },
+        ),
+        (
+            "Assessor decision",
+            {
+                "classes": ("wide",),
+                "fields": (
+                    "recommendation",
+                    "assessor_comment",
+                    "exam_marked",
+                    "phone_follow_up",
+                    "exam_archived",
+                    "assessor",
+                    "assessor_reviewed_at",
+                ),
+            },
+        ),
+        (
+            "Timestamps",
+            {"fields": ("created_at", "updated_at")},
+        ),
+    )
+
+    def __str__(self):
+        return "Assessment evaluation admin"

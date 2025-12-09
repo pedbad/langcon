@@ -19,7 +19,8 @@ from .forms import (
     WritingAnswerForm,
 )
 from .llm_client import get_openai_client
-from .models import Assessment, DebateTopic
+from .models import Assessment, AssessmentEvaluation, DebateTopic
+from .services.evaluation import generate_evaluation_for_assessment
 from .services.questions import generate_followups_from_statement
 
 
@@ -564,6 +565,54 @@ def home(request):
                     "updated_at",
                 ]
             )
+
+            # After reading is locked and saved
+            if assessment.is_fully_complete:
+                # Avoid duplicates
+                if not hasattr(assessment, "evaluation"):
+                    # Get profile for USN
+                    profile = Profile.objects.filter(user=request.user).first()
+                    usn = getattr(profile, "student_number", "") if profile else ""
+
+                    submitted_at = assessment.reading_answer_submitted_at
+                    completion_duration = assessment.completion_duration
+
+                    evaluation = AssessmentEvaluation.objects.create(
+                        assessment=assessment,
+                        student_email=request.user.email,
+                        student_usn=usn,
+                        submitted_at=submitted_at,
+                        completion_duration=completion_duration,
+                    )
+
+                    # here we'll call the LLM evaluation service
+                    # Call LLM to generate the evaluation text
+                    eval_text, error, model_name = generate_evaluation_for_assessment(assessment)
+
+                    if eval_text:
+                        evaluation.llm_evaluation_text = eval_text
+                        evaluation.llm_model_name = model_name
+                        evaluation.llm_generated_at = timezone.now()
+                        evaluation.llm_error = ""
+                        evaluation.save(
+                            update_fields=[
+                                "llm_evaluation_text",
+                                "llm_model_name",
+                                "llm_generated_at",
+                                "llm_error",
+                                "updated_at",
+                            ]
+                        )
+                    elif error:
+                        evaluation.llm_error = error
+                        evaluation.llm_model_name = model_name
+                        evaluation.save(
+                            update_fields=[
+                                "llm_error",
+                                "llm_model_name",
+                                "updated_at",
+                            ]
+                        )
 
             messages.success(
                 request,
