@@ -9,6 +9,7 @@ urlpatterns = [
     path("users/", include("users.urls", namespace="users")),
     path("users/profile/", include(("profiles.urls", "profiles"), namespace="profiles")),
     path("users/assessments/", include("assessments.urls", namespace="assessments")),
+    path("assessor/", include(("assessor.urls", "assessor"), namespace="assessor")),
 ]
 
 if settings.DEBUG:

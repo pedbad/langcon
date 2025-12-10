@@ -75,6 +75,7 @@ INSTALLED_APPS = [
     "users.apps.UsersConfig",
     "profiles.apps.ProfilesConfig",
     "assessments.apps.AssessmentsConfig",
+    "assessor.apps.AssessorConfig",
 ]
 
 if DEBUG:

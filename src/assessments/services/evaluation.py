@@ -2,8 +2,6 @@
 
 from __future__ import annotations
 
-from typing import Optional, Tuple
-
 from ..llm_client import get_openai_client
 from ..models import Assessment
 from ..vendor.evaluation import generate_evaluation as _gen_eval
@@ -69,7 +67,7 @@ Position B – {debate.position_b_title}:
 def generate_evaluation_for_assessment(
     assessment: Assessment,
     model: str = DEFAULT_MODEL,
-) -> Tuple[Optional[str], Optional[str], str]:
+) -> tuple[str | None, str | None, str]:
     """
     High-level service wrapper to generate an LLM evaluation for a fully complete Assessment.
 
@@ -77,8 +75,8 @@ def generate_evaluation_for_assessment(
         (evaluation_text, error_message, model_name)
     """
     client = get_openai_client()
-    stat, q1, a1, q2, a2, lc_trans, lc_ans, rc_trans, rc_ans = _build_evaluation_inputs_from_assessment(
-        assessment
+    stat, q1, a1, q2, a2, lc_trans, lc_ans, rc_trans, rc_ans = (
+        _build_evaluation_inputs_from_assessment(assessment)
     )
 
     try:

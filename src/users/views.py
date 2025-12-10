@@ -170,7 +170,12 @@ def student_home(request):
 @login_required
 @role_required(["teacher"])
 def teacher_home(request):
-    return render(request, "users/teacher_home.html")
+    """
+    Thin routing shim:
+    - keeps /users/teacher/ as the canonical teacher redirect target
+    - but all real UI is handled by the assessor app
+    """
+    return redirect(reverse("assessor:teacher_home"))
 
 
 @login_required

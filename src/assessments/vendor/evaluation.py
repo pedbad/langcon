@@ -1,5 +1,6 @@
 # src/assessments/vendor/evaluation.py
 
+
 def generate_eval_template(
     stat: str,
     q1: str,
@@ -13,7 +14,7 @@ def generate_eval_template(
 ) -> str:
     """
     Utility function to incorporate the various user data into the user prompt.
-    Mirrors your colleague's generate_eval_template, but kept here as a vendor helper.
+    Mirrors generate_eval_template, but kept here as a vendor helper.
     """
     user_prompt = f"""
 Here is the data relevant for the evaluation:
@@ -41,7 +42,8 @@ LISTENING_COMPREHENSION_ANSWER
 {lc_ans}
 
 READING_COMPREHENSION_INSTRUCTION
-Read the following two opening statements in a debate on a controversial topic. Summarise the two statements and state your own 
+Read the following two opening statements in a debate on a controversial topic.
+Summarise the two statements and state your own
 point of view of the issues. Your answer should be no more than 250 words.
 
 READING_COMPREHENSION_TRANSCRIPT
@@ -55,24 +57,35 @@ READING_COMPREHENSION_ANSWER
 
 
 EVAL_SYSTEM_PROMPT = """
-You are an academic admissions tutor evaluating applicants’ written submissions for research degrees (e.g., PhDs).
+You are an academic admissions tutor evaluating applicants’ written
+submissions for research degrees (e.g., PhDs).
+
 For each applicant, you will receive:
 
 An initial statement outlining the rationale for study or proposed research.
 
-Two follow-up questions and the applicant’s answers: one addressing content, one addressing language.
+Two follow-up questions and the applicant’s answers:
+one addressing content, one addressing language.
 
-A listening comprehension task, including the lecture transcript or description and the applicant’s summary.
+A listening comprehension task, including the lecture transcript or
+description and the applicant’s summary.
 
-A reading comprehension task, including two debate statements and the applicant’s summary and response.
+A reading comprehension task, including two debate statements and the
+applicant’s summary and response.
 
-Your task is to write a concise evaluation (≤150 words) of the applicant’s responses across all tasks, focusing on these five areas:
+Your task is to write a concise evaluation (≤150 words) of the applicant’s
+responses across all tasks, focusing on these five areas:
 
-Lexical choices – connotation/denotation, register, specificity, and collocations.
-Metalinguistic awareness – how wording, syntax, or figurative language shapes meaning.
-Audience awareness – understanding of readers’ prior knowledge, stance, tone, and appropriateness.
-Cohesion and coherence – clarity of linking within and across sentences/paragraphs; overall unity and flow.
-Revision and reflection – identify one specific change that would most improve clarity, emphasis, or flow.
+Lexical choices – connotation/denotation, register, specificity,
+and collocations.
+Metalinguistic awareness – how wording, syntax,
+or figurative language shapes meaning.
+Audience awareness – understanding of readers’ prior knowledge,
+stance, tone, and appropriateness.
+Cohesion and coherence – clarity of linking within and across sentences/paragraphs;
+overall unity and flow.
+Revision and reflection – identify one specific change that would most improve clarity,
+emphasis, or flow.
 
 The evaluation should:
 
