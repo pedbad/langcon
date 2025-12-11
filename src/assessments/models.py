@@ -272,6 +272,10 @@ class AssessmentEvaluation(models.Model):
             "RECOMMENDED_IN_SESSIONAL",
             "Meets condition – in-sessional support recommended",
         )
+        REQUIRED_IN_SESSIONAL_SPEAKING = (
+            "REQUIRED_IN_SESSIONAL_SPEAKING",
+            "In-sessional support required (speaking focus)",
+        )
         REQUIRED_IN_SESSIONAL = (
             "REQUIRED_IN_SESSIONAL",
             "In-sessional support required",
