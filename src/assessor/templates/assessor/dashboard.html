@@ -53,7 +53,8 @@
         hx-get="{% url 'assessor:teacher_home' %}"
         hx-target="#assessments-table-wrapper"
         hx-swap="innerHTML"
-        hx-push-url="true"
+        hx-replace-url="true"
+        hx-trigger="keyup changed delay:300ms from:input[name='q']"
         class="mb-3"
       >
         <div class="relative w-full">
@@ -66,15 +67,16 @@
             name="q"
             value="{{ search_query }}"
             placeholder="Search by email, name, or USN…"
+            autocomplete="off"
             class="h-9 w-full rounded-md border border-input bg-background pl-8 pr-3 text-sm shadow-sm placeholder:text-muted-foreground
                   focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
           />
         </div>
 
-        {# Preserve current sort direction when filtering #}
         <input type="hidden" name="sort" value="{{ active_sort }}">
         <input type="hidden" name="dir" value="{{ active_dir }}">
       </form>
+
 
 
       <div class="overflow-x-auto" id="assessments-table-wrapper">
