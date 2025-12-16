@@ -57,7 +57,7 @@ def _redirect_for_role(user: AbstractBaseUser) -> str:
     if role == admin_val:
         return reverse("users:admin_home")
     if role == teacher_val:
-        return reverse("users:teacher_home")
+        return reverse("assessor:teacher_home")
 
     # default (student or unknown)
     return reverse("users:student_home")

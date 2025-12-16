@@ -15,7 +15,7 @@ User = get_user_model()
     [
         # Each tuple = (role we assign, final view name we expect after login)
         ("student", "users:student_home"),
-        ("teacher", "users:teacher_home"),
+        ("teacher", "assessor:teacher_home"),
         ("admin", "users:admin_home"),
     ],
 )
