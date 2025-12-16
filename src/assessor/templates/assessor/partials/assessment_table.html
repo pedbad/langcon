@@ -1,5 +1,6 @@
 {# assessor/partials/assessment_table.html #}
 {% load cotton icons %}
+
 {% if assessments %}
   <table id="assessments-table" class="min-w-full text-xs">
     <thead class="border-b bg-muted/60 text-[10px] uppercase text-muted-foreground">
@@ -15,8 +16,8 @@
             {% endif %}
           >
             <a
-              href="{% url 'assessor:teacher_home' %}?sort={{ col_key }}&dir={% if active_sort == col_key and active_dir == 'asc' %}desc{% else %}asc{% endif %}"
-              hx-get="{% url 'assessor:teacher_home' %}?sort={{ col_key }}&dir={% if active_sort == col_key and active_dir == 'asc' %}desc{% else %}asc{% endif %}"
+              href="{% url 'assessor:teacher_home' %}?sort={{ col_key }}&dir={% if active_sort == col_key and active_dir == 'asc' %}desc{% else %}asc{% endif %}{% if search_query %}&q={{ search_query|urlencode }}{% endif %}"
+              hx-get="{% url 'assessor:teacher_home' %}?sort={{ col_key }}&dir={% if active_sort == col_key and active_dir == 'asc' %}desc{% else %}asc{% endif %}{% if search_query %}&q={{ search_query|urlencode }}{% endif %}"
               hx-target="#assessments-table-wrapper"
               hx-swap="innerHTML"
               hx-push-url="true"
@@ -47,8 +48,8 @@
             {% endif %}
           >
             <a
-              href="{% url 'assessor:teacher_home' %}?sort={{ col_key }}&dir={% if active_sort == col_key and active_dir == 'asc' %}desc{% else %}asc{% endif %}"
-              hx-get="{% url 'assessor:teacher_home' %}?sort={{ col_key }}&dir={% if active_sort == col_key and active_dir == 'asc' %}desc{% else %}asc{% endif %}"
+              href="{% url 'assessor:teacher_home' %}?sort={{ col_key }}&dir={% if active_sort == col_key and active_dir == 'asc' %}desc{% else %}asc{% endif %}{% if search_query %}&q={{ search_query|urlencode }}{% endif %}"
+              hx-get="{% url 'assessor:teacher_home' %}?sort={{ col_key }}&dir={% if active_sort == col_key and active_dir == 'asc' %}desc{% else %}asc{% endif %}{% if search_query %}&q={{ search_query|urlencode }}{% endif %}"
               hx-target="#assessments-table-wrapper"
               hx-swap="innerHTML"
               hx-push-url="true"
@@ -79,8 +80,8 @@
             {% endif %}
           >
             <a
-              href="{% url 'assessor:teacher_home' %}?sort={{ col_key }}&dir={% if active_sort == col_key and active_dir == 'asc' %}desc{% else %}asc{% endif %}"
-              hx-get="{% url 'assessor:teacher_home' %}?sort={{ col_key }}&dir={% if active_sort == col_key and active_dir == 'asc' %}desc{% else %}asc{% endif %}"
+              href="{% url 'assessor:teacher_home' %}?sort={{ col_key }}&dir={% if active_sort == col_key and active_dir == 'asc' %}desc{% else %}asc{% endif %}{% if search_query %}&q={{ search_query|urlencode }}{% endif %}"
+              hx-get="{% url 'assessor:teacher_home' %}?sort={{ col_key }}&dir={% if active_sort == col_key and active_dir == 'asc' %}desc{% else %}asc{% endif %}{% if search_query %}&q={{ search_query|urlencode }}{% endif %}"
               hx-target="#assessments-table-wrapper"
               hx-swap="innerHTML"
               hx-push-url="true"
@@ -111,8 +112,8 @@
             {% endif %}
           >
             <a
-              href="{% url 'assessor:teacher_home' %}?sort={{ col_key }}&dir={% if active_sort == col_key and active_dir == 'asc' %}desc{% else %}asc{% endif %}"
-              hx-get="{% url 'assessor:teacher_home' %}?sort={{ col_key }}&dir={% if active_sort == col_key and active_dir == 'asc' %}desc{% else %}asc{% endif %}"
+              href="{% url 'assessor:teacher_home' %}?sort={{ col_key }}&dir={% if active_sort == col_key and active_dir == 'asc' %}desc{% else %}asc{% endif %}{% if search_query %}&q={{ search_query|urlencode }}{% endif %}"
+              hx-get="{% url 'assessor:teacher_home' %}?sort={{ col_key }}&dir={% if active_sort == col_key and active_dir == 'asc' %}desc{% else %}asc{% endif %}{% if search_query %}&q={{ search_query|urlencode }}{% endif %}"
               hx-target="#assessments-table-wrapper"
               hx-swap="innerHTML"
               hx-push-url="true"
@@ -143,8 +144,8 @@
             {% endif %}
           >
             <a
-              href="{% url 'assessor:teacher_home' %}?sort={{ col_key }}&dir={% if active_sort == col_key and active_dir == 'asc' %}desc{% else %}asc{% endif %}"
-              hx-get="{% url 'assessor:teacher_home' %}?sort={{ col_key }}&dir={% if active_sort == col_key and active_dir == 'asc' %}desc{% else %}asc{% endif %}"
+              href="{% url 'assessor:teacher_home' %}?sort={{ col_key }}&dir={% if active_sort == col_key and active_dir == 'asc' %}desc{% else %}asc{% endif %}{% if search_query %}&q={{ search_query|urlencode }}{% endif %}"
+              hx-get="{% url 'assessor:teacher_home' %}?sort={{ col_key }}&dir={% if active_sort == col_key and active_dir == 'asc' %}desc{% else %}asc{% endif %}{% if search_query %}&q={{ search_query|urlencode }}{% endif %}"
               hx-target="#assessments-table-wrapper"
               hx-swap="innerHTML"
               hx-push-url="true"
@@ -175,8 +176,8 @@
             {% endif %}
           >
             <a
-              href="{% url 'assessor:teacher_home' %}?sort={{ col_key }}&dir={% if active_sort == col_key and active_dir == 'asc' %}desc{% else %}asc{% endif %}"
-              hx-get="{% url 'assessor:teacher_home' %}?sort={{ col_key }}&dir={% if active_sort == col_key and active_dir == 'asc' %}desc{% else %}asc{% endif %}"
+              href="{% url 'assessor:teacher_home' %}?sort={{ col_key }}&dir={% if active_sort == col_key and active_dir == 'asc' %}desc{% else %}asc{% endif %}{% if search_query %}&q={{ search_query|urlencode }}{% endif %}"
+              hx-get="{% url 'assessor:teacher_home' %}?sort={{ col_key }}&dir={% if active_sort == col_key and active_dir == 'asc' %}desc{% else %}asc{% endif %}{% if search_query %}&q={{ search_query|urlencode }}{% endif %}"
               hx-target="#assessments-table-wrapper"
               hx-swap="innerHTML"
               hx-push-url="true"
@@ -207,8 +208,8 @@
             {% endif %}
           >
             <a
-              href="{% url 'assessor:teacher_home' %}?sort={{ col_key }}&dir={% if active_sort == col_key and active_dir == 'asc' %}desc{% else %}asc{% endif %}"
-              hx-get="{% url 'assessor:teacher_home' %}?sort={{ col_key }}&dir={% if active_sort == col_key and active_dir == 'asc' %}desc{% else %}asc{% endif %}"
+              href="{% url 'assessor:teacher_home' %}?sort={{ col_key }}&dir={% if active_sort == col_key and active_dir == 'asc' %}desc{% else %}asc{% endif %}{% if search_query %}&q={{ search_query|urlencode }}{% endif %}"
+              hx-get="{% url 'assessor:teacher_home' %}?sort={{ col_key }}&dir={% if active_sort == col_key and active_dir == 'asc' %}desc{% else %}asc{% endif %}{% if search_query %}&q={{ search_query|urlencode }}{% endif %}"
               hx-target="#assessments-table-wrapper"
               hx-swap="innerHTML"
               hx-push-url="true"
@@ -239,8 +240,8 @@
             {% endif %}
           >
             <a
-              href="{% url 'assessor:teacher_home' %}?sort={{ col_key }}&dir={% if active_sort == col_key and active_dir == 'asc' %}desc{% else %}asc{% endif %}"
-              hx-get="{% url 'assessor:teacher_home' %}?sort={{ col_key }}&dir={% if active_sort == col_key and active_dir == 'asc' %}desc{% else %}asc{% endif %}"
+              href="{% url 'assessor:teacher_home' %}?sort={{ col_key }}&dir={% if active_sort == col_key and active_dir == 'asc' %}desc{% else %}asc{% endif %}{% if search_query %}&q={{ search_query|urlencode }}{% endif %}"
+              hx-get="{% url 'assessor:teacher_home' %}?sort={{ col_key }}&dir={% if active_sort == col_key and active_dir == 'asc' %}desc{% else %}asc{% endif %}{% if search_query %}&q={{ search_query|urlencode }}{% endif %}"
               hx-target="#assessments-table-wrapper"
               hx-swap="innerHTML"
               hx-push-url="true"
@@ -262,199 +263,188 @@
       </tr>
     </thead>
 
-
     <tbody>
-        {% for a in assessments %}
+      {% for a in assessments %}
         {% with ev=a.evaluation %}
-            <tr class="border-b last:border-0">
+          <tr class="border-b last:border-0">
             {# Student #}
             <td class="py-2 pr-4 align-top">
-                <div class="flex flex-col">
+              <div class="flex flex-col">
                 <span class="font-medium text-foreground">
-                    {{ ev.student_email|default:a.user.email }}
+                  {{ ev.student_email|default:a.user.email }}
                 </span>
                 <span class="text-xs text-muted-foreground">
-                    {{ a.user.get_full_name|default:"" }}
+                  {{ a.user.get_full_name|default:"" }}
                 </span>
-                </div>
+              </div>
             </td>
 
             {# USN #}
             <td class="py-1.5 px-4 align-top text-xs text-muted-foreground whitespace-nowrap">
-                {% if ev and ev.student_usn %}
+              {% if ev and ev.student_usn %}
                 {{ ev.student_usn }}
-                {% else %}
+              {% else %}
                 —
-                {% endif %}
+              {% endif %}
             </td>
 
             {# Assessment status badge + optional progress bar #}
             <td class="py-1.5 px-4 align-top">
-                <div class="flex flex-col gap-1">
+              <div class="flex flex-col gap-1">
                 <div>
-                    {% if a.is_fully_complete %}
-                    {# Completed – green badge, label just "Completed" #}
+                  {% if a.is_fully_complete %}
                     {% c badge
-                        variant="outline"
-                        class="border-emerald-500 bg-emerald-50 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-100 text-[11px] font-medium px-2 py-0.5"
+                      variant="outline"
+                      class="border-emerald-500 bg-emerald-50 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-100 text-[11px] font-medium px-2 py-0.5"
                     %}
-                        {% icon 'check_circle' class_='mr-1 h-3.5 w-3.5 text-emerald-500' %}
-                        Completed
+                      {% icon 'check_circle' class_='mr-1 h-3.5 w-3.5 text-emerald-500' %}
+                      Completed
                     {% endc %}
-                    {% elif a.steps_completed > 0 %}
-                    {# In progress – amber badge + progress bar #}
+                  {% elif a.steps_completed > 0 %}
                     {% c badge
-                        variant="outline"
-                        class="border-amber-500 bg-amber-50 text-amber-700 dark:bg-amber-900/40 dark:text-amber-100 text-[11px] font-medium px-2 py-0.5"
+                      variant="outline"
+                      class="border-amber-500 bg-amber-50 text-amber-700 dark:bg-amber-900/40 dark:text-amber-100 text-[11px] font-medium px-2 py-0.5"
                     %}
-                        {% icon 'data_check' class_='mr-1 h-3.5 w-3.5 text-amber-500' %}
-                        {{ a.status_label }}
+                      {% icon 'data_check' class_='mr-1 h-3.5 w-3.5 text-amber-500' %}
+                      {{ a.status_label }}
                     {% endc %}
-                    {% else %}
-                    {# Not started – red badge #}
+                  {% else %}
                     {% c badge
-                        variant="outline"
-                        class="border-red-500 bg-red-50 text-red-700 dark:bg-red-900/40 dark:text-red-100 text-[11px] font-medium px-2 py-0.5"
+                      variant="outline"
+                      class="border-red-500 bg-red-50 text-red-700 dark:bg-red-900/40 dark:text-red-100 text-[11px] font-medium px-2 py-0.5"
                     %}
-                        {% icon 'data_alert' class_='mr-1 h-3.5 w-3.5 text-red-500' %}
-                        {{ a.status_label }}
+                      {% icon 'data_alert' class_='mr-1 h-3.5 w-3.5 text-red-500' %}
+                      {{ a.status_label }}
                     {% endc %}
-                    {% endif %}
+                  {% endif %}
                 </div>
 
-                {# Only show purple progress bar when in progress #}
                 {% if not a.is_fully_complete and a.steps_completed > 0 %}
-                    <div class="w-24">
+                  <div class="w-24">
                     <div
-                        class="h-1.5 w-full overflow-hidden rounded-full bg-muted/70 dark:bg-muted/40"
-                        role="progressbar"
-                        aria-valuenow="{{ a.progress_pct }}"
-                        aria-valuemin="0"
-                        aria-valuemax="100"
+                      class="h-1.5 w-full overflow-hidden rounded-full bg-muted/70 dark:bg-muted/40"
+                      role="progressbar"
+                      aria-valuenow="{{ a.progress_pct }}"
+                      aria-valuemin="0"
+                      aria-valuemax="100"
                     >
-                        <div
+                      <div
                         class="h-full rounded-full bg-violet-600 dark:bg-violet-400 transition-[width] duration-300 ease-out"
                         style="width: {{ a.progress_pct }}%;"
-                        ></div>
+                      ></div>
                     </div>
-                    </div>
+                  </div>
                 {% endif %}
-                </div>
+              </div>
             </td>
 
             {# Submitted + time + duration (UK style) #}
             <td class="py-1.5 px-4 align-top text-xs text-muted-foreground whitespace-nowrap">
-                {% if ev and ev.submitted_at %}
+              {% if ev and ev.submitted_at %}
                 <div class="flex flex-col">
-                    <span>{{ ev.submitted_at|date:"d-m-y" }}</span>
-                    <span class="text-[11px] text-muted-foreground/80">
+                  <span>{{ ev.submitted_at|date:"d-m-y" }}</span>
+                  <span class="text-[11px] text-muted-foreground/80">
                     time: {{ ev.submitted_at|date:"H:i" }}
-                    </span>
-                    {% if a.evaluation_duration_label %}
+                  </span>
+                  {% if a.evaluation_duration_label %}
                     <span class="text-[11px] text-muted-foreground/80">
-                        duration {{ a.evaluation_duration_label }}
+                      duration {{ a.evaluation_duration_label }}
                     </span>
-                    {% endif %}
+                  {% endif %}
                 </div>
-                {% else %}
+              {% else %}
                 <span>—</span>
-                {% endif %}
+              {% endif %}
             </td>
 
             {# Recommendation #}
             <td class="py-1.5 px-4 align-top text-xs text-center">
-                {% if ev and ev.recommendation %}
+              {% if ev and ev.recommendation %}
                 <span class="inline-flex items-center rounded-full bg-muted px-2 py-0.5 text-[11px] font-medium">
-                    {{ ev.get_recommendation_display }}
+                  {{ ev.get_recommendation_display }}
                 </span>
-                {% elif ev %}
+              {% elif ev %}
                 <span class="text-[11px] text-muted-foreground italic">
-                    No recommendation yet
+                  No recommendation yet
                 </span>
-                {% else %}
+              {% else %}
                 <span class="text-[11px] text-muted-foreground italic">
-                    Assessment not fully completed
+                  Assessment not fully completed
                 </span>
-                {% endif %}
+              {% endif %}
             </td>
 
-            {# Exam marked column (True = green, False = red) #}
+            {# Exam marked #}
             <td class="py-1.5 px-4 align-top text-xs text-muted-foreground">
-                {% if ev %}
+              {% if ev %}
                 <div class="flex justify-center">
-                    {% if ev.exam_marked %}
+                  {% if ev.exam_marked %}
                     <span class="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-0.5 font-medium text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-200 text-[11px]">
-                        {% icon "check_circle" class_="h-3.5 w-3.5" %}
-                        Yes
+                      {% icon "check_circle" class_="h-3.5 w-3.5" %}
+                      Yes
                     </span>
-                    {% else %}
+                  {% else %}
                     <span class="inline-flex items-center gap-1 rounded-full bg-red-50 px-2 py-0.5 font-medium text-red-700 dark:bg-red-900/40 dark:text-red-100 text-[11px]">
-                        {% icon "cancel" class_="h-3.5 w-3.5" %}
-                        No
+                      {% icon "cancel" class_="h-3.5 w-3.5" %}
+                      No
                     </span>
-                    {% endif %}
+                  {% endif %}
                 </div>
-                {% else %}
+              {% else %}
                 <div class="flex justify-center">
-                    <span class="text-[11px] text-muted-foreground italic">
-                    —
-                    </span>
+                  <span class="text-[11px] text-muted-foreground italic">—</span>
                 </div>
-                {% endif %}
+              {% endif %}
             </td>
 
-            {# Phone follow-up column (True = green, False = red) #}
+            {# Phone follow-up #}
             <td class="py-1.5 px-4 align-top text-xs text-muted-foreground">
-                {% if ev %}
+              {% if ev %}
                 <div class="flex justify-center">
-                    {% if ev.phone_follow_up %}
+                  {% if ev.phone_follow_up %}
                     <span class="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-0.5 font-medium text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-200 text-[11px]">
-                        {% icon "phone_in_talk" class_="h-3.5 w-3.5" %}
-                        Yes
+                      {% icon "phone_in_talk" class_="h-3.5 w-3.5" %}
+                      Yes
                     </span>
-                    {% else %}
+                  {% else %}
                     <span class="inline-flex items-center gap-1 rounded-full bg-red-50 px-2 py-0.5 font-medium text-red-700 dark:bg-red-900/40 dark:text-red-100 text-[11px]">
-                        {% icon "phone_disabled" class_="h-3.5 w-3.5" %}
-                        No
+                      {% icon "phone_disabled" class_="h-3.5 w-3.5" %}
+                      No
                     </span>
-                    {% endif %}
+                  {% endif %}
                 </div>
-                {% else %}
+              {% else %}
                 <div class="flex justify-center">
-                    <span class="text-[11px] text-muted-foreground italic">
-                    —
-                    </span>
+                  <span class="text-[11px] text-muted-foreground italic">—</span>
                 </div>
-                {% endif %}
+              {% endif %}
             </td>
 
-            {# Archive status column (True = green, False = red) #}
+            {# Archive status #}
             <td class="py-1.5 pl-4 align-top text-xs text-muted-foreground">
-                {% if ev %}
+              {% if ev %}
                 <div class="flex justify-center">
-                    {% if ev.exam_archived %}
+                  {% if ev.exam_archived %}
                     <span class="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-0.5 font-medium text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-200 text-[11px]">
-                        {% icon "lock_clock" class_="h-3.5 w-3.5" %}
-                        Archived
+                      {% icon "lock_clock" class_="h-3.5 w-3.5" %}
+                      Archived
                     </span>
-                    {% else %}
+                  {% else %}
                     <span class="inline-flex items-center gap-1 rounded-full bg-red-50 px-2 py-0.5 font-medium text-red-700 dark:bg-red-900/40 dark:text-red-100 text-[11px]">
-                        {% icon "bolt" class_="h-3.5 w-3.5" %}
-                        Active
+                      {% icon "bolt" class_="h-3.5 w-3.5" %}
+                      Active
                     </span>
-                    {% endif %}
+                  {% endif %}
                 </div>
-                {% else %}
+              {% else %}
                 <div class="flex justify-center">
-                    <span class="text-[11px] text-muted-foreground italic">
-                    —
-                    </span>
+                  <span class="text-[11px] text-muted-foreground italic">—</span>
                 </div>
-                {% endif %}
+              {% endif %}
             </td>
-            </tr>
+          </tr>
         {% endwith %}
-        {% endfor %}
+      {% endfor %}
     </tbody>
   </table>
 {% else %}

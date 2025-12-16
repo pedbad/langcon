@@ -1,5 +1,6 @@
 # src/assessor/views.py
 from django.contrib.auth.decorators import login_required
+from django.db.models import Q
 from django.shortcuts import render
 
 from assessments.models import Assessment
@@ -12,6 +13,7 @@ def dashboard(request):
     # 1) Read sort parameters
     sort = request.GET.get("sort", "submitted")
     direction = request.GET.get("dir", "desc")
+    q = (request.GET.get("q") or "").strip()
 
     valid_sorts = {
         "student",
@@ -30,7 +32,18 @@ def dashboard(request):
     reverse = direction == "desc"
 
     # 2) Base queryset
-    assessments = list(Assessment.objects.select_related("user", "evaluation"))
+    qs = Assessment.objects.select_related("user", "evaluation")
+
+    if q:
+        qs = qs.filter(
+            Q(user__email__icontains=q)
+            | Q(user__first_name__icontains=q)
+            | Q(user__last_name__icontains=q)
+            | Q(evaluation__student_usn__icontains=q)
+            | Q(evaluation__student_email__icontains=q)
+        )
+
+    assessments = list(qs)
 
     # 3) Pre-compute helpers
     for a in assessments:
@@ -117,6 +130,7 @@ def dashboard(request):
         "assessments": assessments,
         "active_sort": sort,
         "active_dir": direction,
+        "search_query": q,
     }
 
     # 5) htmx partial vs full page
