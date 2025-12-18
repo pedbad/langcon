@@ -1,0 +1,195 @@
+{# assessor/partials/teacher_assessments_card.html #}
+{% load cotton icons %}
+
+<div id="teacher-assessments">
+  {% c card class="card-strong" %}
+    {% c card/header %}
+      <div class="flex items-start justify-between gap-4">
+        <div class="flex items-center gap-2">
+          {% icon "rubric" class_="h-6 w-6 text-foreground/80" %}
+          {% c card/title %}Student assessments{% endc %}
+        </div>
+
+        {# Right-aligned toggle buttons (mutually exclusive by view urls) #}
+        <div class="flex items-center gap-2">
+          <a
+            href="{% url 'assessor:teacher_home' %}{{ toggle_phone_url }}"
+            hx-get="{% url 'assessor:teacher_home' %}{{ toggle_phone_url }}"
+            hx-target="#teacher-assessments"
+            hx-swap="outerHTML"
+            hx-replace-url="true"
+            class="inline-flex items-center gap-1.5 rounded-md border px-2 py-1 text-xs font-medium transition-colors
+              {% if phone_only %}
+                border-emerald-500 bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-200
+              {% else %}
+                border-border bg-background text-muted-foreground hover:bg-muted/60 hover:text-foreground
+              {% endif %}"
+            title="{% if phone_only %}Show all students{% else %}Show phone follow-ups only{% endif %}"
+            aria-pressed="{% if phone_only %}true{% else %}false{% endif %}"
+          >
+            {% icon "phone_in_talk" class_="h-4 w-4" %}
+            Phone
+          </a>
+
+          <a
+            href="{% url 'assessor:teacher_home' %}{{ toggle_active_url }}"
+            hx-get="{% url 'assessor:teacher_home' %}{{ toggle_active_url }}"
+            hx-target="#teacher-assessments"
+            hx-swap="outerHTML"
+            hx-replace-url="true"
+            class="inline-flex items-center gap-1.5 rounded-md border px-2 py-1 text-xs font-medium transition-colors
+              {% if active_only %}
+                border-violet-500 bg-violet-50 text-violet-700 dark:bg-violet-900/30 dark:text-violet-200
+              {% else %}
+                border-border bg-background text-muted-foreground hover:bg-muted/60 hover:text-foreground
+              {% endif %}"
+            title="{% if active_only %}Show all students{% else %}Hide archived students{% endif %}"
+            aria-pressed="{% if active_only %}true{% else %}false{% endif %}"
+          >
+            {% icon "bolt" class_="h-4 w-4" %}
+            Active
+          </a>
+        </div>
+      </div>
+
+      <div class="mt-2 text-xs text-muted-foreground">
+        Use the toggles to focus on phone follow-ups or hide archived students.
+      </div>
+    {% endc %}
+
+    {% c card/content %}
+
+      {# Live search (swaps whole card so toggles/search never vanish) #}
+      <form
+        action="{% url 'assessor:teacher_home' %}"
+        method="get"
+        hx-get="{% url 'assessor:teacher_home' %}"
+        hx-target="#teacher-assessments"
+        hx-swap="outerHTML"
+        hx-replace-url="true"
+        hx-trigger="keyup changed delay:300ms from:input[name='q']"
+        class="mb-3"
+      >
+        <div class="relative w-full">
+          <span class="pointer-events-none absolute inset-y-0 left-2 flex items-center">
+            {% icon "search" class_="h-4 w-4 text-muted-foreground" %}
+          </span>
+
+          <input
+            id="assessments-search"
+            type="text"
+            name="q"
+            value="{{ search_query }}"
+            placeholder="Search by email, name, or USN…"
+            autocomplete="off"
+            class="h-9 w-full rounded-md border border-input bg-background pl-8 pr-9 text-sm shadow-sm placeholder:text-muted-foreground
+                   focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+          />
+
+          {% if search_query %}
+            <button
+              type="button"
+              title="Clear search"
+              aria-label="Clear search"
+              class="absolute inset-y-0 right-2 inline-flex items-center rounded-md p-1 text-muted-foreground hover:text-foreground hover:bg-muted/70 transition-colors"
+              hx-get="{% url 'assessor:teacher_home' %}?sort={{ active_sort }}&dir={{ active_dir }}{% if phone_only %}&phone=1{% endif %}{% if active_only %}&active=1{% endif %}"
+              hx-target="#teacher-assessments"
+              hx-swap="outerHTML"
+              hx-replace-url="true"
+              hx-on:click="document.getElementById('assessments-search').value='';"
+            >
+              {% icon "close" class_="h-4 w-4" %}
+            </button>
+          {% endif %}
+        </div>
+
+        {# Preserve state during search #}
+        <input type="hidden" name="sort" value="{{ active_sort }}">
+        <input type="hidden" name="dir" value="{{ active_dir }}">
+        {% if phone_only %}<input type="hidden" name="phone" value="1">{% endif %}
+        {% if active_only %}<input type="hidden" name="active" value="1">{% endif %}
+      </form>
+
+      <div class="overflow-x-auto">
+        {% include "assessor/partials/assessment_table.html" %}
+      </div>
+
+      {# Pagination #}
+      {% if page_obj and page_obj.paginator.num_pages > 1 %}
+        <div class="mt-4 flex items-center justify-between gap-3 text-xs">
+          <div class="text-muted-foreground">
+            Page <span class="font-medium text-foreground">{{ page_obj.number }}</span>
+            of <span class="font-medium text-foreground">{{ page_obj.paginator.num_pages }}</span>
+            · {{ page_obj.paginator.count }} students
+            · {{ per_page }}/page
+          </div>
+
+          <nav class="flex items-center gap-1">
+            {# Prev #}
+            {% if page_obj.has_previous %}
+              <a
+                class="inline-flex items-center rounded-md border px-2 py-1 hover:bg-muted/60 transition-colors"
+                href="?{{ pagination_base_qs }}&page={{ page_obj.previous_page_number }}"
+                hx-get="{% url 'assessor:teacher_home' %}?{{ pagination_base_qs }}&page={{ page_obj.previous_page_number }}"
+                hx-target="#teacher-assessments"
+                hx-swap="outerHTML"
+                hx-replace-url="true"
+              >
+                Prev
+              </a>
+            {% else %}
+              <span class="inline-flex items-center rounded-md border px-2 py-1 text-muted-foreground/60">
+                Prev
+              </span>
+            {% endif %}
+
+            {# Page numbers (compact) #}
+            {% for p in page_obj.paginator.page_range %}
+              {% if p == 1 or p == page_obj.paginator.num_pages or p >= page_obj.number|add:-2 and p <= page_obj.number|add:2 %}
+                {% if p == page_obj.number %}
+                  <span class="inline-flex items-center rounded-md border px-2 py-1 bg-muted font-medium">
+                    {{ p }}
+                  </span>
+                {% else %}
+                  <a
+                    class="inline-flex items-center rounded-md border px-2 py-1 hover:bg-muted/60 transition-colors"
+                    href="?{{ pagination_base_qs }}&page={{ p }}"
+                    hx-get="{% url 'assessor:teacher_home' %}?{{ pagination_base_qs }}&page={{ p }}"
+                    hx-target="#teacher-assessments"
+                    hx-swap="outerHTML"
+                    hx-replace-url="true"
+                  >
+                    {{ p }}
+                  </a>
+                {% endif %}
+              {% elif p == 2 and page_obj.number > 4 %}
+                <span class="px-1 text-muted-foreground">…</span>
+              {% elif p == page_obj.paginator.num_pages|add:-1 and page_obj.number < page_obj.paginator.num_pages|add:-3 %}
+                <span class="px-1 text-muted-foreground">…</span>
+              {% endif %}
+            {% endfor %}
+
+            {# Next #}
+            {% if page_obj.has_next %}
+              <a
+                class="inline-flex items-center rounded-md border px-2 py-1 hover:bg-muted/60 transition-colors"
+                href="?{{ pagination_base_qs }}&page={{ page_obj.next_page_number }}"
+                hx-get="{% url 'assessor:teacher_home' %}?{{ pagination_base_qs }}&page={{ page_obj.next_page_number }}"
+                hx-target="#teacher-assessments"
+                hx-swap="outerHTML"
+                hx-replace-url="true"
+              >
+                Next
+              </a>
+            {% else %}
+              <span class="inline-flex items-center rounded-md border px-2 py-1 text-muted-foreground/60">
+                Next
+              </span>
+            {% endif %}
+          </nav>
+        </div>
+      {% endif %}
+
+    {% endc %}
+  {% endc %}
+</div>

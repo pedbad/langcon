@@ -1,7 +1,9 @@
 # src/assessor/views.py
 from django.contrib.auth.decorators import login_required
+from django.core.paginator import Paginator
 from django.db.models import Q
 from django.shortcuts import render
+from django.utils.http import urlencode
 
 from assessments.models import Assessment
 from users.decorators import role_required
@@ -10,10 +12,23 @@ from users.decorators import role_required
 @login_required
 @role_required(["teacher", "admin"])
 def dashboard(request):
-    # 1) Read sort parameters
+    # ─────────────────────────────────────────────
+    # Pagination knobs (easy to tweak later)
+    # ─────────────────────────────────────────────
+    PER_PAGE = 25
+    PAGE_PARAM = "page"
+
+    # ─────────────────────────────────────────────
+    # 1) Params (sort/search + toggles + pagination)
+    # ─────────────────────────────────────────────
     sort = request.GET.get("sort", "submitted")
     direction = request.GET.get("dir", "desc")
     q = (request.GET.get("q") or "").strip()
+
+    phone_only = request.GET.get("phone") == "1"
+    active_only = request.GET.get("active") == "1"
+
+    page_number = request.GET.get(PAGE_PARAM, "1")
 
     valid_sorts = {
         "student",
@@ -31,8 +46,10 @@ def dashboard(request):
         direction = "desc"
     reverse = direction == "desc"
 
-    # 2) Base queryset
-    qs = Assessment.objects.select_related("user", "evaluation")
+    # ─────────────────────────────────────────────
+    # 2) Base queryset (students only)
+    # ─────────────────────────────────────────────
+    qs = Assessment.objects.select_related("user", "evaluation").filter(user__role="student")
 
     if q:
         qs = qs.filter(
@@ -43,9 +60,19 @@ def dashboard(request):
             | Q(evaluation__student_email__icontains=q)
         )
 
+    # Toggle filters
+    if phone_only:
+        qs = qs.filter(evaluation__phone_follow_up=True)
+
+    if active_only:
+        # show active only: must have evaluation and not archived
+        qs = qs.filter(evaluation__isnull=False, evaluation__exam_archived=False)
+
     assessments = list(qs)
 
-    # 3) Pre-compute helpers
+    # ─────────────────────────────────────────────
+    # 3) Pre-compute helpers (for sorting + display)
+    # ─────────────────────────────────────────────
     for a in assessments:
         ev = getattr(a, "evaluation", None)
 
@@ -104,7 +131,9 @@ def dashboard(request):
         except Exception:
             a.sort_progress_pct = 0
 
+    # ─────────────────────────────────────────────
     # 4) Sort key
+    # ─────────────────────────────────────────────
     def sort_key(a):
         if sort == "student":
             return a.sort_student
@@ -126,17 +155,70 @@ def dashboard(request):
 
     assessments = sorted(assessments, key=sort_key, reverse=reverse)
 
+    # ─────────────────────────────────────────────
+    # 5) Pagination (after sorting)
+    # ─────────────────────────────────────────────
+    paginator = Paginator(assessments, PER_PAGE)
+    page_obj = paginator.get_page(page_number)
+    assessments_page = list(page_obj.object_list)
+
+    # ─────────────────────────────────────────────
+    # 6) URL builders (preserve state)
+    # ─────────────────────────────────────────────
+    def base_params(include_page=True):
+        params = {"sort": sort, "dir": direction}
+        if q:
+            params["q"] = q
+        if phone_only:
+            params["phone"] = "1"
+        if active_only:
+            params["active"] = "1"
+        if include_page and page_obj.number != 1:
+            params[PAGE_PARAM] = str(page_obj.number)
+        return params
+
+    # Mutually-exclusive toggles:
+    # - when enabling phone, drop "active"
+    # - when enabling active, drop "phone"
+    phone_params = {"sort": sort, "dir": direction}
+    if q:
+        phone_params["q"] = q
+    if not phone_only:
+        phone_params["phone"] = "1"  # turning on phone-only
+    # NOTE: do NOT carry "active" (mutual exclusion)
+    toggle_phone_url = "?" + urlencode(phone_params)
+
+    active_params = {"sort": sort, "dir": direction}
+    if q:
+        active_params["q"] = q
+    if not active_only:
+        active_params["active"] = "1"  # turning on active-only
+    # NOTE: do NOT carry "phone" (mutual exclusion)
+    toggle_active_url = "?" + urlencode(active_params)
+
+    # Pagination base (keeps whichever toggle is currently active)
+    pagination_base = base_params(include_page=False)
+
     context = {
-        "assessments": assessments,
+        "assessments": assessments_page,
         "active_sort": sort,
         "active_dir": direction,
         "search_query": q,
+        "phone_only": phone_only,
+        "active_only": active_only,
+        "toggle_phone_url": toggle_phone_url,
+        "toggle_active_url": toggle_active_url,
+        "page_obj": page_obj,
+        "paginator": paginator,
+        "pagination_base_qs": urlencode(pagination_base),
+        "per_page": PER_PAGE,
     }
 
-    # 5) htmx partial vs full page
+    # ─────────────────────────────────────────────
+    # 7) HTMX routing
+    # ─────────────────────────────────────────────
     if request.headers.get("HX-Request", "").lower() == "true":
-        # Only return the table HTML for htmx
-        return render(request, "assessor/partials/assessment_table.html", context)
+        # Return the whole card so toggles/search/pagination never disappear
+        return render(request, "assessor/partials/teacher_assessments_card.html", context)
 
-    # Full page for normal requests
     return render(request, "assessor/dashboard.html", context)

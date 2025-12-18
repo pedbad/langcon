@@ -16,11 +16,11 @@
             {% endif %}
           >
             <a
-              href="{% url 'assessor:teacher_home' %}?sort={{ col_key }}&dir={% if active_sort == col_key and active_dir == 'asc' %}desc{% else %}asc{% endif %}{% if search_query %}&q={{ search_query|urlencode }}{% endif %}"
-              hx-get="{% url 'assessor:teacher_home' %}?sort={{ col_key }}&dir={% if active_sort == col_key and active_dir == 'asc' %}desc{% else %}asc{% endif %}{% if search_query %}&q={{ search_query|urlencode }}{% endif %}"
-              hx-target="#assessments-table-wrapper"
-              hx-swap="innerHTML"
-              hx-push-url="true"
+              href="{% url 'assessor:teacher_home' %}?sort={{ col_key }}&dir={% if active_sort == col_key and active_dir == 'asc' %}desc{% else %}asc{% endif %}{% if search_query %}&q={{ search_query|urlencode }}{% endif %}{% if phone_only %}&phone=1{% endif %}{% if active_only %}&active=1{% endif %}"
+              hx-get="{% url 'assessor:teacher_home' %}?sort={{ col_key }}&dir={% if active_sort == col_key and active_dir == 'asc' %}desc{% else %}asc{% endif %}{% if search_query %}&q={{ search_query|urlencode }}{% endif %}{% if phone_only %}&phone=1{% endif %}{% if active_only %}&active=1{% endif %}"
+              hx-target="#teacher-assessments"
+              hx-swap="outerHTML"
+              hx-replace-url="true"
               class="inline-flex items-center justify-center gap-0.5 rounded-md px-1 py-0.5 hover:bg-muted/80 transition-colors cursor-pointer"
             >
               <span>Student</span>
@@ -48,11 +48,11 @@
             {% endif %}
           >
             <a
-              href="{% url 'assessor:teacher_home' %}?sort={{ col_key }}&dir={% if active_sort == col_key and active_dir == 'asc' %}desc{% else %}asc{% endif %}{% if search_query %}&q={{ search_query|urlencode }}{% endif %}"
-              hx-get="{% url 'assessor:teacher_home' %}?sort={{ col_key }}&dir={% if active_sort == col_key and active_dir == 'asc' %}desc{% else %}asc{% endif %}{% if search_query %}&q={{ search_query|urlencode }}{% endif %}"
-              hx-target="#assessments-table-wrapper"
-              hx-swap="innerHTML"
-              hx-push-url="true"
+              href="{% url 'assessor:teacher_home' %}?sort={{ col_key }}&dir={% if active_sort == col_key and active_dir == 'asc' %}desc{% else %}asc{% endif %}{% if search_query %}&q={{ search_query|urlencode }}{% endif %}{% if phone_only %}&phone=1{% endif %}{% if active_only %}&active=1{% endif %}"
+              hx-get="{% url 'assessor:teacher_home' %}?sort={{ col_key }}&dir={% if active_sort == col_key and active_dir == 'asc' %}desc{% else %}asc{% endif %}{% if search_query %}&q={{ search_query|urlencode }}{% endif %}{% if phone_only %}&phone=1{% endif %}{% if active_only %}&active=1{% endif %}"
+              hx-target="#teacher-assessments"
+              hx-swap="outerHTML"
+              hx-replace-url="true"
               class="inline-flex items-center justify-center gap-0.5 rounded-md px-1 py-0.5 hover:bg-muted/80 transition-colors cursor-pointer"
             >
               <span>USN</span>
@@ -80,11 +80,11 @@
             {% endif %}
           >
             <a
-              href="{% url 'assessor:teacher_home' %}?sort={{ col_key }}&dir={% if active_sort == col_key and active_dir == 'asc' %}desc{% else %}asc{% endif %}{% if search_query %}&q={{ search_query|urlencode }}{% endif %}"
-              hx-get="{% url 'assessor:teacher_home' %}?sort={{ col_key }}&dir={% if active_sort == col_key and active_dir == 'asc' %}desc{% else %}asc{% endif %}{% if search_query %}&q={{ search_query|urlencode }}{% endif %}"
-              hx-target="#assessments-table-wrapper"
-              hx-swap="innerHTML"
-              hx-push-url="true"
+              href="{% url 'assessor:teacher_home' %}?sort={{ col_key }}&dir={% if active_sort == col_key and active_dir == 'asc' %}desc{% else %}asc{% endif %}{% if search_query %}&q={{ search_query|urlencode }}{% endif %}{% if phone_only %}&phone=1{% endif %}{% if active_only %}&active=1{% endif %}"
+              hx-get="{% url 'assessor:teacher_home' %}?sort={{ col_key }}&dir={% if active_sort == col_key and active_dir == 'asc' %}desc{% else %}asc{% endif %}{% if search_query %}&q={{ search_query|urlencode }}{% endif %}{% if phone_only %}&phone=1{% endif %}{% if active_only %}&active=1{% endif %}"
+              hx-target="#teacher-assessments"
+              hx-swap="outerHTML"
+              hx-replace-url="true"
               class="inline-flex items-center justify-center gap-0.5 rounded-md px-1 py-0.5 hover:bg-muted/80 transition-colors cursor-pointer"
             >
               <span>Status</span>
@@ -112,11 +112,11 @@
             {% endif %}
           >
             <a
-              href="{% url 'assessor:teacher_home' %}?sort={{ col_key }}&dir={% if active_sort == col_key and active_dir == 'asc' %}desc{% else %}asc{% endif %}{% if search_query %}&q={{ search_query|urlencode }}{% endif %}"
-              hx-get="{% url 'assessor:teacher_home' %}?sort={{ col_key }}&dir={% if active_sort == col_key and active_dir == 'asc' %}desc{% else %}asc{% endif %}{% if search_query %}&q={{ search_query|urlencode }}{% endif %}"
-              hx-target="#assessments-table-wrapper"
-              hx-swap="innerHTML"
-              hx-push-url="true"
+              href="{% url 'assessor:teacher_home' %}?sort={{ col_key }}&dir={% if active_sort == col_key and active_dir == 'asc' %}desc{% else %}asc{% endif %}{% if search_query %}&q={{ search_query|urlencode }}{% endif %}{% if phone_only %}&phone=1{% endif %}{% if active_only %}&active=1{% endif %}"
+              hx-get="{% url 'assessor:teacher_home' %}?sort={{ col_key }}&dir={% if active_sort == col_key and active_dir == 'asc' %}desc{% else %}asc{% endif %}{% if search_query %}&q={{ search_query|urlencode }}{% endif %}{% if phone_only %}&phone=1{% endif %}{% if active_only %}&active=1{% endif %}"
+              hx-target="#teacher-assessments"
+              hx-swap="outerHTML"
+              hx-replace-url="true"
               class="inline-flex items-center justify-center gap-0.5 rounded-md px-1 py-0.5 hover:bg-muted/80 transition-colors cursor-pointer"
             >
               <span>Submitted</span>
@@ -144,11 +144,11 @@
             {% endif %}
           >
             <a
-              href="{% url 'assessor:teacher_home' %}?sort={{ col_key }}&dir={% if active_sort == col_key and active_dir == 'asc' %}desc{% else %}asc{% endif %}{% if search_query %}&q={{ search_query|urlencode }}{% endif %}"
-              hx-get="{% url 'assessor:teacher_home' %}?sort={{ col_key }}&dir={% if active_sort == col_key and active_dir == 'asc' %}desc{% else %}asc{% endif %}{% if search_query %}&q={{ search_query|urlencode }}{% endif %}"
-              hx-target="#assessments-table-wrapper"
-              hx-swap="innerHTML"
-              hx-push-url="true"
+              href="{% url 'assessor:teacher_home' %}?sort={{ col_key }}&dir={% if active_sort == col_key and active_dir == 'asc' %}desc{% else %}asc{% endif %}{% if search_query %}&q={{ search_query|urlencode }}{% endif %}{% if phone_only %}&phone=1{% endif %}{% if active_only %}&active=1{% endif %}"
+              hx-get="{% url 'assessor:teacher_home' %}?sort={{ col_key }}&dir={% if active_sort == col_key and active_dir == 'asc' %}desc{% else %}asc{% endif %}{% if search_query %}&q={{ search_query|urlencode }}{% endif %}{% if phone_only %}&phone=1{% endif %}{% if active_only %}&active=1{% endif %}"
+              hx-target="#teacher-assessments"
+              hx-swap="outerHTML"
+              hx-replace-url="true"
               class="inline-flex items-center justify-center gap-0.5 rounded-md px-1 py-0.5 hover:bg-muted/80 transition-colors cursor-pointer"
             >
               <span>Recommendation</span>
@@ -176,11 +176,11 @@
             {% endif %}
           >
             <a
-              href="{% url 'assessor:teacher_home' %}?sort={{ col_key }}&dir={% if active_sort == col_key and active_dir == 'asc' %}desc{% else %}asc{% endif %}{% if search_query %}&q={{ search_query|urlencode }}{% endif %}"
-              hx-get="{% url 'assessor:teacher_home' %}?sort={{ col_key }}&dir={% if active_sort == col_key and active_dir == 'asc' %}desc{% else %}asc{% endif %}{% if search_query %}&q={{ search_query|urlencode }}{% endif %}"
-              hx-target="#assessments-table-wrapper"
-              hx-swap="innerHTML"
-              hx-push-url="true"
+              href="{% url 'assessor:teacher_home' %}?sort={{ col_key }}&dir={% if active_sort == col_key and active_dir == 'asc' %}desc{% else %}asc{% endif %}{% if search_query %}&q={{ search_query|urlencode }}{% endif %}{% if phone_only %}&phone=1{% endif %}{% if active_only %}&active=1{% endif %}"
+              hx-get="{% url 'assessor:teacher_home' %}?sort={{ col_key }}&dir={% if active_sort == col_key and active_dir == 'asc' %}desc{% else %}asc{% endif %}{% if search_query %}&q={{ search_query|urlencode }}{% endif %}{% if phone_only %}&phone=1{% endif %}{% if active_only %}&active=1{% endif %}"
+              hx-target="#teacher-assessments"
+              hx-swap="outerHTML"
+              hx-replace-url="true"
               class="inline-flex items-center justify-center gap-0.5 rounded-md px-1 py-0.5 hover:bg-muted/80 transition-colors cursor-pointer"
             >
               <span>Marked</span>
@@ -208,11 +208,11 @@
             {% endif %}
           >
             <a
-              href="{% url 'assessor:teacher_home' %}?sort={{ col_key }}&dir={% if active_sort == col_key and active_dir == 'asc' %}desc{% else %}asc{% endif %}{% if search_query %}&q={{ search_query|urlencode }}{% endif %}"
-              hx-get="{% url 'assessor:teacher_home' %}?sort={{ col_key }}&dir={% if active_sort == col_key and active_dir == 'asc' %}desc{% else %}asc{% endif %}{% if search_query %}&q={{ search_query|urlencode }}{% endif %}"
-              hx-target="#assessments-table-wrapper"
-              hx-swap="innerHTML"
-              hx-push-url="true"
+              href="{% url 'assessor:teacher_home' %}?sort={{ col_key }}&dir={% if active_sort == col_key and active_dir == 'asc' %}desc{% else %}asc{% endif %}{% if search_query %}&q={{ search_query|urlencode }}{% endif %}{% if phone_only %}&phone=1{% endif %}{% if active_only %}&active=1{% endif %}"
+              hx-get="{% url 'assessor:teacher_home' %}?sort={{ col_key }}&dir={% if active_sort == col_key and active_dir == 'asc' %}desc{% else %}asc{% endif %}{% if search_query %}&q={{ search_query|urlencode }}{% endif %}{% if phone_only %}&phone=1{% endif %}{% if active_only %}&active=1{% endif %}"
+              hx-target="#teacher-assessments"
+              hx-swap="outerHTML"
+              hx-replace-url="true"
               class="inline-flex items-center justify-center gap-0.5 rounded-md px-1 py-0.5 hover:bg-muted/80 transition-colors cursor-pointer"
             >
               <span>Phone</span>
@@ -240,11 +240,11 @@
             {% endif %}
           >
             <a
-              href="{% url 'assessor:teacher_home' %}?sort={{ col_key }}&dir={% if active_sort == col_key and active_dir == 'asc' %}desc{% else %}asc{% endif %}{% if search_query %}&q={{ search_query|urlencode }}{% endif %}"
-              hx-get="{% url 'assessor:teacher_home' %}?sort={{ col_key }}&dir={% if active_sort == col_key and active_dir == 'asc' %}desc{% else %}asc{% endif %}{% if search_query %}&q={{ search_query|urlencode }}{% endif %}"
-              hx-target="#assessments-table-wrapper"
-              hx-swap="innerHTML"
-              hx-push-url="true"
+              href="{% url 'assessor:teacher_home' %}?sort={{ col_key }}&dir={% if active_sort == col_key and active_dir == 'asc' %}desc{% else %}asc{% endif %}{% if search_query %}&q={{ search_query|urlencode }}{% endif %}{% if phone_only %}&phone=1{% endif %}{% if active_only %}&active=1{% endif %}"
+              hx-get="{% url 'assessor:teacher_home' %}?sort={{ col_key }}&dir={% if active_sort == col_key and active_dir == 'asc' %}desc{% else %}asc{% endif %}{% if search_query %}&q={{ search_query|urlencode }}{% endif %}{% if phone_only %}&phone=1{% endif %}{% if active_only %}&active=1{% endif %}"
+              hx-target="#teacher-assessments"
+              hx-swap="outerHTML"
+              hx-replace-url="true"
               class="inline-flex items-center justify-center gap-0.5 rounded-md px-1 py-0.5 hover:bg-muted/80 transition-colors cursor-pointer"
             >
               <span>Archive</span>
@@ -288,7 +288,7 @@
               {% endif %}
             </td>
 
-            {# Assessment status badge + optional progress bar #}
+            {# Status #}
             <td class="py-1.5 px-4 align-top">
               <div class="flex flex-col gap-1">
                 <div>
@@ -338,7 +338,7 @@
               </div>
             </td>
 
-            {# Submitted + time + duration (UK style) #}
+            {# Submitted #}
             <td class="py-1.5 px-4 align-top text-xs text-muted-foreground whitespace-nowrap">
               {% if ev and ev.submitted_at %}
                 <div class="flex flex-col">

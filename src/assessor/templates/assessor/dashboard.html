@@ -1,3 +1,4 @@
+{# assessor/dashboard.html #}
 {% extends "core/base.html" %}
 {% load cotton icons %}
 
@@ -6,9 +7,6 @@
 {% block content %}
 <div class="mx-auto max-w-5xl pt-2 space-y-8">
 
-  {# ─────────────────────────────────────────────
-     Top card: Teacher dashboard intro
-     ───────────────────────────────────────────── #}
   {% c card class="card-strong" %}
     {% c card/header %}
       <div class="flex items-center justify-between gap-4">
@@ -18,7 +16,6 @@
         </div>
       </div>
     {% endc %}
-
     {% c card/content %}
       <p class="text-sm text-muted-foreground">
         In this area you’ll eventually see summary information, quick filters,
@@ -27,65 +24,8 @@
     {% endc %}
   {% endc %}
 
-
-  {# ─────────────────────────────────────────────
-    Bottom card: table of students / assessments
-    ───────────────────────────────────────────── #}
-  {% c card class="card-strong" id="teacher-assessments" %}
-    {% c card/header %}
-      <div class="flex items-center justify-between gap-4">
-        <div class="flex items-center gap-2">
-          {% icon "rubric" class_="h-6 w-6 text-foreground/80" %}
-          {% c card/title %}Student assessments{% endc %}
-        </div>
-        <p class="text-xs text-muted-foreground">
-          All students with an assessment, including not started / in progress / completed.
-        </p>
-      </div>
-    {% endc %}
-
-    {% c card/content %}
-
-      {# Search / filter row #}
-      <form
-        action="{% url 'assessor:teacher_home' %}"
-        method="get"
-        hx-get="{% url 'assessor:teacher_home' %}"
-        hx-target="#assessments-table-wrapper"
-        hx-swap="innerHTML"
-        hx-replace-url="true"
-        hx-trigger="keyup changed delay:300ms from:input[name='q']"
-        class="mb-3"
-      >
-        <div class="relative w-full">
-          <span class="pointer-events-none absolute inset-y-0 left-2 flex items-center">
-            {% icon "search" class_="h-4 w-4 text-muted-foreground" %}
-          </span>
-
-          <input
-            type="text"
-            name="q"
-            value="{{ search_query }}"
-            placeholder="Search by email, name, or USN…"
-            autocomplete="off"
-            class="h-9 w-full rounded-md border border-input bg-background pl-8 pr-3 text-sm shadow-sm placeholder:text-muted-foreground
-                  focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-          />
-        </div>
-
-        <input type="hidden" name="sort" value="{{ active_sort }}">
-        <input type="hidden" name="dir" value="{{ active_dir }}">
-      </form>
-
-
-
-      <div class="overflow-x-auto" id="assessments-table-wrapper">
-        {% include "assessor/partials/assessment_table.html" %}
-      </div>
-    {% endc %}
-
-  {% endc %}
-
+  {# Whole card is HTMX swap target #}
+  {% include "assessor/partials/teacher_assessments_card.html" %}
 
 </div>
 {% endblock %}
