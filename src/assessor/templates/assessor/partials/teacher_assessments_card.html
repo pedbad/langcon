@@ -10,7 +10,7 @@
           {% c card/title %}Student assessments{% endc %}
         </div>
 
-        {# Right-aligned toggle buttons (mutually exclusive by view urls) #}
+        {# Right-aligned toggle buttons #}
         <div class="flex items-center gap-2">
           <a
             href="{% url 'assessor:teacher_home' %}{{ toggle_phone_url }}"
@@ -92,7 +92,7 @@
               title="Clear search"
               aria-label="Clear search"
               class="absolute inset-y-0 right-2 inline-flex items-center rounded-md p-1 text-muted-foreground hover:text-foreground hover:bg-muted/70 transition-colors"
-              hx-get="{% url 'assessor:teacher_home' %}?sort={{ active_sort }}&dir={{ active_dir }}{% if phone_only %}&phone=1{% endif %}{% if active_only %}&active=1{% endif %}"
+              hx-get="{% url 'assessor:teacher_home' %}?sort={{ active_sort }}&dir={{ active_dir }}&page=1{% if phone_only %}&phone=1{% endif %}{% if active_only %}&active=1{% endif %}"
               hx-target="#teacher-assessments"
               hx-swap="outerHTML"
               hx-replace-url="true"
@@ -104,6 +104,7 @@
         </div>
 
         {# Preserve state during search #}
+        <input type="hidden" name="page" value="1">
         <input type="hidden" name="sort" value="{{ active_sort }}">
         <input type="hidden" name="dir" value="{{ active_dir }}">
         {% if phone_only %}<input type="hidden" name="phone" value="1">{% endif %}
@@ -129,8 +130,8 @@
             {% if page_obj.has_previous %}
               <a
                 class="inline-flex items-center rounded-md border px-2 py-1 hover:bg-muted/60 transition-colors"
-                href="?{{ pagination_base_qs }}&page={{ page_obj.previous_page_number }}"
-                hx-get="{% url 'assessor:teacher_home' %}?{{ pagination_base_qs }}&page={{ page_obj.previous_page_number }}"
+                href="?{% if base_qs %}{{ base_qs }}&{% endif %}page={{ page_obj.previous_page_number }}"
+                hx-get="{% url 'assessor:teacher_home' %}?{% if base_qs %}{{ base_qs }}&{% endif %}page={{ page_obj.previous_page_number }}"
                 hx-target="#teacher-assessments"
                 hx-swap="outerHTML"
                 hx-replace-url="true"
@@ -153,8 +154,8 @@
                 {% else %}
                   <a
                     class="inline-flex items-center rounded-md border px-2 py-1 hover:bg-muted/60 transition-colors"
-                    href="?{{ pagination_base_qs }}&page={{ p }}"
-                    hx-get="{% url 'assessor:teacher_home' %}?{{ pagination_base_qs }}&page={{ p }}"
+                    href="?{% if base_qs %}{{ base_qs }}&{% endif %}page={{ p }}"
+                    hx-get="{% url 'assessor:teacher_home' %}?{% if base_qs %}{{ base_qs }}&{% endif %}page={{ p }}"
                     hx-target="#teacher-assessments"
                     hx-swap="outerHTML"
                     hx-replace-url="true"
@@ -173,8 +174,8 @@
             {% if page_obj.has_next %}
               <a
                 class="inline-flex items-center rounded-md border px-2 py-1 hover:bg-muted/60 transition-colors"
-                href="?{{ pagination_base_qs }}&page={{ page_obj.next_page_number }}"
-                hx-get="{% url 'assessor:teacher_home' %}?{{ pagination_base_qs }}&page={{ page_obj.next_page_number }}"
+                href="?{% if base_qs %}{{ base_qs }}&{% endif %}page={{ page_obj.next_page_number }}"
+                hx-get="{% url 'assessor:teacher_home' %}?{% if base_qs %}{{ base_qs }}&{% endif %}page={{ page_obj.next_page_number }}"
                 hx-target="#teacher-assessments"
                 hx-swap="outerHTML"
                 hx-replace-url="true"
