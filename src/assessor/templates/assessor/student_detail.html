@@ -1,0 +1,38 @@
+{# assessor/student_detail.html #}
+{% extends "core/base.html" %}
+{% load cotton icons %}
+
+{% block title %}Student detail{% endblock %}
+
+{% block content %}
+<div class="mx-auto max-w-3xl pt-2 space-y-6">
+
+  {% c card class="card-strong" %}
+    {% c card/header %}
+      <div class="flex items-center gap-3 text-2xl">
+        {% icon "assignment_ind" class_="h-7 w-7 text-foreground/80" %}
+        {% c card/title %}Student detail{% endc %}
+      </div>
+    {% endc %}
+
+    {% c card/content %}
+      <div class="space-y-2 text-sm">
+        <div>
+          <div class="text-xs uppercase text-muted-foreground">Name</div>
+          <div class="font-medium">{{ student_name }}</div>
+        </div>
+
+        <div>
+          <div class="text-xs uppercase text-muted-foreground">Email</div>
+          <div class="font-medium">{{ student_email }}</div>
+        </div>
+      </div>
+
+      <div class="mt-5 text-xs text-muted-foreground">
+        Placeholder page — we’ll add answers + LLM feedback next.
+      </div>
+    {% endc %}
+  {% endc %}
+
+</div>
+{% endblock %}

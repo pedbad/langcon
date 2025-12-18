@@ -17,7 +17,7 @@
             hx-get="{% url 'assessor:teacher_home' %}{{ toggle_phone_url }}"
             hx-target="#teacher-assessments"
             hx-swap="outerHTML"
-            hx-replace-url="true"
+            hx-push-url="true"
             class="inline-flex items-center gap-1.5 rounded-md border px-2 py-1 text-xs font-medium transition-colors
               {% if phone_only %}
                 border-emerald-500 bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-200
@@ -36,7 +36,7 @@
             hx-get="{% url 'assessor:teacher_home' %}{{ toggle_active_url }}"
             hx-target="#teacher-assessments"
             hx-swap="outerHTML"
-            hx-replace-url="true"
+            hx-push-url="true"
             class="inline-flex items-center gap-1.5 rounded-md border px-2 py-1 text-xs font-medium transition-colors
               {% if active_only %}
                 border-violet-500 bg-violet-50 text-violet-700 dark:bg-violet-900/30 dark:text-violet-200
@@ -59,15 +59,10 @@
 
     {% c card/content %}
 
-      {# Live search (swaps whole card so toggles/search never vanish) #}
+      {# Live search (input-driven HTMX, still submits full form including hidden fields) #}
       <form
         action="{% url 'assessor:teacher_home' %}"
         method="get"
-        hx-get="{% url 'assessor:teacher_home' %}"
-        hx-target="#teacher-assessments"
-        hx-swap="outerHTML"
-        hx-replace-url="true"
-        hx-trigger="keyup changed delay:300ms from:input[name='q']"
         class="mb-3"
       >
         <div class="relative w-full">
@@ -82,8 +77,15 @@
             value="{{ search_query }}"
             placeholder="Search by email, name, or USN…"
             autocomplete="off"
+
+            hx-get="{% url 'assessor:teacher_home' %}"
+            hx-target="#teacher-assessments"
+            hx-swap="outerHTML"
+            hx-push-url="true"
+            hx-trigger="keyup changed delay:300ms"
+
             class="h-9 w-full rounded-md border border-input bg-background pl-8 pr-9 text-sm shadow-sm placeholder:text-muted-foreground
-                   focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                  focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
           />
 
           {% if search_query %}
@@ -95,7 +97,7 @@
               hx-get="{% url 'assessor:teacher_home' %}?sort={{ active_sort }}&dir={{ active_dir }}&page=1{% if phone_only %}&phone=1{% endif %}{% if active_only %}&active=1{% endif %}"
               hx-target="#teacher-assessments"
               hx-swap="outerHTML"
-              hx-replace-url="true"
+              hx-push-url="true"
               hx-on:click="document.getElementById('assessments-search').value='';"
             >
               {% icon "close" class_="h-4 w-4" %}
@@ -134,7 +136,7 @@
                 hx-get="{% url 'assessor:teacher_home' %}?{% if base_qs %}{{ base_qs }}&{% endif %}page={{ page_obj.previous_page_number }}"
                 hx-target="#teacher-assessments"
                 hx-swap="outerHTML"
-                hx-replace-url="true"
+                hx-push-url="true"
               >
                 Prev
               </a>
@@ -158,7 +160,7 @@
                     hx-get="{% url 'assessor:teacher_home' %}?{% if base_qs %}{{ base_qs }}&{% endif %}page={{ p }}"
                     hx-target="#teacher-assessments"
                     hx-swap="outerHTML"
-                    hx-replace-url="true"
+                    hx-push-url="true"
                   >
                     {{ p }}
                   </a>
@@ -178,7 +180,7 @@
                 hx-get="{% url 'assessor:teacher_home' %}?{% if base_qs %}{{ base_qs }}&{% endif %}page={{ page_obj.next_page_number }}"
                 hx-target="#teacher-assessments"
                 hx-swap="outerHTML"
-                hx-replace-url="true"
+                hx-push-url="true"
               >
                 Next
               </a>

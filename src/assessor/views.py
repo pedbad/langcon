@@ -227,3 +227,20 @@ def dashboard(request):
     # ─────────────────────────────────────────────
     if request.headers.get("HX-Request", "").lower() == "true":
         return render(request, "assessor/partials/teacher_assessments_card.html", context)
+
+    return render(request, "assessor/dashboard.html", context)
+
+
+@login_required
+@role_required(["teacher", "admin"])
+def student_detail(request, assessment_id: int):
+    assessment = Assessment.objects.select_related("user", "evaluation").get(
+        id=assessment_id, user__role="student"
+    )
+
+    context = {
+        "assessment": assessment,
+        "student_name": assessment.user.get_full_name() or "—",
+        "student_email": assessment.user.email or "—",
+    }
+    return render(request, "assessor/student_detail.html", context)
