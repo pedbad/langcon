@@ -100,234 +100,273 @@
         {# ─────────────────────────────────────────
           Writing Q1
           ───────────────────────────────────────── #}
-        <div class="space-y-4">
-          <div>
-            <h3 class="text-sm font-semibold text-foreground">
-              Personal Statement
-            </h3>
-            <p class="mt-1 text-xs text-muted-foreground">
-              {{ assessment.writing_q1_prompt }}
-            </p>
+        <section class="space-y-4">
+          {# Header: icon + title in “writing” theme #}
+          <div class="flex items-center justify-between gap-4 border-b-8 border-writing pb-3">
+            <div class="flex items-center gap-3 text-2xl md:text-3xl text-writing">
+              {% icon "ink_pen" class_="h-8 w-8 text-writing" %}
+              <h3 class="font-semibold">Writing Task</h3>
+            </div>
           </div>
 
-          <div class="rounded-md border bg-muted/40 p-4">
+          {# Prompt styled like student view #}
+          <p class="assessment-prompt border-writing">
+            {{ assessment.writing_q1_prompt }}
+          </p>
+
+          {# Answer (read-only) #}
+          <div class="rounded-md border border-muted bg-muted/60 px-3 py-3">
             {% if assessment.writing_answer_final %}
-              <div class="prose prose-sm max-w-none dark:prose-invert">
+              <div class="prose prose-sm max-w-none dark:prose-invert [&_p:last-child]:mb-0">
                 {{ assessment.writing_answer_final|linebreaks }}
               </div>
+
+              {% if assessment.writing_submitted_at %}
+                <div class="mt-2 border-t border-border/60 pt-1 text-right text-[11px] text-muted-foreground">
+                  Submitted {{ assessment.writing_submitted_at|date:"d-m-y" }} · {{ assessment.writing_submitted_at|date:"H:i" }}
+                </div>
+              {% endif %}
+
             {% elif assessment.writing_answer_draft %}
-              <div class="prose prose-sm max-w-none dark:prose-invert">
+              <div class="prose prose-sm max-w-none dark:prose-invert [&_p:last-child]:mb-0">
                 {{ assessment.writing_answer_draft|linebreaks }}
               </div>
-              <p class="mt-2 text-[11px] italic text-muted-foreground">
-                Draft (final answer not submitted)
-              </p>
-            {% else %}
-              <p class="text-xs italic text-muted-foreground">
-                No answer submitted yet.
-              </p>
-            {% endif %}
 
-            {% if assessment.writing_submitted_at %}
-              <p class="mt-2 text-[11px] text-muted-foreground">
-                Writing submitted {{ assessment.writing_submitted_at|date:"d-m-y" }} · {{ assessment.writing_submitted_at|date:"H:i" }}
-              </p>
+              <div class="mt-2 border-t border-border/60 pt-1 text-right text-[11px] italic text-muted-foreground">
+                Draft (final answer not submitted)
+              </div>
+
+            {% else %}
+              <span class="text-xs italic text-muted-foreground">
+                No answer submitted yet.
+              </span>
             {% endif %}
           </div>
-        </div>
+        </section>
+
 
         {# ─────────────────────────────────────────
           LLM Follow-up Question 1 + Answer
           ───────────────────────────────────────── #}
-        <div class="space-y-4">
-          <div>
-            <h3 class="text-sm font-semibold text-foreground">
-              Follow-up Question 1
-            </h3>
-            <p class="mt-1 text-xs text-muted-foreground">
-              {% if assessment.llm_question_1 %}
-                {{ assessment.llm_question_1 }}
-              {% else %}
-                No follow-up question generated yet.
-              {% endif %}
-            </p>
+        <section class="space-y-4">
+          {# Header: icon + title in “writing” theme #}
+          <div class="flex items-center justify-between gap-4 border-b-8 border-writing pb-3">
+            <div class="flex items-center gap-3 text-2xl md:text-3xl text-writing">
+              {% icon "ink_pen" class_="h-8 w-8 text-writing" %}
+              <h3 class="font-semibold">Follow-up Question 1</h3>
+            </div>
           </div>
 
-          <div class="rounded-md border bg-muted/40 p-4">
+          {# Prompt styled like student view #}
+          {% if assessment.llm_question_1 %}
+            <p class="assessment-prompt border-writing">
+              {{ assessment.llm_question_1 }}
+            </p>
+          {% else %}
+            <p class="text-xs italic text-muted-foreground">
+              No follow-up question generated yet.
+            </p>
+          {% endif %}
+
+          {# Answer (read-only) #}
+          <div class="rounded-md border border-muted bg-muted/60 px-3 py-3">
             {% if assessment.llm_question_1_answer_final %}
-              <div class="prose prose-sm max-w-none dark:prose-invert">
+              <div class="prose prose-sm max-w-none dark:prose-invert [&_p:last-child]:mb-0">
                 {{ assessment.llm_question_1_answer_final|linebreaks }}
               </div>
+
+              {% if assessment.llm_question_1_answer_submitted_at %}
+                <div class="mt-2 border-t border-border/60 pt-1 text-right text-[11px] text-muted-foreground">
+                  Submitted {{ assessment.llm_question_1_answer_submitted_at|date:"d-m-y" }} ·
+                  {{ assessment.llm_question_1_answer_submitted_at|date:"H:i" }}
+                </div>
+              {% endif %}
+
             {% elif assessment.llm_question_1_answer_draft %}
-              <div class="prose prose-sm max-w-none dark:prose-invert">
+              <div class="prose prose-sm max-w-none dark:prose-invert [&_p:last-child]:mb-0">
                 {{ assessment.llm_question_1_answer_draft|linebreaks }}
               </div>
-              <p class="mt-2 text-[11px] italic text-muted-foreground">
-                Draft (final answer not submitted)
-              </p>
-            {% else %}
-              <p class="text-xs italic text-muted-foreground">
-                No answer submitted yet.
-              </p>
-            {% endif %}
 
-            {% if assessment.llm_question_1_answer_submitted_at %}
-              <p class="mt-2 text-[11px] text-muted-foreground">
-                Submitted {{ assessment.llm_question_1_answer_submitted_at|date:"d-m-y" }} · {{ assessment.llm_question_1_answer_submitted_at|date:"H:i" }}
-              </p>
+              <div class="mt-2 border-t border-border/60 pt-1 text-right text-[11px] italic text-muted-foreground">
+                Draft (final answer not submitted)
+              </div>
+
+            {% else %}
+              <span class="text-xs italic text-muted-foreground">
+                No answer submitted yet.
+              </span>
             {% endif %}
           </div>
-        </div>
+        </section>
 
         {# ─────────────────────────────────────────
           LLM Follow-up Question 2 + Answer
           ───────────────────────────────────────── #}
-        <div class="space-y-4">
-          <div>
-            <h3 class="text-sm font-semibold text-foreground">
-              Follow-up Question 2
-            </h3>
-            <p class="mt-1 text-xs text-muted-foreground">
-              {% if assessment.llm_question_2 %}
-                {{ assessment.llm_question_2 }}
-              {% else %}
-                No follow-up question generated yet.
-              {% endif %}
-            </p>
+
+        <section class="space-y-4">
+          {# Header: icon + title in “writing” theme #}
+          <div class="flex items-center justify-between gap-4 border-b-8 border-writing pb-3">
+            <div class="flex items-center gap-3 text-2xl md:text-3xl text-writing">
+              {% icon "ink_pen" class_="h-8 w-8 text-writing" %}
+              <h3 class="font-semibold">Follow-up Question 2</h3>
+            </div>
           </div>
 
-          <div class="rounded-md border bg-muted/40 p-4">
+          {# Prompt styled like student view #}
+          {% if assessment.llm_question_2 %}
+            <p class="assessment-prompt border-writing">
+              {{ assessment.llm_question_2 }}
+            </p>
+          {% else %}
+            <p class="text-xs italic text-muted-foreground">
+              No follow-up question generated yet.
+            </p>
+          {% endif %}
+
+          {# Answer (read-only) #}
+          <div class="rounded-md border border-muted bg-muted/60 px-3 py-3">
             {% if assessment.llm_question_2_answer_final %}
-              <div class="prose prose-sm max-w-none dark:prose-invert">
+              <div class="prose prose-sm max-w-none dark:prose-invert [&_p:last-child]:mb-0">
                 {{ assessment.llm_question_2_answer_final|linebreaks }}
               </div>
 
+              {% if assessment.llm_question_2_answer_submitted_at %}
+                <div class="mt-2 border-t border-border/60 pt-1 text-right text-[11px] text-muted-foreground">
+                  Submitted {{ assessment.llm_question_2_answer_submitted_at|date:"d-m-y" }} ·
+                  {{ assessment.llm_question_2_answer_submitted_at|date:"H:i" }}
+                </div>
+              {% endif %}
+
             {% elif assessment.llm_question_2_answer_draft %}
-              <div class="prose prose-sm max-w-none dark:prose-invert">
+              <div class="prose prose-sm max-w-none dark:prose-invert [&_p:last-child]:mb-0">
                 {{ assessment.llm_question_2_answer_draft|linebreaks }}
               </div>
-              <p class="mt-2 text-[11px] italic text-muted-foreground">
+
+              <div class="mt-2 border-t border-border/60 pt-1 text-right text-[11px] italic text-muted-foreground">
                 Draft (final answer not submitted)
-              </p>
+              </div>
 
             {% else %}
-              <p class="text-xs italic text-muted-foreground">
+              <span class="text-xs italic text-muted-foreground">
                 No answer submitted yet.
-              </p>
-            {% endif %}
-
-            {% if assessment.llm_question_2_answer_submitted_at %}
-              <p class="mt-2 text-[11px] text-muted-foreground">
-                Submitted {{ assessment.llm_question_2_answer_submitted_at|date:"d-m-y" }}
-                · {{ assessment.llm_question_2_answer_submitted_at|date:"H:i" }}
-              </p>
+              </span>
             {% endif %}
           </div>
-        </div>
+        </section>
+
+
 
         {# ─────────────────────────────────────────
           Listening Comprehension
           ───────────────────────────────────────── #}
-        <div class="space-y-4 pt-6 border-t">
-
-          {# Section heading + subject area #}
-          <div>
-            <h3 class="text-sm font-semibold text-foreground">
-              Listening Comprehension
-            </h3>
-
-            <p class="mt-0.5 text-[11px] text-muted-foreground">
-              Subject area: <span class="font-medium text-foreground">{{ subject_label }}</span>
-            </p>
-
-            <p class="mt-2 text-xs text-muted-foreground">
-              {{ assessment.listening_q1_prompt }}
-            </p>
+        <section class="space-y-4 pt-6 border-t">
+          {# Header: icon + title in “listening” theme #}
+          <div class="flex items-center justify-between gap-4 border-b-8 border-listening pb-3">
+            <div class="flex items-center gap-3 text-2xl md:text-3xl text-listening">
+              {% icon "headphones" class_="h-8 w-8 text-listening" %}
+              <h3 class="font-semibold">Listening Comprehension</h3>
+            </div>
           </div>
 
+          {# Subject area + prompt #}
+          <p class="text-[11px] text-muted-foreground">
+            Subject area: <span class="font-medium text-foreground">{{ subject_label }}</span>
+          </p>
+
+          <p class="assessment-prompt border-listening">
+            {{ assessment.listening_q1_prompt }}
+          </p>
+
           {# Audio (read-only) #}
-          <div class="rounded-md border bg-muted/30 p-3">
+          <div class="rounded-md border border-muted bg-muted/30 p-3">
             <audio controls class="w-full">
               <source src="{% static listening_audio_path %}" type="audio/mpeg" />
               Your browser does not support the audio element.
             </audio>
 
-            <p class="mt-2 text-[11px] text-muted-foreground">
+            <div class="mt-2 border-t border-border/60 pt-1 text-right text-[11px] text-muted-foreground">
               File: {{ listening_audio_path }}
-            </p>
+            </div>
           </div>
 
           {# Student answer (read-only) #}
-          <div class="rounded-md border bg-muted/40 p-4">
+          <div class="rounded-md border border-muted bg-muted/60 px-3 py-3">
             {% if assessment.listening_answer_final %}
-              <div class="prose prose-sm max-w-none dark:prose-invert">
+              <div class="prose prose-sm max-w-none dark:prose-invert [&_p:last-child]:mb-0">
                 {{ assessment.listening_answer_final|linebreaks }}
               </div>
 
               {% if assessment.listening_answer_submitted_at %}
-                <p class="mt-3 text-[11px] text-muted-foreground">
+                <div class="mt-2 border-t border-border/60 pt-1 text-right text-[11px] text-muted-foreground">
                   Submitted {{ assessment.listening_answer_submitted_at|date:"d-m-y" }} ·
                   {{ assessment.listening_answer_submitted_at|date:"H:i" }}
-                </p>
+                </div>
               {% endif %}
             {% else %}
-              <p class="text-xs italic text-muted-foreground">
+              <span class="text-xs italic text-muted-foreground">
                 No listening answer submitted yet.
-              </p>
+              </span>
             {% endif %}
           </div>
+        </section>
 
-        </div>
 
         {# ─────────────────────────────────────────
           Reading Comprehension
           (Topic + student answer)
           ───────────────────────────────────────── #}
 
-        <div class="space-y-4 pt-6 border-t">
-
-          <div>
-            <h3 class="text-sm font-semibold text-foreground">
-              Reading Comprehension
-            </h3>
-
-            {% if assessment.reading_debate %}
-              <p class="mt-2 text-xs text-muted-foreground">
-                Topic {{ assessment.reading_debate.topic_number }} · {{ assessment.reading_debate.question }}
-              </p>
-            {% else %}
-              <p class="mt-2 text-xs italic text-muted-foreground">
-                No reading debate topic assigned yet.
-              </p>
-            {% endif %}
+        <section class="space-y-4 pt-6 border-t">
+          {# Header: icon + title in “reading” theme #}
+          <div class="flex items-center justify-between gap-4 border-b-8 border-reading pb-3">
+            <div class="flex items-center gap-3 text-2xl md:text-3xl text-reading">
+              {% icon "book_open" class_="h-8 w-8 text-reading" %}
+              <h3 class="font-semibold">Reading Comprehension</h3>
+            </div>
           </div>
+
+          {# Topic prompt (styled like student reading prompt) #}
+          {% if assessment.reading_debate %}
+            <p class="assessment-prompt border-reading">
+              Topic {{ assessment.reading_debate.topic_number }} · {{ assessment.reading_debate.question }}
+            </p>
+          {% else %}
+            <p class="text-xs italic text-muted-foreground">
+              No reading debate topic assigned yet.
+            </p>
+          {% endif %}
 
           {# Student answer #}
-          <div class="rounded-md border bg-muted/40 p-4">
+          <div class="rounded-md border border-muted bg-muted/60 px-3 py-3">
             {% if assessment.reading_answer_final %}
-              <div class="prose prose-sm max-w-none dark:prose-invert">
+              <div class="prose prose-sm max-w-none dark:prose-invert [&_p:last-child]:mb-0">
                 {{ assessment.reading_answer_final|linebreaks }}
               </div>
+
               {% if assessment.reading_answer_submitted_at %}
-                <p class="mt-3 text-[11px] text-muted-foreground">
-                  Submitted {{ assessment.reading_answer_submitted_at|date:"d-m-y" }} · {{ assessment.reading_answer_submitted_at|date:"H:i" }}
-                </p>
+                <div class="mt-2 border-t border-border/60 pt-1 text-right text-[11px] text-muted-foreground">
+                  Submitted {{ assessment.reading_answer_submitted_at|date:"d-m-y" }} ·
+                  {{ assessment.reading_answer_submitted_at|date:"H:i" }}
+                </div>
               {% endif %}
+
             {% elif assessment.reading_answer_draft %}
-              <div class="prose prose-sm max-w-none dark:prose-invert">
+              <div class="prose prose-sm max-w-none dark:prose-invert [&_p:last-child]:mb-0">
                 {{ assessment.reading_answer_draft|linebreaks }}
               </div>
-              <p class="mt-3 text-[11px] text-muted-foreground italic">
+
+              <div class="mt-2 border-t border-border/60 pt-1 text-right text-[11px] italic text-muted-foreground">
                 Draft (not submitted)
-              </p>
+              </div>
+
             {% else %}
-              <p class="text-xs italic text-muted-foreground">
+              <span class="text-xs italic text-muted-foreground">
                 No reading answer submitted yet.
-              </p>
+              </span>
             {% endif %}
           </div>
+        </section>
 
-        </div>
 
       </div>
     {% endc %}

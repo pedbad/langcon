@@ -24,26 +24,30 @@
       {# DESKTOP NAV (≥ sm) #}
       <div class="hidden sm:flex items-center gap-6 ml-6">
 
-        {# Public: Home #}
-        <a
-          href="{% url 'core:landing' %}"
-          class="nav-link focus-ring rounded-md px-2 py-1.5 {% active_url 'core:landing' %}"
-          {% aria_current 'core:landing' %}
-        >
-          {% icon 'home' class_='h-5 w-5 align-middle shrink-0' %}
-          <span>Home</span>
-        </a>
+        {# Public-only links (logged out) #}
+        {% if not request.user.is_authenticated %}
+          {# Home #}
+          <a
+            href="{% url 'core:landing' %}"
+            class="nav-link focus-ring rounded-md px-2 py-1.5 {% active_url 'core:landing' %}"
+            {% aria_current 'core:landing' %}
+          >
+            {% icon 'home' class_='h-5 w-5 align-middle shrink-0' %}
+            <span>Home</span>
+          </a>
 
-        {# Public: About (treat /about/* as active) #}
-        <a
-          href="{% url 'core:about' %}"
-          class="nav-link focus-ring rounded-md px-2 py-1.5 {% active_url 'core:about' startswith='/about/' %}"
-          {% aria_current 'core:about' startswith='/about/' %}
-        >
-          {% icon 'info' class_='h-5 w-5 align-middle shrink-0' %}
-          <span>About</span>
-        </a>
+          {# About (treat /about/* as active) #}
+          <a
+            href="{% url 'core:about' %}"
+            class="nav-link focus-ring rounded-md px-2 py-1.5 {% active_url 'core:about' startswith='/about/' %}"
+            {% aria_current 'core:about' startswith='/about/' %}
+          >
+            {% icon 'info' class_='h-5 w-5 align-middle shrink-0' %}
+            <span>About</span>
+          </a>
+        {% endif %}
 
+        {# Authenticated links (role-aware) #}
         {% if request.user.is_authenticated %}
 
           {# Dashboard (multi-role) #}
@@ -63,7 +67,7 @@
             <span>Dashboard</span>
           </a>
 
-          {# Staff-only: Admin #}
+          {# Staff-only: Django Admin #}
           {% if request.user.is_staff %}
             <a
               href="/admin/"
@@ -75,7 +79,7 @@
             </a>
           {% endif %}
 
-          {# Admin-only: Register #}
+          {# Admin-role only: Register #}
           {% if request.user|is_admin %}
             <a
               href="{% url 'users:register' %}"
@@ -87,14 +91,10 @@
             </a>
           {% endif %}
 
-          {# ───────────────────────────────────────────────────────
-             STUDENT DESKTOP LINKS
-             NOTE: No boolean expressions in {% with %}. We fetch the
-             profile, then use a regular {% if %} to compute classes.
-             ─────────────────────────────────────────────────────── #}
+          {# Student-only desktop links #}
           {% if request.user|is_student %}
 
-            {# Profile link #}
+            {# Profile #}
             <a
               href="{% url 'profiles:profile' %}"
               class="nav-link focus-ring rounded-md px-2 py-1.5 {% active_url 'profiles:profile' startswith='/users/profile' %}"
@@ -104,7 +104,7 @@
               <span>Profile</span>
             </a>
 
-            {# Assessment link (always visible → gate; dim if incomplete) #}
+            {# Assessment (always visible; dim + tooltip if profile incomplete) #}
             {% with profile_obj=request.user.profile %}
               {% if profile_obj and profile_obj.is_complete %}
                 {% with assess_dim_class="" assess_title="" %}
@@ -133,14 +133,9 @@
               {% endif %}
             {% endwith %}
 
-          {% elif request.user|is_teacher %}
-            {# TEACHER DESKTOP LINKS #}
-            <a href="#" class="nav-link focus-ring rounded-md px-2 py-1.5">
-              <span>Availability</span>
-            </a>
-          {% endif %}
+          {% endif %} {# end student desktop links #}
 
-        {% endif %}
+        {% endif %} {# end authenticated desktop nav #}
       </div>
     </div>
 
@@ -149,20 +144,8 @@
        ───────────────────────────────────────────────────────────── #}
     <div class="hidden sm:flex items-center gap-2 ml-auto">
       {% if request.user.is_authenticated %}
-        {% if request.user|is_teacher %}
-          {% url 'users:teacher_home' as profile_href %}
-        {% elif request.user|is_admin %}
-          {% url 'users:admin_home' as profile_href %}
-        {% else %}
-          {% url 'users:student_home' as profile_href %}
-        {% endif %}
-        <a
-          href="{{ profile_href }}"
-          class="focus-ring inline-flex items-center gap-2 text-sm hover:text-foreground/80 px-2 py-1.5 rounded-md"
-        >
-          {% icon 'verified_user' class_='h-5 w-5 align-middle shrink-0' %}
-          <span>{{ request.user.get_short_name|default:request.user.email }}</span>
-        </a>
+
+        {# Removed redundant username link (it pointed to Dashboard anyway) #}
 
         <form method="post" action="{% url 'users:logout' %}">
           {% csrf_token %}
@@ -222,33 +205,35 @@
     :aria-hidden="(!open).toString()"
   >
 
-    {# Home #}
-    <a
-      href="{% url 'core:landing' %}"
-      class="nav-link focus-ring flex w-full rounded-md px-3 py-2 hover:bg-accent hover:text-accent-foreground {% active_url 'core:landing' %}"
-      {% aria_current 'core:landing' %}
-      @click="open = false"
-      role="menuitem"
-    >
-      {% icon 'home' class_='h-5 w-5 align-middle shrink-0' %}
-      <span>Home</span>
-    </a>
+    {# Public-only links (logged out) #}
+    {% if not request.user.is_authenticated %}
+      <a
+        href="{% url 'core:landing' %}"
+        class="nav-link focus-ring flex w-full rounded-md px-3 py-2 hover:bg-accent hover:text-accent-foreground {% active_url 'core:landing' %}"
+        {% aria_current 'core:landing' %}
+        @click="open = false"
+        role="menuitem"
+      >
+        {% icon 'home' class_='h-5 w-5 align-middle shrink-0' %}
+        <span>Home</span>
+      </a>
 
-    {# About (treat /about/* as active) #}
-    <a
-      href="{% url 'core:about' %}"
-      class="nav-link focus-ring flex w-full rounded-md px-3 py-2 hover:bg-accent hover:text-accent-foreground {% active_url 'core:about' startswith='/about/' %}"
-      {% aria_current 'core:about' startswith='/about/' %}
-      @click="open = false"
-      role="menuitem"
-    >
-      {% icon 'info' class_='h-5 w-5 align-middle shrink-0' %}
-      <span>About</span>
-    </a>
+      <a
+        href="{% url 'core:about' %}"
+        class="nav-link focus-ring flex w-full rounded-md px-3 py-2 hover:bg-accent hover:text-accent-foreground {% active_url 'core:about' startswith='/about/' %}"
+        {% aria_current 'core:about' startswith='/about/' %}
+        @click="open = false"
+        role="menuitem"
+      >
+        {% icon 'info' class_='h-5 w-5 align-middle shrink-0' %}
+        <span>About</span>
+      </a>
+    {% endif %}
 
+    {# Authenticated links (role-aware) #}
     {% if request.user.is_authenticated %}
 
-      {# Dashboard (role-aware href) #}
+      {# Dashboard (multi-role) #}
       {% aria_current 'users:student_home' 'users:teacher_home' 'users:admin_home' as current_attr %}
       <a
         {% if request.user|is_teacher %}
@@ -295,9 +280,7 @@
         </a>
       {% endif %}
 
-      {# ───────────────────────────────────────────────────────
-         STUDENT MOBILE LINKS (gate + dim if incomplete)
-         ─────────────────────────────────────────────────────── #}
+      {# Student-only mobile links #}
       {% if request.user|is_student %}
         <a
           href="{% url 'profiles:profile' %}"
@@ -340,22 +323,14 @@
             {% endwith %}
           {% endif %}
         {% endwith %}
+      {% endif %} {# end student mobile links #}
 
-      {% elif request.user|is_teacher %}
-        <a
-          href="#"
-          class="nav-link focus-ring flex w-full rounded-md px-3 py-2 hover:bg-accent hover:text-accent-foreground"
-          @click="open = false"
-          role="menuitem"
-        >
-          <span>Availability</span>
-        </a>
-      {% endif %}
-
+      {# Theme toggle for logged-in users #}
       <div class="py-1">
         {% include "core/partials/theme_toggle.html" with variant="mobile" %}
       </div>
 
+      {# Logout #}
       <form method="post" action="{% url 'users:logout' %}" class="mt-1 px-3 py-2">
         {% csrf_token %}
         <button
@@ -370,10 +345,7 @@
 
     {% else %}
 
-      <div class="px-3 py-2">
-        {% include "core/partials/theme_toggle.html" with variant="mobile" %}
-      </div>
-
+      {# Logged out: Login first, Theme LAST #}
       <a
         href="{% url 'users:login' %}"
         class="focus-ring nav-link flex w-full rounded-md px-3 py-2 hover:bg-accent hover:text-accent-foreground {% active_url 'users:login' %}"
@@ -385,6 +357,11 @@
         <span>Login</span>
       </a>
 
+      <div class="mt-1 border-t border-border px-3 py-2">
+        {% include "core/partials/theme_toggle.html" with variant="mobile" %}
+      </div>
+
     {% endif %}
+
   </div>
 </nav>
