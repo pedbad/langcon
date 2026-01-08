@@ -1,7 +1,7 @@
 {# assessor/partials/assessment_table_row.html #}
 {% load cotton icons %}
 
-{% with ev=assessment.evaluation %}
+{% with ev=assessment.evaluation|default:None %}
   <tr class="border-b last:border-0">
     {# Student #}
     <td class="py-2 pr-4 align-top">
@@ -32,12 +32,13 @@
       {% endif %}
     </td>
 
+
     {# Status #}
     <td class="py-1.5 px-4 align-top">
       <div class="flex flex-col gap-1">
         <div>
-          {% if assessment.is_fully_complete %}
-            <a href="{% url 'assessor:student_detail' assessment_id=assessment.id %}" class="inline-flex">
+          <a href="{% url 'assessor:student_detail' assessment_id=assessment.id %}" class="inline-flex">
+            {% if assessment.is_fully_complete %}
               {% c badge
                 variant="outline"
                 class="border-emerald-500 bg-emerald-50 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-100 text-[11px] font-medium px-2 py-0.5"
@@ -45,24 +46,24 @@
                 {% icon 'check_circle' class_='mr-1 h-3.5 w-3.5 text-emerald-500' %}
                 Completed
               {% endc %}
-            </a>
-          {% elif assessment.steps_completed > 0 %}
-            {% c badge
-              variant="outline"
-              class="border-amber-500 bg-amber-50 text-amber-700 dark:bg-amber-900/40 dark:text-amber-100 text-[11px] font-medium px-2 py-0.5"
-            %}
-              {% icon 'data_check' class_='mr-1 h-3.5 w-3.5 text-amber-500' %}
-              {{ assessment.status_label }}
-            {% endc %}
-          {% else %}
-            {% c badge
-              variant="outline"
-              class="border-red-500 bg-red-50 text-red-700 dark:bg-red-900/40 dark:text-red-100 text-[11px] font-medium px-2 py-0.5"
-            %}
-              {% icon 'data_alert' class_='mr-1 h-3.5 w-3.5 text-red-500' %}
-              {{ assessment.status_label }}
-            {% endc %}
-          {% endif %}
+            {% elif assessment.steps_completed > 0 %}
+              {% c badge
+                variant="outline"
+                class="border-amber-500 bg-amber-50 text-amber-700 dark:bg-amber-900/40 dark:text-amber-100 text-[11px] font-medium px-2 py-0.5"
+              %}
+                {% icon 'data_check' class_='mr-1 h-3.5 w-3.5 text-amber-500' %}
+                {{ assessment.status_label }}
+              {% endc %}
+            {% else %}
+              {% c badge
+                variant="outline"
+                class="border-red-500 bg-red-50 text-red-700 dark:bg-red-900/40 dark:text-red-100 text-[11px] font-medium px-2 py-0.5"
+              %}
+                {% icon 'data_alert' class_='mr-1 h-3.5 w-3.5 text-red-500' %}
+                {{ assessment.status_label }}
+              {% endc %}
+            {% endif %}
+          </a>
         </div>
 
         {% if not assessment.is_fully_complete and assessment.steps_completed > 0 %}
@@ -83,6 +84,7 @@
         {% endif %}
       </div>
     </td>
+
 
     {# Submitted #}
     <td class="py-1.5 px-4 align-top text-xs text-muted-foreground whitespace-nowrap">

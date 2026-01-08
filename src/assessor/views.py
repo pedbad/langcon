@@ -1,12 +1,16 @@
 # src/assessor/views.py
+from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
 from django.db.models import Q
-from django.shortcuts import render
+from django.shortcuts import get_object_or_404, redirect, render
+from django.utils import timezone
 from django.utils.http import urlencode
 
 from assessments.models import Assessment
 from users.decorators import role_required
+
+from .forms import AssessmentEvaluationDecisionForm
 
 # ─────────────────────────────────────────────
 # Pagination constants (easy to tweak later)
@@ -233,14 +237,56 @@ def dashboard(request):
 
 @login_required
 @role_required(["teacher", "admin"])
-def student_detail(request, assessment_id: int):
-    assessment = Assessment.objects.select_related("user", "evaluation").get(
-        id=assessment_id, user__role="student"
+def student_detail(request, assessment_id):
+    assessment = get_object_or_404(
+        Assessment.objects.select_related("user", "evaluation"),
+        id=assessment_id,
+        user__role="student",
     )
+
+    ev = getattr(assessment, "evaluation", None)
+
+    # Duration label (safe)
+    label = ""
+    if ev and ev.completion_duration:
+        total_seconds = int(ev.completion_duration.total_seconds())
+        total_minutes = total_seconds // 60
+        hours = total_minutes // 60
+        minutes = total_minutes % 60
+        label = f"{hours}hrs {minutes:02d}mins"
+    assessment.evaluation_duration_label = label
+
+    # Strict rule: do not allow saving without a real evaluation
+    if request.method == "POST":
+        if ev is None:
+            messages.error(
+                request,
+                "This assessment has no evaluation yet. "
+                "You can only save recommendations/comments after submission.",
+            )
+            return redirect("assessor:student_detail", assessment_id=assessment.id)
+
+        form = AssessmentEvaluationDecisionForm(request.POST, instance=ev)
+        if form.is_valid():
+            saved = form.save(commit=False)
+
+            # Optional: keep email snapshot aligned (safe)
+            saved.student_email = assessment.user.email or saved.student_email
+
+            saved.assessor = request.user
+            saved.assessor_reviewed_at = timezone.now()
+
+            saved.save()
+            messages.success(request, "Assessor decision saved.")
+            return redirect("assessor:student_detail", assessment_id=assessment.id)
+    else:
+        form = AssessmentEvaluationDecisionForm(instance=ev) if ev else None
 
     context = {
         "assessment": assessment,
+        "ev": ev,
         "student_name": assessment.user.get_full_name() or "—",
         "student_email": assessment.user.email or "—",
+        "decision_form": form,  # None when no evaluation exists
     }
     return render(request, "assessor/student_detail.html", context)
