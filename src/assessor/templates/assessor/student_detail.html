@@ -372,11 +372,18 @@
 
     {% c card/content %}
       {% if ev and ev.llm_evaluation_text %}
-        <div class="rounded-md border border-sky-200 bg-sky-50/70 p-4">
-          <div class="prose prose-sm max-w-none dark:prose-invert">
+        <div
+          class="
+            rounded-md border border-sky-200 bg-sky-50/70 p-4
+            text-slate-900
+            dark:border-sky-800 dark:bg-slate-900/60 dark:text-slate-100
+          "
+        >
+          <div class="prose prose-sm max-w-none prose-slate dark:prose-slate">
             {{ ev.llm_evaluation_text|linebreaks }}
           </div>
         </div>
+
       {% elif ev and ev.llm_error %}
         <div class="rounded-md border border-amber-200 bg-amber-50/70 p-4">
           <p class="text-xs text-amber-900 dark:text-amber-100">
@@ -392,43 +399,60 @@
     {% endc %}
   {% endc %}
 
+
+  {# ─────────────────────────────────────────────
+   Assessor decision (separate card)
+   ───────────────────────────────────────────── #}
+
   {% if decision_form %}
-    <div class="pt-6">
-      <form method="post" class="space-y-0">
+    <div class="pt-4">
+      <form method="post">
         {% csrf_token %}
 
         {% c card class="card-strong" %}
           {% c card/header %}
             <div class="flex items-center justify-between gap-4">
-              <div class="flex items-center gap-3 text-2xl md:text-3xl">
-                {% icon "fact_check" class_="h-8 w-8 text-foreground/80" %}
+              <div class="flex items-center gap-3 text-xl md:text-2xl">
+                {% if ev and ev.exam_archived %}
+                  {% icon "lock_clock" class_="h-7 w-7 text-muted-foreground" %}
+                {% else %}
+                  {% icon "fact_check" class_="h-7 w-7 text-foreground/80" %}
+                {% endif %}
                 {% c card/title %}Assessor decision{% endc %}
               </div>
 
-              {# Save button in header (optional but nice) #}
-              {% c button type="submit" variant="default" class="h-9 px-4" %}
-                Save
-              {% endc %}
+              {% if ev and ev.exam_archived %}
+                {% c badge
+                  variant="outline"
+                  class="border-slate-300 bg-muted text-muted-foreground text-[11px] font-medium"
+                %}
+                  Archived · read-only
+                {% endc %}
+              {% endif %}
             </div>
           {% endc %}
 
           {% c card/content %}
-            <div class="space-y-4">
+            {% if ev and ev.exam_archived %}
+              <div class="rounded-md border border-border bg-muted/30 p-3 text-sm text-muted-foreground" role="status">
+                This evaluation has been archived and is now read-only.
+              </div>
+            {% endif %}
 
-              {# Non-field errors #}
-              {% if decision_form.non_field_errors %}
-                <div class="rounded-md border border-red-200 bg-red-50 p-3 text-xs text-red-700 dark:border-red-900/40 dark:bg-red-900/20 dark:text-red-200">
-                  {{ decision_form.non_field_errors }}
-                </div>
-              {% endif %}
+            {% if decision_form.non_field_errors %}
+              <div class="rounded-md border border-destructive/60 bg-destructive/10 p-3 text-sm text-destructive">
+                {% for e in decision_form.non_field_errors %}
+                  <p>{{ e }}</p>
+                {% endfor %}
+              </div>
+            {% endif %}
 
+            <fieldset {% if ev and ev.exam_archived %}disabled aria-disabled="true"{% endif %} class="space-y-4">
               <div class="space-y-1">
                 <label class="text-xs font-medium text-muted-foreground">Recommendation</label>
                 {{ decision_form.recommendation }}
                 {% if decision_form.recommendation.errors %}
-                  <p class="text-xs text-red-600 dark:text-red-300">
-                    {{ decision_form.recommendation.errors|striptags }}
-                  </p>
+                  <p class="mt-1 text-sm text-destructive">{{ decision_form.recommendation.errors.0 }}</p>
                 {% endif %}
               </div>
 
@@ -436,9 +460,7 @@
                 <label class="text-xs font-medium text-muted-foreground">Assessor comment (optional)</label>
                 {{ decision_form.assessor_comment }}
                 {% if decision_form.assessor_comment.errors %}
-                  <p class="text-xs text-red-600 dark:text-red-300">
-                    {{ decision_form.assessor_comment.errors|striptags }}
-                  </p>
+                  <p class="mt-1 text-sm text-destructive">{{ decision_form.assessor_comment.errors.0 }}</p>
                 {% endif %}
               </div>
 
@@ -453,20 +475,30 @@
                   {{ decision_form.exam_archived }} <span>Exam archived</span>
                 </label>
               </div>
-
-            </div>
+            </fieldset>
           {% endc %}
+
+          {% c card/footer %}
+            {% if not ev or not ev.exam_archived %}
+              <button
+                type="submit"
+                class="inline-flex w-full cursor-pointer items-center justify-center gap-2
+                      rounded-md border border-input bg-primary px-4 py-2 text-sm font-medium
+                      text-primary-foreground shadow-sm transition-all duration-150 ease-out
+                      hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-1
+                      focus-visible:ring-ring active:scale-[0.99]
+                      disabled:pointer-events-none disabled:opacity-50"
+              >
+                {% icon "save" class_="h-5 w-5" %}
+                <span>Save assessor decision</span>
+              </button>
+            {% endif %}
+          {% endc %}
+
         {% endc %}
       </form>
     </div>
-  {% else %}
-    <div class="pt-6">
-      <p class="text-xs italic text-muted-foreground">
-        This assessment has no evaluation yet — assessor decision is disabled.
-      </p>
-    </div>
   {% endif %}
-
 
 
 </div>

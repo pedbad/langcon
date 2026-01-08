@@ -30,4 +30,3 @@ class AssessmentEvaluationDecisionForm(forms.ModelForm):
         else:
             choices.insert(0, ("", "Select a recommendation"))
         self.fields["recommendation"].choices = choices
-
