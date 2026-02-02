@@ -193,8 +193,8 @@ def home(request):
                 messages.success(request, "Follow-up question 1 draft saved.")
                 return redirect("assessments:home")
 
-            # Submit path: enforce 250–300 words, then lock
-            MIN_W, MAX_W = 250, 300
+            # Submit path: enforce 200–250 words, then lock
+            MIN_W, MAX_W = 200, 250
             n_words = _count_words(q1_answer)
 
             if n_words < MIN_W or n_words > MAX_W:
@@ -301,8 +301,8 @@ def home(request):
                 messages.success(request, "Follow-up question 2 draft saved.")
                 return redirect("assessments:home")
 
-            # Submit path: enforce 250–300 words, then lock
-            MIN_W, MAX_W = 250, 300
+            # Submit path: enforce 100–150 words, then lock
+            MIN_W, MAX_W = 100, 150
             n_words = _count_words(q2_answer)
 
             if n_words < MIN_W or n_words > MAX_W:
@@ -409,8 +409,8 @@ def home(request):
                 messages.success(request, "Listening draft saved.")
                 return redirect("assessments:home")
 
-            # Submit path: enforce 250–300 words, then lock
-            MIN_W, MAX_W = 250, 300
+            # Submit path: enforce 250–350 words, then lock
+            MIN_W, MAX_W = 250, 350
             n_words = _count_words(listening_answer)
 
             if n_words < MIN_W or n_words > MAX_W:
@@ -689,7 +689,7 @@ def home(request):
 
             # Authoritative server-side word count
             n_words = _count_words(answer)
-            MIN_W, MAX_W = 250, 300
+            MIN_W, MAX_W = 300, 350
 
             if n_words < MIN_W or n_words > MAX_W:
                 # Keep draft (truncated to MAX_CHARS if needed); do not lock

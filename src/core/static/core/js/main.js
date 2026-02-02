@@ -75,9 +75,9 @@
 
     if (!writingTa || !wordChip) return;
 
-    const MIN = 250;
-    const MAX = 300;
-    const WARNING = 295;
+    const MIN = 300;
+    const MAX = 350;
+    const WARNING = 345;
 
     const showClientWarning = (show, text) => {
       if (!warnToast) return;
@@ -164,7 +164,7 @@
       if (n > MAX) {
         showClientWarning(
           true,
-          "Your answer exceeds 300 words. You can still save a draft, but you must reduce it to 300 words to submit."
+          `Your answer exceeds ${MAX} words. You can still save a draft, but you must reduce it to ${MAX} words to submit.`
         );
         setSubmitEnabled(false);
       } else {
@@ -309,9 +309,9 @@
       spinnerId: "q1-submit-status",
       warnToastId: "q1-client-word-warning",
       warnTextDataAttr: "[data-role='q1-word-warning-text']",
-      minWords: 250,
-      maxWords: 300,
-      warningThreshold: 295,
+      minWords: 200,
+      maxWords: 250,
+      warningThreshold: 245,
     });
   }
 
@@ -325,9 +325,9 @@
       spinnerId: "q2-submit-status",
       warnToastId: "q2-client-word-warning",
       warnTextDataAttr: "[data-role='q2-word-warning-text']",
-      minWords: 250,
-      maxWords: 300,
-      warningThreshold: 295,
+      minWords: 100,
+      maxWords: 150,
+      warningThreshold: 145,
     });
   }
 
@@ -344,8 +344,8 @@
       warnToastId: "listening-client-word-warning",     // client-side warning toast
       warnTextDataAttr: "[data-role='listening-word-warning-text']",
       minWords: 250,
-      maxWords: 300,
-      warningThreshold: 295,
+      maxWords: 350,
+      warningThreshold: 345,
     });
   }
 

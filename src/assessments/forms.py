@@ -8,7 +8,7 @@ class WritingAnswerForm(forms.Form):
         widget=forms.Textarea(
             attrs={
                 "rows": 10,
-                "placeholder": "Write your 250–300 word answer here…",
+                "placeholder": "Write your 300–350 word answer here…",
                 "maxlength": "3000",  # ≈500 words cap (client-side)
                 "class": "writing-answer-input",
             }
@@ -53,7 +53,7 @@ class ListeningAnswerForm(forms.Form):
         widget=forms.Textarea(
             attrs={
                 "rows": 8,
-                "placeholder": "Write your 250–300 word summary of the lecture here…",
+                "placeholder": "Write your 250–350 word summary of the lecture here…",
                 "maxlength": "3000",  # similar cap to other answers
                 "class": "writing-answer-input",
             }
@@ -79,6 +79,9 @@ class ReadingAnswerForm(forms.Form):
                 "rows": 10,
                 "maxlength": "3000",  # ≈ 500 words, consistent with other tasks
                 "class": "writing-answer-input",  # reuse the nice textarea styling
+                "placeholder": (
+                    "Summarise the two debate positions and state your view " "(250–300 words)…"
+                ),
             }
         ),
     )
