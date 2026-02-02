@@ -39,7 +39,7 @@
 
       {% c card/description %}
         <p class="leading-relaxed text-foreground/80 pb-1 border-b-2 border-b-blue-400 dark:border-b-blue-700/70">
-          Your responses will be assessed by the ADTIS Director at the University of Cambridge Language Centre, who may contact you by e-mail to arrange a telephone interview to assess your competency in spoken English.
+          Your responses will be assessed by the ADTIS Director at the University of Cambridge Language Centre, who may contact you by<br>e-mail to arrange a zoom interview to assess your spoken fluency.
         </p>
       {% endc %}
     {% endc %}
@@ -51,7 +51,7 @@
           <h2 class="flex items-center gap-2 text-lg font-semibold text-foreground">
             {% icon 'id_card' class_='size-5 opacity-70' %}
             <span>
-              {{ request.user.first_name|default:"First" }} {{ request.user.last_name|default:"Last" }}
+              {{ request.user.first_name|default:"First name" }} {{ request.user.last_name|default:"Last name" }}
             </span>
           </h2>
           <div class="flex items-center gap-2 text-sm text-muted-foreground">
@@ -62,7 +62,7 @@
       </div>
 
       <p class="mt-4 leading-relaxed text-foreground/80">
-        Please provide your details below should this be deemed necessary.
+        Please provide your details below.
       </p>
 
       {% with is_readonly=form_readonly|default:False %}
@@ -108,10 +108,10 @@
               Include country code if possible (e.g. +44 …).
             </p>
 
-            {# Unique Student Number (USN / CRSid) #}
+            {# University Student Number (USN / CRSid) #}
             <div class="mt-4">
               <label for="{{ form.student_number.id_for_label }}" class="mb-1 block text-sm font-medium text-foreground">
-                Unique Student Number (USN)
+                University Student Number (USN) or ADTIS identifier
               </label>
               <div class="flex rounded-md shadow-sm">
                 <span class="inline-flex h-10 items-center rounded-l-md border border-input border-r-0 bg-muted px-3 text-muted-foreground shrink-0">
@@ -123,7 +123,8 @@
                 <p class="mt-1 text-sm text-destructive">{{ form.student_number.errors.0 }}</p>
               {% endif %}
               <p id="{{ form.student_number.auto_id }}_helptext" class="mt-1 text-xs text-muted-foreground">
-                Enter your Unique Student Number (USN).
+                Enter your University Student Number (USN).<br>
+                (USN is a 9 digit number that usually starts with a 3.)
               </p>
             </div>
           </div>
