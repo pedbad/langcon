@@ -57,7 +57,14 @@ python src/manage.py seed_students data/students.csv \
   --send-welcome \
   --site-domain=assess.langcen.cam.ac.uk \
   --use-https \
-  --welcome-message "Welcome to The Adtin  Langusage Condition Assessment.Please complete your profile before starting."
+  --welcome-message "Welcome to LangCon! Please complete your profile before starting."
+
+# Send a custom welcome message from a file
+python src/manage.py seed_students data/students.csv \
+  --send-welcome \
+  --site-domain=assess.langcen.cam.ac.uk \
+  --use-https \
+  --welcome-message-file data/message.txt
 ```
 
 

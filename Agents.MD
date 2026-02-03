@@ -4,7 +4,7 @@ Source repo: https://github.com/pedbad/langcon (forked from https://github.com/p
 ## 1) Project structure and app organization
 - Django project root is `src/`; settings/entrypoints in `src/config` (settings, urls, wsgi/asgi).
 - Core reusable UI/utilities in `core` (landing/about views, context processors, template tags, shared templates/static).
-- Auth and roles in `users` (custom email-based user model, role redirects/decorators, auth views, admin, invite utilities, management commands `seed_students` and `send_set_password`; `seed_students` supports `--send-welcome` plus optional `--welcome-message` or `--welcome-message-file`).
+- Auth and roles in `users` (custom email-based user model, role redirects/decorators, auth views, admin, invite utilities, management commands `seed_students` and `send_set_password`; `seed_students` supports `--send-welcome` plus optional `--welcome-message` or `--welcome-message-file` (e.g., `data/message.txt`)).
 - Student profile lifecycle in `profiles` (Profile model/validation, forms, signals to auto-create profiles and assessments, student profile page).
 - Assessment workflow in `assessments` (Assessment/DebateTopic/AssessmentEvaluation models, forms, main assessment view logic, OpenAI LLM services, admin setup).
 - Assessor dashboard in `assessor` (teacher/admin-facing dashboards and detail view, decision form; depends on assessments).
