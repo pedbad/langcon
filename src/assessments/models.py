@@ -23,7 +23,7 @@ class Assessment(models.Model):
         default=(
             "Explain as if writing for an educated but non-expert audience the nature of your "
             "postgraduate research if applying for a PhD or the reasons for your choice of "
-            "taught postgraduate or (undergraduate) programme."
+            "taught postgraduate programme."
         ),
         editable=False,
     )
