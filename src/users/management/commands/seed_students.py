@@ -95,6 +95,16 @@ class Command(BaseCommand):
             default=None,
             help="Override From: address (defaults to settings.DEFAULT_FROM_EMAIL).",
         )
+        parser.add_argument(
+            "--welcome-message",
+            default=None,
+            help="Optional extra welcome message to include in the email body.",
+        )
+        parser.add_argument(
+            "--welcome-message-file",
+            default=None,
+            help="Path to a text file whose contents will be appended to the welcome email.",
+        )
 
     def handle(self, *args, **options):
         csv_path = Path(options["csv_path"])
@@ -105,12 +115,21 @@ class Command(BaseCommand):
         site_domain: str | None = options["site_domain"]
         use_https: bool = options["use_https"]
         from_email: str | None = options["from_email"]
+        welcome_message: str | None = options["welcome_message"]
+        welcome_message_file: str | None = options["welcome_message_file"]
 
         if not csv_path.exists():
             raise CommandError(f"CSV not found: {csv_path}")
 
         if send_welcome and not site_domain:
             raise CommandError("--site-domain is required when using --send-welcome")
+        if welcome_message and welcome_message_file:
+            raise CommandError("--welcome-message and --welcome-message-file are mutually exclusive")
+        if welcome_message_file:
+            message_path = Path(welcome_message_file)
+            if not message_path.exists():
+                raise CommandError(f"Welcome message file not found: {message_path}")
+            welcome_message = message_path.read_text(encoding="utf-8").strip()
 
         # --- Pass 1: validate headers ----------------------------------------
         try:
@@ -227,6 +246,7 @@ class Command(BaseCommand):
                                         site_domain=site_domain,
                                         use_https=use_https,
                                         from_email=from_email,
+                                        welcome_message=welcome_message,
                                         dry_run=False,
                                     )
                         else:
@@ -266,6 +286,7 @@ class Command(BaseCommand):
                                 site_domain=site_domain,
                                 use_https=use_https,
                                 from_email=from_email,
+                                welcome_message=welcome_message,
                                 dry_run=False,
                             )
 
@@ -288,6 +309,7 @@ class Command(BaseCommand):
         site_domain: str,
         use_https: bool,
         from_email: str | None,
+        welcome_message: str | None,
         dry_run: bool,
     ):
         """Send a welcome email with login info and a password reset link."""
@@ -313,6 +335,8 @@ class Command(BaseCommand):
             "",
             "If you weren’t expecting this, you can ignore this message.",
         ]
+        if welcome_message:
+            body_lines.extend(["", welcome_message])
         body = "\n".join(body_lines)
 
         if dry_run:
