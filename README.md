@@ -36,6 +36,13 @@ Example commands:
 # Dry run, no changes
 python src/manage.py seed_students data/students.csv --dry-run
 
+# Preview welcome emails (dry-run)
+python src/manage.py seed_students data/students.csv --dry-run \
+  --send-welcome \
+  --site-domain=assess.langcen.cam.ac.uk \
+  --use-https \
+  --welcome-message-file data/message.txt
+
 # Create users with a default password
 python src/manage.py seed_students data/students.csv --default-password=ChangeMe123!
 
@@ -44,6 +51,13 @@ python src/manage.py seed_students data/students.csv \
   --send-welcome \
   --site-domain=assess.langcen.cam.ac.uk \
   --use-https
+
+# Send welcome emails for real (with a file-based custom message)
+python src/manage.py seed_students data/students.csv \
+  --send-welcome \
+  --site-domain=assess.langcen.cam.ac.uk \
+  --use-https \
+  --welcome-message-file data/message.txt
 
 # Update existing users and email only when CSV includes a password
 python src/manage.py seed_students data/students.csv \

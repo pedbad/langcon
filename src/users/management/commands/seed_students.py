@@ -16,6 +16,12 @@
 #   python src/manage.py seed_students data/sample_students.csv --default-password=ChangeMe123!
 #   python src/manage.py seed_students data/update_alice.csv --update --send-welcome \
 #       --site-domain=127.0.0.1:8000
+#   # Preview welcome emails (dry-run)
+#   python src/manage.py seed_students data/students.csv --dry-run --send-welcome \
+#       --site-domain=assess.langcen.cam.ac.uk --use-https --welcome-message-file data/message.txt
+#   # Send welcome emails for real
+#   python src/manage.py seed_students data/students.csv --send-welcome \
+#       --site-domain=assess.langcen.cam.ac.uk --use-https --welcome-message-file data/message.txt
 #
 # Notes:
 # - Emails are lowercased and validated; invalid or blank emails are skipped with a warning.
@@ -322,18 +328,24 @@ class Command(BaseCommand):
         )
         reset_url = f"{scheme}://{site_domain}{reset_path}"
 
-        subject = "Welcome — your account details"
+        subject = "Welcome to the Language Condition Assessment - Action Required"
         body_lines = [
             "Hello,",
             "",
-            "Your account has been created.",
+            "Welcome to the Graduate Applications – Language Condition assessment platform.",
+            "Your account has been created with the following details:",
             f"Email: {email}",
             f"Temporary password: {plain_password or '(not set)'}",
             "",
-            "For security, please set a new password now:",
+            "For security reasons, please set a new password using the link below before logging in:",
             reset_url,
             "",
-            "If you weren’t expecting this, you can ignore this message.",
+            "Once your password is set, please complete your profile as soon as possible so we can "
+            "proceed with your assessment.",
+            "If you were not expecting this email, you can safely ignore it.",
+            "",
+            "Kind regards,",
+            "Language Centre Technical Team",
         ]
         if welcome_message:
             body_lines.extend(["", welcome_message])
