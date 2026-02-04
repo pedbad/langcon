@@ -48,6 +48,9 @@ SITE_DESCRIPTION = os.getenv(
     "LangCon — a clean, accessible Django 5 + Tailwind v4 starter.",
 )
 
+# If the app is mounted under a sub-path (e.g., /langcon), force it here
+FORCE_SCRIPT_NAME = "/langcon"
+
 
 # Application definition
 
