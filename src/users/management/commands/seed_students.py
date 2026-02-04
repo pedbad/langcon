@@ -130,7 +130,9 @@ class Command(BaseCommand):
         if send_welcome and not site_domain:
             raise CommandError("--site-domain is required when using --send-welcome")
         if welcome_message and welcome_message_file:
-            raise CommandError("--welcome-message and --welcome-message-file are mutually exclusive")
+            raise CommandError(
+                "--welcome-message and --welcome-message-file are mutually exclusive"
+            )
         if welcome_message_file:
             message_path = Path(welcome_message_file)
             if not message_path.exists():
@@ -337,7 +339,8 @@ class Command(BaseCommand):
             f"Email: {email}",
             f"Temporary password: {plain_password or '(not set)'}",
             "",
-            "For security reasons, please set a new password using the link below before logging in:",
+            "For security reasons, please set a new password using the link below "
+            "before logging in:",
             reset_url,
             "",
             "Once your password is set, please complete your profile as soon as possible so we can "
