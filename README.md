@@ -81,5 +81,19 @@ python src/manage.py seed_students data/students.csv \
   --welcome-message-file data/message.txt
 ```
 
+### Deployment helper scripts (server)
+
+On the deployment server, there are helper scripts under `~/scripts`:
+
+- `addusers-and-send-email.sh` — runs a real send using the configured CSV and message file.
+- `dryrun-addusers-and-send-email.sh.org` — runs a dry run (no database changes).
+
+Run them like this (as the `administrator` user):
+```bash
+cd ~/scripts
+bash addusers-and-send-email.sh
+bash dryrun-addusers-and-send-email.sh.org
+```
+
 
 ---
