@@ -20,6 +20,15 @@ Command:
 python src/manage.py seed_students /path/to/students.csv
 ```
 
+Required CSV columns:
+- `email`
+- `first_name`
+- `last_name`
+- `student_number` (USN / ADTIS identifier)
+
+Optional CSV column:
+- `password`
+
 Common options:
 - `--dry-run` to preview changes without writing.
 - `--update` to update existing users (password updates only when CSV provides `password`).
@@ -30,6 +39,7 @@ Common options:
 Notes:
 - `--welcome-message` and `--welcome-message-file` are mutually exclusive.
 - `--send-welcome` requires `--site-domain`.
+- `student_number` is validated and must be unique.
 
 Example commands:
 ```bash
@@ -80,6 +90,9 @@ python src/manage.py seed_students data/students.csv \
   --use-https \
   --welcome-message-file data/message.txt
 ```
+
+Detailed walkthrough for non-technical operators:
+- See [`SEED_STUDENTS_GUIDE.md`](SEED_STUDENTS_GUIDE.md)
 
 ### Deployment helper scripts (server)
 

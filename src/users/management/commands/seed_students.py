@@ -9,7 +9,7 @@
 #           email, the temp password (if any), and a password reset link
 #
 # CSV columns supported:
-#   email[,first_name,last_name,password]
+#   email,first_name,last_name,student_number[,password]
 #
 # Examples:
 #   python src/manage.py seed_students data/sample_students.csv --dry-run
@@ -40,13 +40,15 @@ from django.urls import reverse
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
 
+from profiles.models import Profile
+
 User = get_user_model()
 
 
 class Command(BaseCommand):
     help = (
         "Seed student users from a CSV.\n"
-        "Columns supported: email[,first_name,last_name,password]\n"
+        "Columns supported: email,first_name,last_name,student_number[,password]\n"
         "Extra CSV columns are ignored safely.\n\n"
         "Examples:\n"
         "  python src/manage.py seed_students students.csv --dry-run\n"
@@ -70,7 +72,10 @@ class Command(BaseCommand):
         parser.add_argument(
             "--update",
             action="store_true",
-            help="Update first/last name and password for existing users with the same email.",
+            help=(
+                "Update first/last name, student_number, and password for existing users "
+                "with the same email."
+            ),
         )
         parser.add_argument(
             "--dry-run",
@@ -149,6 +154,12 @@ class Command(BaseCommand):
 
         if "email" not in headers:
             raise CommandError("CSV must include an 'email' column.")
+        required_headers = {"first_name", "last_name", "student_number"}
+        missing = sorted(h for h in required_headers if h not in headers)
+        if missing:
+            raise CommandError(
+                "CSV must include required column(s): " + ", ".join(missing)
+            )
 
         # New safety check: warn if no password column
         if "password" not in headers:
@@ -172,7 +183,10 @@ class Command(BaseCommand):
         updated = 0
         skipped = 0
         invalid = 0
+        invalid_data = 0
         rows = 0
+        seen_student_numbers: dict[str, int] = {}
+        student_number_field = Profile._meta.get_field("student_number")
 
         # --- Pass 2: process rows --------------------------------------------
         with csv_path.open(newline="", encoding="utf-8") as f:
@@ -200,6 +214,53 @@ class Command(BaseCommand):
 
                 first_name = (row.get("first_name") or "").strip()
                 last_name = (row.get("last_name") or "").strip()
+                student_number = (row.get("student_number") or "").strip()
+
+                if not first_name:
+                    invalid_data += 1
+                    self.stdout.write(self.style.WARNING(f"[row {rows}] missing first_name → skip"))
+                    continue
+                if not last_name:
+                    invalid_data += 1
+                    self.stdout.write(self.style.WARNING(f"[row {rows}] missing last_name → skip"))
+                    continue
+                if not student_number:
+                    invalid_data += 1
+                    self.stdout.write(
+                        self.style.WARNING(
+                            f"[row {rows}] missing student_number (USN/ADTIS) → skip"
+                        )
+                    )
+                    continue
+
+                duplicate_row = seen_student_numbers.get(student_number)
+                if duplicate_row is not None:
+                    invalid_data += 1
+                    self.stdout.write(
+                        self.style.WARNING(
+                            f"[row {rows}] duplicate student_number '{student_number}' "
+                            f"(already used in row {duplicate_row}) → skip"
+                        )
+                    )
+                    continue
+
+                student_number_errors = []
+                for validator in student_number_field.validators:
+                    try:
+                        validator(student_number)
+                    except ValidationError as exc:
+                        student_number_errors.extend(exc.messages)
+                if student_number_errors:
+                    invalid_data += 1
+                    joined = "; ".join(student_number_errors)
+                    self.stdout.write(
+                        self.style.WARNING(
+                            f"[row {rows}] invalid student_number '{student_number}': "
+                            f"{joined} → skip"
+                        )
+                    )
+                    continue
+                seen_student_numbers[student_number] = rows
 
                 # CSV-provided password (may be empty)
                 csv_pwd = (row.get("password") or "").strip()
@@ -213,15 +274,45 @@ class Command(BaseCommand):
                     user = User.objects.get(email=email)
 
                     if update:
+                        if user.role != User.Roles.STUDENT:
+                            skipped += 1
+                            self.stdout.write(
+                                self.style.WARNING(
+                                    f"[row {rows}] exists but role is '{user.role}' "
+                                    "(not student) → skip"
+                                )
+                            )
+                            continue
+
+                        if Profile.objects.filter(student_number=student_number).exclude(
+                            user=user
+                        ).exists():
+                            invalid_data += 1
+                            self.stdout.write(
+                                self.style.WARNING(
+                                    f"[row {rows}] student_number '{student_number}' "
+                                    "already used by "
+                                    "another profile → skip"
+                                )
+                            )
+                            continue
+
+                        profile, _ = Profile.objects.get_or_create(
+                            user=user,
+                            defaults={"phone": ""},
+                        )
                         changed = False
                         pwd_changed = False
 
                         # names update if provided and different
-                        if first_name and user.first_name != first_name:
+                        if user.first_name != first_name:
                             user.first_name = first_name
                             changed = True
-                        if last_name and user.last_name != last_name:
+                        if user.last_name != last_name:
                             user.last_name = last_name
+                            changed = True
+                        if profile.student_number != student_number:
+                            profile.student_number = student_number
                             changed = True
 
                         # For UPDATES, only change password if CSV provides one
@@ -242,6 +333,7 @@ class Command(BaseCommand):
                                     )
                             else:
                                 user.save()
+                                profile.save(update_fields=["student_number", "updated_at"])
                                 updated += 1
                                 self.stdout.write(
                                     self.style.SUCCESS(f"[row {rows}] updated: {email}")
@@ -266,6 +358,16 @@ class Command(BaseCommand):
                         self.stdout.write(f"[row {rows}] exists → skip: {email}")
 
                 except User.DoesNotExist:
+                    if Profile.objects.filter(student_number=student_number).exists():
+                        invalid_data += 1
+                        self.stdout.write(
+                            self.style.WARNING(
+                                f"[row {rows}] student_number '{student_number}' "
+                                "already used → skip"
+                            )
+                        )
+                        continue
+
                     if dry_run:
                         created += 1
                         self.stdout.write(
@@ -282,6 +384,13 @@ class Command(BaseCommand):
                             last_name=last_name,
                             is_active=True,
                         )
+                        profile, _ = Profile.objects.get_or_create(
+                            user=user,
+                            defaults={"phone": "", "student_number": student_number},
+                        )
+                        if profile.student_number != student_number:
+                            profile.student_number = student_number
+                            profile.save(update_fields=["student_number", "updated_at"])
                         created += 1
                         self.stdout.write(
                             self.style.SUCCESS(f"[row {rows}] created: {email} (student)")
@@ -302,7 +411,8 @@ class Command(BaseCommand):
         self.stdout.write(
             self.style.NOTICE(
                 f"rows={rows} created={created} updated={updated} "
-                f"skipped={skipped} invalid_email={invalid} dry_run={dry_run}"
+                f"skipped={skipped} invalid_email={invalid} invalid_data={invalid_data} "
+                f"dry_run={dry_run}"
             )
         )
         self.stdout.write(self.style.SUCCESS("Done."))

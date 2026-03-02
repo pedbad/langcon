@@ -17,7 +17,10 @@ from pathlib import Path
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.core.management import call_command
+from django.core.management.base import CommandError
 import pytest
+
+from profiles.models import Profile
 
 User = get_user_model()
 
@@ -57,10 +60,6 @@ def test_seed_students_dry_run_uses_sample_csv_and_writes_nothing():
     assert User.objects.count() == 0
 
 
-def _project_data_csv(name: str) -> Path:
-    return Path(settings.BASE_DIR).parent / "data" / name
-
-
 @pytest.mark.django_db
 def test_seed_students_creates_users_with_default_password_from_sample_csv():
     """
@@ -72,12 +71,18 @@ def test_seed_students_creates_users_with_default_password_from_sample_csv():
     default_pwd = "ChangeMe123!"
 
     # Build expected emails directly from the CSV to avoid test drift
+    expected_rows: dict[str, dict[str, str]] = {}
     with csv_path.open(newline="", encoding="utf-8") as f:
-        expected_emails = {
-            (row.get("email") or "").strip().lower()
-            for row in csv.DictReader(f)
-            if (row.get("email") or "").strip()
-        }
+        for row in csv.DictReader(f):
+            email = (row.get("email") or "").strip().lower()
+            if not email:
+                continue
+            expected_rows[email] = {
+                "first_name": (row.get("first_name") or "").strip(),
+                "last_name": (row.get("last_name") or "").strip(),
+                "student_number": (row.get("student_number") or "").strip(),
+            }
+    expected_emails = set(expected_rows.keys())
 
     call_command("seed_students", str(csv_path), f"--default-password={default_pwd}")
 
@@ -88,6 +93,10 @@ def test_seed_students_creates_users_with_default_password_from_sample_csv():
         assert u.role == User.Roles.STUDENT
         assert u.is_active is True
         assert u.check_password(default_pwd)
+        expected = expected_rows[u.email]
+        assert u.first_name == expected["first_name"]
+        assert u.last_name == expected["last_name"]
+        assert Profile.objects.get(user=u).student_number == expected["student_number"]
 
 
 @pytest.mark.django_db
@@ -107,10 +116,11 @@ def test_seed_students_update_changes_names_and_password(tmp_path):
         is_active=True,
     )
     assert u.check_password("OldPass!1")
+    Profile.objects.create(user=u, phone="", student_number="300000001")
 
     # 2) Build a one-row CSV that updates first/last and sets a new password
     csv_path = tmp_path / "update.csv"
-    fieldnames = ["email", "first_name", "last_name", "password"]
+    fieldnames = ["email", "first_name", "last_name", "student_number", "password"]
     with csv_path.open("w", newline="", encoding="utf-8") as f:
         w = csv.DictWriter(f, fieldnames=fieldnames)
         w.writeheader()
@@ -119,6 +129,7 @@ def test_seed_students_update_changes_names_and_password(tmp_path):
                 "email": "update_me@example.com",
                 "first_name": "NewFirst",
                 "last_name": "NewLast",
+                "student_number": "300000999",
                 "password": "NewPass!2",
             }
         )
@@ -136,3 +147,23 @@ def test_seed_students_update_changes_names_and_password(tmp_path):
     assert u.first_name == "NewFirst"
     assert u.last_name == "NewLast"
     assert u.check_password("NewPass!2")
+    assert Profile.objects.get(user=u).student_number == "300000999"
+
+
+@pytest.mark.django_db
+def test_seed_students_requires_student_number_header(tmp_path):
+    csv_path = tmp_path / "missing_usn.csv"
+    fieldnames = ["email", "first_name", "last_name"]
+    with csv_path.open("w", newline="", encoding="utf-8") as f:
+        w = csv.DictWriter(f, fieldnames=fieldnames)
+        w.writeheader()
+        w.writerow(
+            {
+                "email": "no_usn@example.com",
+                "first_name": "No",
+                "last_name": "Usn",
+            }
+        )
+
+    with pytest.raises(CommandError, match="student_number"):
+        call_command("seed_students", str(csv_path), "--dry-run")

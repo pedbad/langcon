@@ -92,6 +92,8 @@ class RegisterView(AdminRequiredMixin, CreateView):
     def form_valid(self, form):
         user = form.save(commit=False)
         user.role = form.cleaned_data.get("role", User.Roles.STUDENT)
+        user.first_name = (form.cleaned_data.get("first_name") or "").strip()
+        user.last_name = (form.cleaned_data.get("last_name") or "").strip()
 
         # require first-time set password
         user.set_unusable_password()
@@ -109,6 +111,16 @@ class RegisterView(AdminRequiredMixin, CreateView):
 
             teacher_group, _ = Group.objects.get_or_create(name="Teacher Admin")
             user.groups.add(teacher_group)
+
+        if user.role == User.Roles.STUDENT:
+            profile, _ = Profile.objects.get_or_create(
+                user=user,
+                defaults={"phone": ""},
+            )
+            student_number = (form.cleaned_data.get("student_number") or "").strip()
+            if student_number:
+                profile.student_number = student_number
+                profile.save(update_fields=["student_number", "updated_at"])
 
         messages.success(
             self.request,

@@ -1,7 +1,7 @@
-email,first_name,last_name
-alice@example.com,Alice,Anderson
-bob@example.com,Bob,Barnes
-charlie@example.com,Charlie,Chaplin
-don@example.com,Donnie,Darko
-Ed@example.com,Eddie,Eagle
-Fred@example.com,Freddie,Frog
+email,first_name,last_name,student_number,password
+alice@example.com,Alice,Anderson,300000001,
+bob@example.com,Bob,Barnes,300000002,
+charlie@example.com,Charlie,Chaplin,300000003,
+don@example.com,Donnie,Darko,300000004,
+ed@example.com,Eddie,Eagle,300000005,
+fred@example.com,Freddie,Frog,300000006,

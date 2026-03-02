@@ -75,9 +75,12 @@
 
     {# Help region – always exists to satisfy aria-describedby #}
     {% if field.help_text %}
-      <p id="{{ help_id }}" class="text-xs text-foreground/70">{{ field.help_text|safe }}</p>
+      <div
+        id="{{ help_id }}"
+        class="text-[11px] leading-snug text-foreground/55 [&_ul]:mt-1 [&_ul]:space-y-0.5 [&_li]:text-[11px] [&_li]:leading-snug"
+      >{{ field.help_text|safe }}</div>
     {% else %}
-      <p id="{{ help_id }}" class="sr-only"></p>
+      <div id="{{ help_id }}" class="sr-only"></div>
     {% endif %}
 
     {# Error region – always exists to satisfy aria-describedby #}

@@ -48,8 +48,21 @@ SITE_DESCRIPTION = os.getenv(
     "LangCon — a clean, accessible Django 5 + Tailwind v4 starter.",
 )
 
-# If the app is mounted under a sub-path (e.g., /langcon), force it here
-FORCE_SCRIPT_NAME = "/langcon"
+# URL mount prefix for reverse-proxy deployments.
+#
+# Dev/local:
+# - Leave FORCE_SCRIPT_NAME unset (or set to empty).
+# - App runs at / and static URLs are /static/...
+#
+# Production (only if mounted under a sub-path, e.g. /langcon):
+# - Set FORCE_SCRIPT_NAME=/langcon in environment.
+# - Ensure the reverse proxy forwards /langcon/* to Django.
+# - Static URLs become /langcon/static/...
+#
+# Defaults:
+# - ENV=dev  -> ""
+# - ENV=prod -> "/langcon"
+FORCE_SCRIPT_NAME = os.getenv("FORCE_SCRIPT_NAME", "/langcon" if ENV == "prod" else "")
 
 
 # Application definition

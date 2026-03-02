@@ -7,7 +7,7 @@
   {% c card class="w-full max-w-md card-solid" %}
     {% c card/header %}
       {% c card/title %}Create an account{% endc %}
-      {% c card/description %}Enter your details to get started.{% endc %}
+      {% c card/description %}Enter user details.{% endc %}
     {% endc %}
 
     {% c card/content %}
@@ -16,14 +16,37 @@
         {% include "core/forms/non_field_errors.html" with form=form %}
 
         {% if form.email %}{% include "core/forms/field.html" with field=form.email autocomplete="email" placeholder="Email address" %}{% endif %}
+        {% if form.first_name %}{% include "core/forms/field.html" with field=form.first_name autocomplete="given-name" placeholder="First name" %}{% endif %}
+        {% if form.last_name %}{% include "core/forms/field.html" with field=form.last_name autocomplete="family-name" placeholder="Last name" %}{% endif %}
+        {% if form.role %}{% include "core/forms/field.html" with field=form.role %}{% endif %}
+        <div id="student-number-row">
+          {% if form.student_number %}{% include "core/forms/field.html" with field=form.student_number placeholder="3xxxxxxxx" %}{% endif %}
+        </div>
         {% if form.password1 %}{% include "core/forms/field.html" with field=form.password1 type="password" autocomplete="new-password" placeholder="Password" %}{% endif %}
         {% if form.password2 %}{% include "core/forms/field.html" with field=form.password2 type="password" autocomplete="new-password" placeholder="Confirm password" %}{% endif %}
-        {% if form.role %}{% include "core/forms/field.html" with field=form.role %}{% endif %}
 
         <div class="pt-2">
           <c-button variant="default" size="lg" class="w-full">Create account</c-button>
         </div>
       </form>
+      <script>
+        (function () {
+          var form = document.currentScript.closest("div").querySelector("form");
+          if (!form) return;
+
+          var roleInput = form.querySelector('[name="role"]');
+          var studentNumberRow = form.querySelector("#student-number-row");
+          if (!roleInput || !studentNumberRow) return;
+
+          function syncStudentNumberVisibility() {
+            var isStudent = (roleInput.value || "").toLowerCase() === "student";
+            studentNumberRow.style.display = isStudent ? "" : "none";
+          }
+
+          roleInput.addEventListener("change", syncStudentNumberVisibility);
+          syncStudentNumberVisibility();
+        })();
+      </script>
     {% endc %}
   {% endc %}
 </div>

@@ -4,6 +4,8 @@ from django.test import override_settings
 from django.urls import reverse
 import pytest
 
+from profiles.models import Profile
+
 User = get_user_model()
 
 
@@ -42,6 +44,9 @@ def test_staff_can_register_user_and_invite_is_sent(client, django_capture_on_co
     url = reverse("users:register")
     form_data = {
         "email": "newstudent@example.com",
+        "first_name": "New",
+        "last_name": "Student",
+        "student_number": "USN-1001",
         "password1": "pass1234ABC!",
         "password2": "pass1234ABC!",
         "role": "student",
@@ -57,7 +62,10 @@ def test_staff_can_register_user_and_invite_is_sent(client, django_capture_on_co
 
     # New user exists and has an unusable password (invite flow)
     new_user = User.objects.get(email="newstudent@example.com")
+    assert new_user.first_name == "New"
+    assert new_user.last_name == "Student"
     assert not new_user.has_usable_password()
+    assert Profile.objects.get(user=new_user).student_number == "USN-1001"
 
     # Exactly one invite email was sent by the signal
     assert len(callbacks) >= 1  # at least one callback was scheduled
@@ -66,3 +74,38 @@ def test_staff_can_register_user_and_invite_is_sent(client, django_capture_on_co
         mail.outbox[0].alternatives[0][0] if mail.outbox[0].alternatives else mail.outbox[0].body
     ).lower()
     assert "/users/reset/" in body
+
+
+@pytest.mark.django_db
+def test_register_rejects_duplicate_student_number(client):
+    admin = User.objects.create_user(
+        email="admin2@example.com",
+        password="adminpass",
+        is_active=True,
+        is_staff=True,
+        role="admin",
+    )
+    existing_user = User.objects.create_user(
+        email="existing@example.com",
+        password="pass1234ABC!",
+        role="student",
+    )
+    Profile.objects.create(user=existing_user, phone="", student_number="USN-2000")
+
+    client.force_login(admin)
+    resp = client.post(
+        reverse("users:register"),
+        data={
+            "email": "dupe@example.com",
+            "first_name": "Dupe",
+            "last_name": "User",
+            "student_number": "USN-2000",
+            "password1": "pass1234ABC!",
+            "password2": "pass1234ABC!",
+            "role": "student",
+        },
+    )
+
+    assert resp.status_code == 200
+    assert b"already in use" in resp.content
+    assert not User.objects.filter(email="dupe@example.com").exists()
