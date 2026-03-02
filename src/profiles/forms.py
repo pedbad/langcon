@@ -74,9 +74,13 @@ class ProfileForm(forms.ModelForm):
     # ─────────────────────────────
     student_number = forms.CharField(
         label="Unique Student Number",
-        required=True,
+        required=False,
+        disabled=True,
         max_length=20,
-        help_text="Your Unique Student Number (USN) or CRSid (up to 20 characters).",
+        help_text=(
+            "Assigned during registration by staff. "
+            "Contact support if this value is incorrect."
+        ),
         widget=forms.TextInput(
             attrs={
                 "id": "id_student_number",

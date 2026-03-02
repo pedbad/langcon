@@ -48,12 +48,25 @@
       {# Header strip: student name + email #}
       <div class="border-l-2 border-primary/60 pl-3">
         <div class="flex flex-col gap-1 sm:flex-row sm:items-baseline sm:justify-between">
-          <h2 class="flex items-center gap-2 text-lg font-semibold text-foreground">
-            {% icon 'id_card' class_='size-5 opacity-70' %}
-            <span>
-              {{ request.user.first_name|default:"First name" }} {{ request.user.last_name|default:"Last name" }}
-            </span>
-          </h2>
+          <div class="space-y-1">
+            <h2 class="flex flex-wrap items-center gap-2 text-lg font-semibold text-foreground">
+              {% icon 'id_card' class_='size-5 opacity-70' %}
+              <span>
+                {{ request.user.first_name|default:"First name" }} {{ request.user.last_name|default:"Last name" }}
+              </span>
+            </h2>
+            <div class="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+              <span>University Student Number (USN) or ADTIS identifier</span>
+              <span class="inline-flex items-center gap-1 rounded-full border border-blue-500 bg-blue-50 px-2 py-0.5 font-medium text-foreground dark:border-blue-400 dark:bg-blue-900/40 dark:text-foreground">
+                {% icon 'badge' class_='size-3.5 text-blue-600 dark:text-blue-300' label='Unique student identifier' %}
+                {% if profile.student_number %}
+                  <span class="font-mono">{{ profile.student_number }}</span>
+                {% else %}
+                  <span class="italic text-muted-foreground">Not set</span>
+                {% endif %}
+              </span>
+            </div>
+          </div>
           <div class="flex items-center gap-2 text-sm text-muted-foreground">
             {% icon 'alternate_email' class_='size-4 opacity-70' %}
             <span class="font-mono truncate max-w-[44ch]" title="{{ request.user.email }}">{{ request.user.email }}</span>
@@ -89,7 +102,7 @@
           Two-column: Phone (left) + Subject area (right)
         ───────────────────────────────────────────────────────────── #}
         <div class="grid gap-4 sm:grid-cols-2">
-          {# Phone + Unique Student Number (stacked in left column) #}
+          {# Phone (left column) #}
           <div>
             {# Phone #}
             <label for="{{ form.phone.id_for_label }}" class="mb-1 block text-sm font-medium text-foreground">
@@ -107,26 +120,6 @@
             <p id="{{ form.phone.auto_id }}_helptext" class="mt-1 text-xs text-muted-foreground">
               Include country code if possible (e.g. +44 …).
             </p>
-
-            {# University Student Number (USN / CRSid) #}
-            <div class="mt-4">
-              <label for="{{ form.student_number.id_for_label }}" class="mb-1 block text-sm font-medium text-foreground">
-                University Student Number (USN) or ADTIS identifier
-              </label>
-              <div class="flex rounded-md shadow-sm">
-                <span class="inline-flex h-10 items-center rounded-l-md border border-input border-r-0 bg-muted px-3 text-muted-foreground shrink-0">
-                  {% icon 'user_attributes' class_='size-6 opacity-80 -mt-[1px]' label='Unique student number' %}
-                </span>
-                {{ form.student_number }}
-              </div>
-              {% if form.student_number.errors %}
-                <p class="mt-1 text-sm text-destructive">{{ form.student_number.errors.0 }}</p>
-              {% endif %}
-              <p id="{{ form.student_number.auto_id }}_helptext" class="mt-1 text-xs text-muted-foreground">
-                Enter your University Student Number (USN).<br>
-                (USN is a 9 digit number that usually starts with a 3.)
-              </p>
-            </div>
           </div>
 
           {# Subject area (native <select> with explicit placeholder control) #}
