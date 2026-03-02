@@ -61,7 +61,10 @@ class Command(BaseCommand):
         parser.add_argument(
             "csv_path",
             type=str,
-            help="Path to CSV file. Must at least include the 'email' column.",
+            help=(
+                "Path to CSV file. Required columns: "
+                "email, first_name, last_name, student_number."
+            ),
         )
         parser.add_argument(
             "--default-password",

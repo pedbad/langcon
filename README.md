@@ -31,7 +31,7 @@ Optional CSV column:
 
 Common options:
 - `--dry-run` to preview changes without writing.
-- `--update` to update existing users (password updates only when CSV provides `password`).
+- `--update` to update existing student users (first name, last name, and `student_number`; password updates only when CSV provides `password`).
 - `--send-welcome --site-domain=assess.langcen.cam.ac.uk --use-https` to email login info and reset link.
 - `--welcome-message "..."` to append a custom message to the welcome email.
 - `--welcome-message-file /path/to/message.txt` to append a file-based message.

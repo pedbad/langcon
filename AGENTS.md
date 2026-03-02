@@ -4,14 +4,15 @@ Source repo: https://github.com/pedbad/langcon (forked from https://github.com/p
 ## 1) Project structure and app organization
 - Django project root is `src/`; settings/entrypoints in `src/config` (settings, urls, wsgi/asgi).
 - Core reusable UI/utilities in `core` (landing/about views, context processors, template tags, shared templates/static).
-- Auth and roles in `users` (custom email-based user model, role redirects/decorators, auth views, admin, invite utilities, management commands `seed_students` and `send_set_password`; `seed_students` supports `--send-welcome` plus optional `--welcome-message` or `--welcome-message-file` (e.g., `data/message.txt`)).
+- Auth and roles in `users` (custom email-based user model, role redirects/decorators, auth views, admin, invite utilities, management commands `seed_students` and `send_set_password`; `seed_students` supports `--send-welcome` plus optional `--welcome-message` or `--welcome-message-file` (e.g., `data/message.txt`); web registration is available to admin and teacher roles, with teachers restricted to creating student accounts).
 - Student profile lifecycle in `profiles` (Profile model/validation, forms, signals to auto-create profiles and assessments, student profile page).
 - Assessment workflow in `assessments` (Assessment/DebateTopic/AssessmentEvaluation models, forms, main assessment view logic, OpenAI LLM services, admin setup).
-- Assessor dashboard in `assessor` (teacher/admin-facing dashboards and detail view, decision form; depends on assessments).
+- Assessor dashboard in `assessor` (teacher/admin-facing dashboards and detail view, decision form; includes admin-only student registry view with year filtering/search/sort; depends on assessments).
 - Project-level templates also live under `templates/` (cotton components, shared layouts); app templates under each app’s `templates/`.
 
 ## 2) Coding patterns and conventions
 - Views are mostly function-based with decorators for auth (`login_required`), role gating (`users.decorators.role_required`), and profile completeness (`profiles.utils.require_complete_profile`); class-based views used for Django’s auth flows.
+- Register flow is class-based (`users.views.RegisterView`) and role-aware: admin/teacher can access; teacher submissions are forced to `student` role.
 - Strict progression in assessment view: action-based POST handler with explicit word-count validation and locking; HTMX-friendly responses for some actions.
 - Signals bootstrap related data: create Profile on student creation (feature-flagged), create Assessment when Profile becomes complete, teacher group bootstrap on migrations.
 - Admin uses Unfold styling and django-import-export; forms often customized with Unfold widgets for readability.
