@@ -10,5 +10,5 @@ class AdminRequiredMixin(LoginRequiredMixin, UserPassesTestMixin):
         user = self.request.user
         if getattr(user, "is_superuser", False):
             return True
-        # use your explicit role field for clarity
-        return getattr(user, "role", None) == "admin"
+        # Allow both admin and teacher roles to access registration tooling.
+        return getattr(user, "role", None) in {"admin", "teacher"}

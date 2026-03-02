@@ -16,7 +16,7 @@ User = get_user_model()
         # Each tuple = (role we assign, final view name we expect after login)
         ("student", "users:student_home"),
         ("teacher", "assessor:teacher_home"),
-        ("admin", "users:admin_home"),
+        ("admin", "assessor:teacher_home"),
     ],
 )
 def test_login_redirects_by_role(client, role, expected_name):

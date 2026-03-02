@@ -58,7 +58,7 @@ def test_staff_can_register_user_and_invite_is_sent(client, django_capture_on_co
 
     # We now keep the creator (admin) on their own dashboard
     assert resp.redirect_chain
-    assert resp.resolver_match.view_name == "users:admin_home"
+    assert resp.resolver_match.view_name == "assessor:teacher_home"
 
     # New user exists and has an unusable password (invite flow)
     new_user = User.objects.get(email="newstudent@example.com")
@@ -109,3 +109,66 @@ def test_register_rejects_duplicate_student_number(client):
     assert resp.status_code == 200
     assert b"already in use" in resp.content
     assert not User.objects.filter(email="dupe@example.com").exists()
+
+
+@pytest.mark.django_db
+@override_settings(EMAIL_BACKEND="django.core.mail.backends.locmem.EmailBackend")
+def test_teacher_can_register_student(client, django_capture_on_commit_callbacks):
+    teacher = User.objects.create_user(
+        email="teacher@example.com",
+        password="teachpass",
+        is_active=True,
+        is_staff=True,
+        role="teacher",
+    )
+    client.force_login(teacher)
+
+    with django_capture_on_commit_callbacks(execute=True):
+        resp = client.post(
+            reverse("users:register"),
+            data={
+                "email": "teachmade@example.com",
+                "first_name": "Teach",
+                "last_name": "Made",
+                "student_number": "USN-3000",
+                "password1": "pass1234ABC!",
+                "password2": "pass1234ABC!",
+                "role": "student",
+            },
+            follow=True,
+        )
+
+    assert resp.redirect_chain
+    assert resp.resolver_match.view_name == "assessor:teacher_home"
+    created = User.objects.get(email="teachmade@example.com")
+    assert created.role == User.Roles.STUDENT
+    assert Profile.objects.get(user=created).student_number == "USN-3000"
+
+
+@pytest.mark.django_db
+def test_teacher_cannot_register_admin_role(client):
+    teacher = User.objects.create_user(
+        email="teacher2@example.com",
+        password="teachpass",
+        is_active=True,
+        is_staff=True,
+        role="teacher",
+    )
+    client.force_login(teacher)
+
+    resp = client.post(
+        reverse("users:register"),
+        data={
+            "email": "shouldfail@example.com",
+            "first_name": "Should",
+            "last_name": "Fail",
+            "student_number": "USN-3001",
+            "password1": "pass1234ABC!",
+            "password2": "pass1234ABC!",
+            "role": "admin",
+        },
+    )
+
+    assert resp.status_code == 200
+    assert b"Select a valid choice" in resp.content
+    assert not User.objects.filter(email="shouldfail@example.com").exists()

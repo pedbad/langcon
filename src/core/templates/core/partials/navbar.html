@@ -55,7 +55,7 @@
           <a
             {% if request.user|is_teacher %}
               href="{% url 'users:teacher_home' %}"
-            {% elif request.user|is_admin %}
+            {% elif request.user.role == "admin" %}
               href="{% url 'users:admin_home' %}"
             {% else %}
               href="{% url 'users:student_home' %}"
@@ -67,8 +67,20 @@
             <span>Dashboard</span>
           </a>
 
-          {# Staff-only: Django Admin #}
-          {% if request.user.is_staff %}
+          {# Admin-role only: Students registry #}
+          {% if request.user.role == "admin" %}
+            <a
+              href="{% url 'assessor:students' %}"
+              class="nav-link focus-ring rounded-md px-2 py-1.5 {% active_url 'assessor:students' startswith='/assessor/students/' %}"
+              {% aria_current 'assessor:students' startswith='/assessor/students/' %}
+            >
+              {% icon 'diversity' class_='h-5 w-5 align-middle shrink-0' %}
+              <span>Students</span>
+            </a>
+          {% endif %}
+
+          {# Admin-role only: Django Admin #}
+          {% if request.user.role == "admin" %}
             <a
               href="/admin/"
               class="nav-link focus-ring rounded-md px-2 py-1.5 {% active_url startswith='/admin/' %}"
@@ -80,7 +92,7 @@
           {% endif %}
 
           {# Admin-role only: Register #}
-          {% if request.user|is_admin %}
+          {% if request.user.role == "admin" or request.user.role == "teacher" %}
             <a
               href="{% url 'users:register' %}"
               class="nav-link focus-ring rounded-md px-2 py-1.5 {% active_url 'users:register' startswith='/users/register' %}"
@@ -238,7 +250,7 @@
       <a
         {% if request.user|is_teacher %}
           href="{% url 'users:teacher_home' %}"
-        {% elif request.user|is_admin %}
+        {% elif request.user.role == "admin" %}
           href="{% url 'users:admin_home' %}"
         {% else %}
           href="{% url 'users:student_home' %}"
@@ -252,8 +264,22 @@
         <span>Dashboard</span>
       </a>
 
-      {# Django admin (staff) #}
-      {% if request.user.is_staff %}
+      {# Students (admin role) #}
+      {% if request.user.role == "admin" %}
+        <a
+          href="{% url 'assessor:students' %}"
+          class="nav-link focus-ring flex w-full rounded-md px-3 py-2 hover:bg-accent hover:text-accent-foreground {% active_url 'assessor:students' startswith='/assessor/students/' %}"
+          {% aria_current 'assessor:students' startswith='/assessor/students/' %}
+          @click="open = false"
+          role="menuitem"
+        >
+          {% icon 'diversity' class_='h-5 w-5 align-middle shrink-0' %}
+          <span>Students</span>
+        </a>
+      {% endif %}
+
+      {# Django admin (admin role) #}
+      {% if request.user.role == "admin" %}
         <a
           href="/admin/"
           class="nav-link focus-ring flex w-full rounded-md px-3 py-2 hover:bg-accent hover:text-accent-foreground {% active_url startswith='/admin/' %}"
@@ -267,7 +293,7 @@
       {% endif %}
 
       {# Register (admin role only) #}
-      {% if request.user|is_admin %}
+      {% if request.user.role == "admin" or request.user.role == "teacher" %}
         <a
           href="{% url 'users:register' %}"
           class="nav-link focus-ring flex w-full rounded-md px-3 py-2 hover:bg-accent hover:text-accent-foreground {% active_url 'users:register' startswith='/users/register' %}"

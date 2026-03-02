@@ -1,0 +1,323 @@
+{% extends "core/base.html" %}
+{% load cotton icons %}
+
+{% block title %}Students{% endblock %}
+
+{% block content %}
+<div class="mx-auto max-w-6xl pt-2 space-y-8">
+  {% c card class="card-strong" %}
+    {% c card/header %}
+      <div class="flex items-center justify-between gap-4">
+        <div class="flex items-center gap-3 text-2xl md:text-3xl">
+          {% icon "diversity" class_="h-8 w-8 text-foreground/80" %}
+          {% c card/title %}All students{% endc %}
+        </div>
+      </div>
+    {% endc %}
+    {% c card/content %}
+      <p class="text-sm text-muted-foreground">
+        Admin view of all registered student users, including incomplete profiles.
+      </p>
+      <div class="mt-3 space-y-2">
+        <div class="flex flex-wrap items-center gap-2">
+          <span class="inline-flex items-center gap-1 rounded-full border border-sky-500 bg-sky-50 px-2 py-0.5 text-xs font-medium text-sky-700">
+            {% icon "diversity" class_="h-3.5 w-3.5 text-sky-500" %}
+            Total students: {{ students_stats.total_students }}
+          </span>
+          <span class="inline-flex items-center gap-1 rounded-full border border-emerald-500 bg-emerald-50 px-2 py-0.5 text-xs font-medium text-emerald-700">
+            {% icon "check_circle" class_="h-3.5 w-3.5 text-emerald-500" %}
+            Profile complete: {{ students_stats.profile_complete }}
+          </span>
+          <span class="inline-flex items-center gap-1 rounded-full border border-red-500 bg-red-50 px-2 py-0.5 text-xs font-medium text-red-700">
+            {% icon "data_alert" class_="h-3.5 w-3.5 text-red-500" %}
+            Profile incomplete: {{ students_stats.profile_incomplete }}
+          </span>
+        </div>
+
+        <div class="flex flex-wrap items-center gap-2">
+          <span class="inline-flex items-center gap-1 rounded-full border border-indigo-500 bg-indigo-50 px-2 py-0.5 text-xs font-medium text-indigo-700">
+            {% icon "rubric" class_="h-3.5 w-3.5 text-indigo-500" %}
+            Assessment created: {{ students_stats.assessment_created }}
+          </span>
+          <span class="inline-flex items-center gap-1 rounded-full border border-orange-500 bg-orange-50 px-2 py-0.5 text-xs font-medium text-orange-700">
+            {% icon "warning" class_="h-3.5 w-3.5 text-orange-500" %}
+            No assessment yet: {{ students_stats.no_assessment }}
+          </span>
+        </div>
+
+        <div class="flex flex-wrap items-center gap-2">
+          <span class="inline-flex items-center gap-1 rounded-full border border-emerald-500 bg-emerald-50 px-2 py-0.5 text-xs font-medium text-emerald-700">
+            {% icon "check_circle" class_="h-3.5 w-3.5 text-emerald-500" %}
+            Marked: {{ students_stats.marked }}
+          </span>
+          <span class="inline-flex items-center gap-1 rounded-full border border-rose-500 bg-rose-50 px-2 py-0.5 text-xs font-medium text-rose-700">
+            {% icon "assignment_ind" class_="h-3.5 w-3.5 text-rose-500" %}
+            Unmarked: {{ students_stats.left_to_mark }}
+          </span>
+        </div>
+      </div>
+    {% endc %}
+  {% endc %}
+
+  {% c card class="card-strong" %}
+    {% c card/header %}
+      <div class="flex items-start justify-between gap-4">
+        <div class="flex items-center gap-2">
+          {% icon "diversity" class_="h-6 w-6 text-foreground/80" %}
+          {% c card/title %}Student registry{% endc %}
+        </div>
+
+        <form method="get" class="flex items-center gap-2">
+          {% if search_query %}<input type="hidden" name="q" value="{{ search_query }}">{% endif %}
+          <input type="hidden" name="sort" value="{{ active_sort }}">
+          <input type="hidden" name="dir" value="{{ active_dir }}">
+          <label for="year-filter" class="inline-flex items-center gap-1 text-xs text-muted-foreground">
+            {% icon "swap_vert" class_="h-4 w-4" %}
+            Year
+          </label>
+          <select
+            id="year-filter"
+            name="year"
+            class="h-8 rounded-md border border-input bg-background px-2 text-xs"
+            onchange="this.form.submit()"
+          >
+            <option value="">All years</option>
+            {% for y in years %}
+              <option value="{{ y }}" {% if selected_year == y %}selected{% endif %}>
+                {{ y }}
+              </option>
+            {% endfor %}
+          </select>
+        </form>
+      </div>
+      <div class="mt-2 text-xs text-muted-foreground">
+        Search, sort, and review all student accounts in one place.
+      </div>
+    {% endc %}
+    {% c card/content %}
+      <form method="get" class="mb-3">
+        <input type="hidden" name="sort" value="{{ active_sort }}">
+        <input type="hidden" name="dir" value="{{ active_dir }}">
+        {% if selected_year %}<input type="hidden" name="year" value="{{ selected_year }}">{% endif %}
+        <div class="relative w-full">
+          <span class="pointer-events-none absolute inset-y-0 left-2 flex items-center">
+            {% icon "search" class_="h-4 w-4 text-muted-foreground" %}
+          </span>
+          <input
+            type="text"
+            name="q"
+            value="{{ search_query }}"
+            placeholder="Search by email, name, or USN…"
+            autocomplete="off"
+            class="h-9 w-full rounded-md border border-input bg-background pl-8 pr-3 text-sm shadow-sm placeholder:text-muted-foreground
+              focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+          />
+        </div>
+      </form>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+          <thead class="text-left text-muted-foreground border-b">
+            <tr>
+              <th class="py-2 pr-3">
+                <a
+                  href="?sort=student&dir={% if active_sort == 'student' and active_dir == 'asc' %}desc{% else %}asc{% endif %}{% if search_query %}&q={{ search_query|urlencode }}{% endif %}{% if selected_year %}&year={{ selected_year }}{% endif %}"
+                  class="inline-flex items-center gap-1 hover:text-foreground"
+                >
+                  Student
+                  {% if active_sort == "student" %}
+                    {% if active_dir == "asc" %}
+                      {% icon "arrow_upward_alt" class_="h-3.5 w-3.5" %}
+                    {% else %}
+                      {% icon "arrow_downward_alt" class_="h-3.5 w-3.5" %}
+                    {% endif %}
+                  {% else %}
+                    {% icon "swap_vert" class_="h-3.5 w-3.5 opacity-60" %}
+                  {% endif %}
+                </a>
+              </th>
+              <th class="py-2 pr-3">
+                <a
+                  href="?sort=usn&dir={% if active_sort == 'usn' and active_dir == 'asc' %}desc{% else %}asc{% endif %}{% if search_query %}&q={{ search_query|urlencode }}{% endif %}{% if selected_year %}&year={{ selected_year }}{% endif %}"
+                  class="inline-flex items-center gap-1 hover:text-foreground"
+                >
+                  USN
+                  {% if active_sort == "usn" %}
+                    {% if active_dir == "asc" %}
+                      {% icon "arrow_upward_alt" class_="h-3.5 w-3.5" %}
+                    {% else %}
+                      {% icon "arrow_downward_alt" class_="h-3.5 w-3.5" %}
+                    {% endif %}
+                  {% else %}
+                    {% icon "swap_vert" class_="h-3.5 w-3.5 opacity-60" %}
+                  {% endif %}
+                </a>
+              </th>
+              <th class="py-2 pr-3">
+                <a
+                  href="?sort=profile&dir={% if active_sort == 'profile' and active_dir == 'asc' %}desc{% else %}asc{% endif %}{% if search_query %}&q={{ search_query|urlencode }}{% endif %}{% if selected_year %}&year={{ selected_year }}{% endif %}"
+                  class="inline-flex items-center gap-1 hover:text-foreground"
+                >
+                  Profile
+                  {% if active_sort == "profile" %}
+                    {% if active_dir == "asc" %}
+                      {% icon "arrow_upward_alt" class_="h-3.5 w-3.5" %}
+                    {% else %}
+                      {% icon "arrow_downward_alt" class_="h-3.5 w-3.5" %}
+                    {% endif %}
+                  {% else %}
+                    {% icon "swap_vert" class_="h-3.5 w-3.5 opacity-60" %}
+                  {% endif %}
+                </a>
+              </th>
+              <th class="py-2 pr-3">
+                <a
+                  href="?sort=assessment&dir={% if active_sort == 'assessment' and active_dir == 'asc' %}desc{% else %}asc{% endif %}{% if search_query %}&q={{ search_query|urlencode }}{% endif %}{% if selected_year %}&year={{ selected_year }}{% endif %}"
+                  class="inline-flex items-center gap-1 hover:text-foreground"
+                >
+                  Assessment
+                  {% if active_sort == "assessment" %}
+                    {% if active_dir == "asc" %}
+                      {% icon "arrow_upward_alt" class_="h-3.5 w-3.5" %}
+                    {% else %}
+                      {% icon "arrow_downward_alt" class_="h-3.5 w-3.5" %}
+                    {% endif %}
+                  {% else %}
+                    {% icon "swap_vert" class_="h-3.5 w-3.5 opacity-60" %}
+                  {% endif %}
+                </a>
+              </th>
+              <th class="py-2 pr-3">
+                <a
+                  href="?sort=joined&dir={% if active_sort == 'joined' and active_dir == 'asc' %}desc{% else %}asc{% endif %}{% if search_query %}&q={{ search_query|urlencode }}{% endif %}{% if selected_year %}&year={{ selected_year }}{% endif %}"
+                  class="inline-flex items-center gap-1 hover:text-foreground"
+                >
+                  Joined
+                  {% if active_sort == "joined" %}
+                    {% if active_dir == "asc" %}
+                      {% icon "arrow_upward_alt" class_="h-3.5 w-3.5" %}
+                    {% else %}
+                      {% icon "arrow_downward_alt" class_="h-3.5 w-3.5" %}
+                    {% endif %}
+                  {% else %}
+                    {% icon "swap_vert" class_="h-3.5 w-3.5 opacity-60" %}
+                  {% endif %}
+                </a>
+              </th>
+              <th class="py-2 pr-3">Admin</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for row in student_rows %}
+              <tr class="border-b last:border-0">
+                <td class="py-2 pr-3">
+                  <div class="font-medium text-foreground">{{ row.display_name }}</div>
+                  <div class="text-xs text-muted-foreground">{{ row.email }}</div>
+                </td>
+                <td class="py-2 pr-3">
+                  {% if row.student_number %}
+                    {{ row.student_number }}
+                  {% else %}
+                    <span class="text-muted-foreground">—</span>
+                  {% endif %}
+                </td>
+                <td class="py-2 pr-3">
+                  {% if row.profile_state == "completed" %}
+                    <span class="inline-flex items-center gap-1 rounded-full border border-emerald-500 bg-emerald-50 px-2 py-0.5 text-xs font-medium text-emerald-700">
+                      {% icon "check_circle" class_="h-3.5 w-3.5 text-emerald-500" %}
+                      Complete
+                    </span>
+                  {% else %}
+                    <span class="inline-flex items-center gap-1 rounded-full border border-red-500 bg-red-50 px-2 py-0.5 text-xs font-medium text-red-700">
+                      {% icon "data_alert" class_="h-3.5 w-3.5 text-red-500" %}
+                      Incomplete
+                    </span>
+                  {% endif %}
+                </td>
+                <td class="py-2 pr-3">
+                  {% if row.assessment_state == "completed" %}
+                    <span class="inline-flex items-center gap-1 rounded-full border border-emerald-500 bg-emerald-50 px-2 py-0.5 text-xs font-medium text-emerald-700">
+                      {% icon "check_circle" class_="h-3.5 w-3.5 text-emerald-500" %}
+                      {{ row.assessment_status }}
+                    </span>
+                  {% elif row.assessment_state == "in_progress" %}
+                    <span class="inline-flex items-center gap-1 rounded-full border border-amber-500 bg-amber-50 px-2 py-0.5 text-xs font-medium text-amber-700">
+                      {% icon "data_check" class_="h-3.5 w-3.5 text-amber-500" %}
+                      {{ row.assessment_status }}
+                    </span>
+                  {% else %}
+                    <span class="inline-flex items-center gap-1 rounded-full border border-red-500 bg-red-50 px-2 py-0.5 text-xs font-medium text-red-700">
+                      {% icon "data_alert" class_="h-3.5 w-3.5 text-red-500" %}
+                      {{ row.assessment_status }}
+                    </span>
+                  {% endif %}
+                </td>
+                <td class="py-2 pr-3 text-muted-foreground">
+                  {{ row.date_joined|date:"Y-m-d H:i" }}
+                </td>
+                <td class="py-2 pr-3">
+                  <a
+                    href="/admin/users/user/{{ row.user.id }}/change/"
+                    class="inline-flex items-center gap-1 rounded-md border border-border px-2 py-1 text-xs hover:bg-accent hover:text-accent-foreground"
+                  >
+                    {% icon "admin" class_="h-3.5 w-3.5" %}
+                    Edit
+                  </a>
+                </td>
+              </tr>
+            {% empty %}
+              <tr>
+                <td colspan="6" class="py-6 text-center text-muted-foreground">
+                  No students found.
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+      {% if page_obj and page_obj.paginator.num_pages > 1 %}
+        <div class="mt-4 flex items-center justify-between gap-3 text-xs">
+          <div class="text-muted-foreground">
+            Page <span class="font-medium text-foreground">{{ page_obj.number }}</span>
+            of <span class="font-medium text-foreground">{{ page_obj.paginator.num_pages }}</span>
+            · {{ page_obj.paginator.count }} students
+            · {{ per_page }}/page
+          </div>
+          <nav class="flex items-center gap-1">
+            {% if page_obj.has_previous %}
+              <a
+                class="inline-flex items-center rounded-md border px-2 py-1 hover:bg-muted/60 transition-colors"
+                href="?{% if base_qs %}{{ base_qs }}&{% endif %}page={{ page_obj.previous_page_number }}"
+              >
+                Prev
+              </a>
+            {% else %}
+              <span class="inline-flex items-center rounded-md border px-2 py-1 text-muted-foreground/60">
+                Prev
+              </span>
+            {% endif %}
+
+            <span class="inline-flex items-center rounded-md border px-2 py-1 bg-muted font-medium">
+              {{ page_obj.number }}
+            </span>
+
+            {% if page_obj.has_next %}
+              <a
+                class="inline-flex items-center rounded-md border px-2 py-1 hover:bg-muted/60 transition-colors"
+                href="?{% if base_qs %}{{ base_qs }}&{% endif %}page={{ page_obj.next_page_number }}"
+              >
+                Next
+              </a>
+            {% else %}
+              <span class="inline-flex items-center rounded-md border px-2 py-1 text-muted-foreground/60">
+                Next
+              </span>
+            {% endif %}
+          </nav>
+        </div>
+      {% endif %}
+    {% endc %}
+  {% endc %}
+</div>
+{% endblock %}

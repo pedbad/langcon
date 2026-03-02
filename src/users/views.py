@@ -88,10 +88,23 @@ class RegisterView(AdminRequiredMixin, CreateView):
     form_class = RegisterForm
     success_url = reverse_lazy("users:student_home")  # fallback
 
+    def get_form(self, form_class=None):
+        form = super().get_form(form_class)
+        creator_role = getattr(self.request.user, "role", None)
+        if creator_role == User.Roles.TEACHER and "role" in form.fields:
+            # Teachers may register users, but only as students.
+            form.fields["role"].choices = [(User.Roles.STUDENT, "Student")]
+            form.fields["role"].initial = User.Roles.STUDENT
+        return form
+
     @transaction.atomic
     def form_valid(self, form):
         user = form.save(commit=False)
-        user.role = form.cleaned_data.get("role", User.Roles.STUDENT)
+        creator_role = getattr(self.request.user, "role", None)
+        if creator_role == User.Roles.TEACHER:
+            user.role = User.Roles.STUDENT
+        else:
+            user.role = form.cleaned_data.get("role", User.Roles.STUDENT)
         user.first_name = (form.cleaned_data.get("first_name") or "").strip()
         user.last_name = (form.cleaned_data.get("last_name") or "").strip()
 
@@ -193,4 +206,9 @@ def teacher_home(request):
 @login_required
 @role_required(["admin"])
 def admin_home(request):
-    return render(request, "users/admin_home.html")
+    """
+    Thin routing shim for admins:
+    - keeps /users/admin-home/ as a stable URL target
+    - reuses assessor dashboard UI for now
+    """
+    return redirect(reverse("assessor:teacher_home"))
