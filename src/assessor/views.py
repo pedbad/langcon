@@ -300,6 +300,9 @@ def students(request):
 
     all_students_qs = User.objects.filter(role=User.Roles.STUDENT)
     years = [d.year for d in all_students_qs.dates("date_joined", "year", order="DESC")]
+    year_counts = {year: all_students_qs.filter(date_joined__year=year).count() for year in years}
+    year_chips = [{"year": year, "count": year_counts[year]} for year in years]
+    total_students_all_years = sum(year_counts.values())
 
     selected_year = None
     if year_raw.isdigit():
@@ -422,6 +425,9 @@ def students(request):
             "active_dir": direction,
             "base_qs": base_qs,
             "years": years,
+            "year_chips": year_chips,
+            "year_counts": year_counts,
+            "total_students_all_years": total_students_all_years,
             "selected_year": selected_year,
             "students_stats": {
                 "total_students": total_students,

@@ -93,6 +93,34 @@
       <div class="mt-2 text-xs text-muted-foreground">
         Search, sort, and review all student accounts in one place.
       </div>
+      <div class="mt-3 flex flex-wrap items-center gap-2">
+        <a
+          href="?sort={{ active_sort }}&dir={{ active_dir }}{% if search_query %}&q={{ search_query|urlencode }}{% endif %}"
+          class="inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs font-medium transition-colors
+            {% if not selected_year %}
+              border-violet-500 bg-violet-50 text-violet-700
+            {% else %}
+              border-border bg-background text-muted-foreground hover:bg-muted/60 hover:text-foreground
+            {% endif %}"
+        >
+          <span>All</span>
+          <span class="opacity-80">· {{ total_students_all_years }}</span>
+        </a>
+        {% for chip in year_chips %}
+          <a
+            href="?sort={{ active_sort }}&dir={{ active_dir }}&year={{ chip.year }}{% if search_query %}&q={{ search_query|urlencode }}{% endif %}"
+            class="inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs font-medium transition-colors
+              {% if selected_year == chip.year %}
+                border-violet-500 bg-violet-50 text-violet-700
+              {% else %}
+                border-border bg-background text-muted-foreground hover:bg-muted/60 hover:text-foreground
+              {% endif %}"
+          >
+            <span>{{ chip.year }}</span>
+            <span class="opacity-80">· {{ chip.count }}</span>
+          </a>
+        {% endfor %}
+      </div>
     {% endc %}
     {% c card/content %}
       <form method="get" class="mb-3">
