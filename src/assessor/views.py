@@ -353,12 +353,15 @@ def students(request):
             assessment_status = "Not started"
         is_marked = bool(evaluation and evaluation.exam_marked)
 
+        student_number_value = (getattr(profile, "student_number", "") if profile else "") or ""
+        assessment_status_sort = (assessment_status or "").lower()
+
         student_rows.append(
             {
                 "user": student,
                 "display_name": display_name,
                 "email": student.email,
-                "student_number": getattr(profile, "student_number", "") if profile else "",
+                "student_number": student_number_value,
                 "profile_complete": profile_complete,
                 "profile_state": "completed" if profile_complete else "not_started",
                 "assessment_status": assessment_status,
@@ -367,11 +370,11 @@ def students(request):
                 "is_marked": is_marked,
                 "date_joined": student.date_joined,
                 "sort_student": (display_name or student.email or "").lower(),
-                "sort_usn": (getattr(profile, "student_number", "") if profile else "").lower(),
+                "sort_usn": str(student_number_value).lower(),
                 "sort_profile": 1 if profile_complete else 0,
                 "sort_assessment": (
                     0 if has_assessment else 1,
-                    assessment_status.lower(),
+                    assessment_status_sort,
                 ),
             }
         )
