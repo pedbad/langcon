@@ -108,9 +108,6 @@ class RegisterView(AdminRequiredMixin, CreateView):
         user.first_name = (form.cleaned_data.get("first_name") or "").strip()
         user.last_name = (form.cleaned_data.get("last_name") or "").strip()
 
-        # require first-time set password
-        user.set_unusable_password()
-
         # flags first
         if user.role in (User.Roles.TEACHER, User.Roles.ADMIN):
             user.is_staff = True
@@ -137,7 +134,7 @@ class RegisterView(AdminRequiredMixin, CreateView):
 
         messages.success(
             self.request,
-            f"User {user.email} created. An invite email will be sent automatically.",
+            f"User {user.email} created successfully.",
         )
 
         # Redirect the creator (admin/teacher), not the new user

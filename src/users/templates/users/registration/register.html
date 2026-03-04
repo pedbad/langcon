@@ -20,7 +20,7 @@
         {% if form.last_name %}{% include "core/forms/field.html" with field=form.last_name autocomplete="family-name" placeholder="Last name" %}{% endif %}
         {% if form.role %}{% include "core/forms/field.html" with field=form.role %}{% endif %}
         <div id="student-number-row">
-          {% if form.student_number %}{% include "core/forms/field.html" with field=form.student_number placeholder="3xxxxxxxx" %}{% endif %}
+          {% if form.student_number %}{% include "core/forms/field.html" with field=form.student_number autocomplete="off" placeholder="3xxxxxxxx" %}{% endif %}
         </div>
         {% if form.password1 %}{% include "core/forms/field.html" with field=form.password1 type="password" autocomplete="new-password" placeholder="Password" %}{% endif %}
         {% if form.password2 %}{% include "core/forms/field.html" with field=form.password2 type="password" autocomplete="new-password" placeholder="Confirm password" %}{% endif %}

@@ -30,7 +30,7 @@
           {% include "core/forms/non_field_errors.html" with form=form %}
 
           {% if form.email %}
-            {% include "core/forms/field.html" with field=form.email autocomplete="email" placeholder="Email address" %}
+            {% include "core/forms/field.html" with field=form.email autocomplete="username" placeholder="Email address" %}
           {% elif form.username %}
             {% include "core/forms/field.html" with field=form.username autocomplete="username" placeholder="Username" %}
           {% endif %}
