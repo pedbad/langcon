@@ -1,10 +1,11 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from django.contrib.auth import get_user_model
 from django.urls import reverse
 from django.utils import timezone
 import pytest
 
+from assessments.models import Assessment, AssessmentEvaluation
 from profiles.models import Profile
 
 User = get_user_model()
@@ -92,3 +93,35 @@ def test_students_page_filters_by_year(client):
     assert resp.status_code == 200
     assert b"oldyear@example.com" in resp.content
     assert b"newyear@example.com" not in resp.content
+
+
+@pytest.mark.django_db
+def test_dashboard_uses_profile_usn_when_evaluation_snapshot_is_blank(client):
+    teacher = User.objects.create_user(
+        email="teacher-dashboard@example.com",
+        password="teachpass",
+        role="teacher",
+        is_staff=True,
+    )
+    student = User.objects.create_user(
+        email="student-usn@example.com",
+        password="pass1234",
+        role="student",
+        first_name="USN",
+        last_name="Fallback",
+    )
+    Profile.objects.create(user=student, phone="", student_number="300009999")
+    assessment = Assessment.objects.create(user=student)
+    AssessmentEvaluation.objects.create(
+        assessment=assessment,
+        student_email=student.email,
+        student_usn="",
+        submitted_at=timezone.now(),
+        completion_duration=timedelta(minutes=10),
+    )
+
+    client.force_login(teacher)
+    resp = client.get(reverse("assessor:teacher_home"))
+
+    assert resp.status_code == 200
+    assert b"300009999" in resp.content

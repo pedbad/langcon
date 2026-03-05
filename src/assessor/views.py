@@ -88,7 +88,9 @@ def dashboard(request):
     # ─────────────────────────────────────────────
     # 2) Base queryset (students only)
     # ─────────────────────────────────────────────
-    qs = Assessment.objects.select_related("user", "evaluation").filter(user__role="student")
+    qs = Assessment.objects.select_related("user", "user__profile", "evaluation").filter(
+        user__role="student"
+    )
 
     if q:
         qs = qs.filter(
@@ -97,6 +99,7 @@ def dashboard(request):
             | Q(user__last_name__icontains=q)
             | Q(evaluation__student_usn__icontains=q)
             | Q(evaluation__student_email__icontains=q)
+            | Q(user__profile__student_number__icontains=q)
         )
 
     # Toggle filters
@@ -133,8 +136,16 @@ def dashboard(request):
             student_email = ""
         a.sort_student = student_email.lower()
 
-        # USN
-        a.sort_usn = ev.student_usn if ev and ev.student_usn else ""
+        # USN (prefer evaluation snapshot, fallback to live profile)
+        try:
+            profile = a.user.profile
+        except Exception:  # noqa: BLE001
+            profile = None
+        profile_usn = (getattr(profile, "student_number", "") if profile else "") or ""
+        eval_usn = (ev.student_usn if ev and ev.student_usn else "") or ""
+        usn_value = eval_usn or profile_usn
+        a.usn_display = usn_value
+        a.sort_usn = usn_value.lower()
 
         # Submitted
         if ev and ev.submitted_at:

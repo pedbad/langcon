@@ -20,12 +20,12 @@
 
     {# USN #}
     <td class="py-1.5 px-4 align-top text-xs text-muted-foreground whitespace-nowrap">
-      {% if ev and ev.student_usn %}
+      {% if assessment.usn_display %}
         <a
           href="{% url 'assessor:student_detail' assessment_id=assessment.id %}"
           class="hover:underline"
         >
-          {{ ev.student_usn }}
+          {{ assessment.usn_display }}
         </a>
       {% else %}
         —
