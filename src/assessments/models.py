@@ -21,9 +21,9 @@ class Assessment(models.Model):
     # Writing section fields
     writing_q1_prompt = models.TextField(
         default=(
-            "Explain as if writing for an educated but non-expert audience the nature of your "
-            "postgraduate research if applying for a PhD or the reasons for your choice of "
-            "taught postgraduate programme."
+            "Explain the nature of your proposed postgraduate research or the reasons for your "
+            "choice of taught postgraduate programme. Write for an educated but non-expert "
+            "audience."
         ),
         editable=False,
     )
