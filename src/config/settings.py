@@ -193,15 +193,12 @@ WSGI_APPLICATION = "config.wsgi.application"
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
-DATABASES = {
-    "default": {
-        "ENGINE": os.getenv("DB_ENGINE", "django.db.backends.sqlite3"),
-        "NAME": os.getenv("DB_NAME", os.path.join(BASE_DIR, "db.sqlite3")),
-        "USER": os.getenv("DB_USER", ""),
-        "PASSWORD": os.getenv("DB_PASSWORD", ""),
-        "HOST": os.getenv("DB_HOST", ""),
-        "PORT": os.getenv("DB_PORT", ""),
-        "CONN_MAX_AGE": int(os.getenv("DB_CONN_MAX_AGE", "0")),
+DB_ENGINE = os.getenv("DB_ENGINE", "django.db.backends.sqlite3")
+IS_MYSQL = DB_ENGINE == "django.db.backends.mysql"
+
+# charset/collation options are MySQL-only; SQLite rejects them when connecting.
+MYSQL_DB_SETTINGS = (
+    {
         "OPTIONS": {
             # Keep it simple to avoid privileged session SETs
             "charset": os.getenv("DB_CHARSET", "utf8mb4"),
@@ -211,6 +208,21 @@ DATABASES = {
             "CHARSET": os.getenv("DB_CHARSET", "utf8mb4"),
             "COLLATION": os.getenv("DB_COLLATION", "utf8mb4_unicode_ci"),
         },
+    }
+    if IS_MYSQL
+    else {}
+)
+
+DATABASES = {
+    "default": {
+        "ENGINE": DB_ENGINE,
+        "NAME": os.getenv("DB_NAME", os.path.join(BASE_DIR, "db.sqlite3")),
+        "USER": os.getenv("DB_USER", ""),
+        "PASSWORD": os.getenv("DB_PASSWORD", ""),
+        "HOST": os.getenv("DB_HOST", ""),
+        "PORT": os.getenv("DB_PORT", ""),
+        "CONN_MAX_AGE": int(os.getenv("DB_CONN_MAX_AGE", "0")),
+        **MYSQL_DB_SETTINGS,
     }
 }
 

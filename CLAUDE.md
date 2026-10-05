@@ -16,4 +16,3 @@ Shared project instructions:
 - For model changes, also run `.venv/bin/python src/manage.py makemigrations --check --dry-run`.
 - For template/style changes, run `npm run tw:build`.
 - Mock OpenAI calls (`src/assessments/services/`) in tests; never make live API calls.
-- Before relying on the database, remember the SQLite `charset` caveat in `AGENTS.md` section 4.

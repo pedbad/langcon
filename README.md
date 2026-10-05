@@ -107,7 +107,7 @@ Copy `.env.example` to `.env` **only for a fresh setup with no existing `.env`**
 
 [Settings](src/config/settings.py) accept MySQL through `DB_ENGINE=django.db.backends.mysql` and `DB_NAME`, `DB_USER`, `DB_PASSWORD`, `DB_HOST`, `DB_PORT`. Create a local database/account and configure those values before migrating.
 
-**Known SQLite setup issue:** SQLite is the default engine, but the current settings unconditionally include MySQL's `OPTIONS.charset`. Opening a SQLite connection fails with `TypeError: Connection() got an unexpected keyword argument 'charset'`. SQLite use requires making these options backend-specific; also review the fixed test database name and MySQL test charset/collation settings. This README documents the issue; it has not been fixed in application code. A successful `manage.py check` alone does not prove the database connection works.
+**Database backends:** SQLite is the default engine when `DB_ENGINE` is unset. MySQL-only settings (`OPTIONS.charset`, the fixed `test_langcon` test database name, and test charset/collation) are applied only when `DB_ENGINE=django.db.backends.mysql`. A successful `manage.py check` alone does not prove the database connection works.
 
 Once the local database is configured:
 
@@ -145,7 +145,7 @@ The root `.env` is loaded by [src/config/settings.py](src/config/settings.py). E
 | `SITE_NAME`, `SITE_DESCRIPTION`, `SITE_ORIGIN` | Site identity/metadata; the origin includes the scheme. |
 | `SITE_DOMAIN` | Hostname, optionally port, used for invitation links without a request. Do not include a scheme or path. |
 | `FORCE_SCRIPT_NAME` | URL prefix: empty locally, `/langcon` by default with `ENV=prod`. Set explicitly to match the reverse proxy. |
-| `DB_*` | Database connection and test charset/collation configuration. See the database caveat above. |
+| `DB_*` | Database connection settings. `DB_CHARSET`/`DB_COLLATION` apply to MySQL only. See the database note above. |
 | `OPENAI_API_KEY` | Used by question generation and evaluation; unnecessary for ordinary page rendering or mocked tests. |
 | `EMAIL_BACKEND`, `EMAIL_FILE_PATH` | Override email delivery and development outbox location. Default development outbox is `tmp_emails/`. |
 | `EMAIL_HOST`, `EMAIL_PORT`, `EMAIL_HOST_USER`, `EMAIL_HOST_PASSWORD`, `EMAIL_USE_TLS` | SMTP settings read outside `ENV=dev`. |
