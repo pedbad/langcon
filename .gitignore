@@ -90,3 +90,7 @@ data/*.csv
 !src/core/static/core/js/lib/**/*.min.js
 *.keep.py
 .npm-cache
+
+# Claude Code local data (keep shared .claude/ config trackable)
+.claude/tdd-guard/
+.claude/settings.local.json
