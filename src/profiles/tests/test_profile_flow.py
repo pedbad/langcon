@@ -44,6 +44,10 @@ class ProfileExamFlowTests(TestCase):
         assert self.client.login(email="student@example.com", password="pw12345678")
         # The view uses get_or_create; this ensures we have an instance to compare against.
         self.profile = Profile.objects.get_or_create(user=self.user)[0]
+        # student_number is read-only in ProfileForm (staff assign it at registration),
+        # so set it directly rather than posting it.
+        self.profile.student_number = "USNTEST123"
+        self.profile.save(update_fields=["student_number"])
         self.url = reverse("profiles:profile")
 
         # A helper to build a valid “base” payload for the form
@@ -55,7 +59,6 @@ class ProfileExamFlowTests(TestCase):
             "requires_uk_student_visa": "True",
             # honour code must be ticked to allow save
             "academic_integrity_confirmed": "true",
-            "student_number": "USNTEST123",
             # exam switch + split date
             "has_recent_english_exam": "True",
             "exam_type": "",

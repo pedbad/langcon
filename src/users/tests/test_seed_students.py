@@ -116,7 +116,8 @@ def test_seed_students_update_changes_names_and_password(tmp_path):
         is_active=True,
     )
     assert u.check_password("OldPass!1")
-    Profile.objects.create(user=u, phone="", student_number="300000001")
+    # The user signal already created a profile; reuse it rather than creating a second one.
+    Profile.objects.update_or_create(user=u, defaults={"phone": "", "student_number": "300000001"})
 
     # 2) Build a one-row CSV that updates first/last and sets a new password
     csv_path = tmp_path / "update.csv"

@@ -87,7 +87,10 @@ def test_register_rejects_duplicate_student_number(client):
         password="pass1234ABC!",
         role="student",
     )
-    Profile.objects.create(user=existing_user, phone="", student_number="USN-2000")
+    # The user signal already created a profile; reuse it rather than creating a second one.
+    Profile.objects.update_or_create(
+        user=existing_user, defaults={"phone": "", "student_number": "USN-2000"}
+    )
 
     client.force_login(admin)
     resp = client.post(
