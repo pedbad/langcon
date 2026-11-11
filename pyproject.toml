@@ -1,30 +1,56 @@
-# pyproject.toml
+# Project-owned formatting and linting rules.
+# Keep editor, command-line and Git-hook tooling consistent.
 
 [tool.black]
+# Python formatter: use a 100-column target and Python 3.13 syntax.
+# Black controls Python indentation; it uses four spaces.
 line-length = 100
 target-version = ["py313"]
 
 [tool.ruff]
+# Python linter and import organiser.
+# Match Black's line-length target and Python version.
 line-length = 100
 target-version = "py313"
+
+# Allow fixes by default when running Ruff checks.
+# Use `ruff check --no-fix` for inspection without edits.
 fix = true
+
+# Treat src/ as a source root when classifying imports.
 src = ["src"]
 
 [tool.ruff.lint]
-# E = pycodestyle, F = pyflakes, I = import sorting, W = warnings, UP = pyupgrade
+# E/W: style checks; F: likely errors; I: import sorting;
+# UP: suggestions for modern Python syntax.
 select = ["E", "F", "I", "W", "UP"]
 
-# Ignore long lines in generated Django migrations
+# Exempt generated Django migrations from long-line warnings.
 per-file-ignores = { "src/**/migrations/*.py" = ["E501"] }
 
 [tool.ruff.lint.isort]
-# Group your apps correctly
+# Explicitly classify Django as a third-party dependency.
 known-third-party = ["django"]
 
-# Sorting behaviour
+# Combine compatible imports using aliases.
 combine-as-imports = true
+
+# Sort imports within each section without prioritising
+# constants, classes or other names by their type.
 force-sort-within-sections = true
 order-by-type = false
 
-# (Optional) If you want to control the order of sections explicitly:
-# section-order = ["future", "standard-library", "third-party", "first-party", "local-folder"]
+[tool.djlint]
+# Use Django-aware rules for template syntax.
+profile = "django"
+
+# Format templates with two-space indentation.
+indent = 2
+
+# Use a 100-column formatting target.
+max_line_length = 100
+
+# Leave embedded CSS and JavaScript formatting disabled
+# while their separate formatter settings are reviewed.
+format_css = false
+format_js = false

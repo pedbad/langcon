@@ -1,9 +1,13 @@
-# Development-only tools; includes runtime too
+# Development tools, plus the application's runtime dependencies.
 -r requirements.txt
 
-pre-commit
-black
-ruff
+# Verified tooling versions.
+pre-commit==4.3.0
+black==25.9.0
+ruff==0.14.2
+djlint==1.50.0
+
+# Existing development dependencies; version policy still to review.
 pytest
 pytest-django
 django-browser-reload
