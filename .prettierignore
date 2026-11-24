@@ -1,0 +1,10 @@
+# Django templates are formatted by djLint.
+**/*.html
+
+# Dependencies and local editor configuration.
+node_modules/
+.venv/
+.vscode/
+
+# Generated Tailwind output.
+src/core/static/core/css/output.css
